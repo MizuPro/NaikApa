@@ -39,5 +39,5 @@ Thumbs.db
 # Agent files
 .agent/
 
-data
-references
+/data/
+/references/

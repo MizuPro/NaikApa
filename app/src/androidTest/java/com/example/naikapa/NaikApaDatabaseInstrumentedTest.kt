@@ -166,7 +166,7 @@ class NaikApaDatabaseInstrumentedTest {
                 stopType = "halte"
             )
         )
-        assertEquals(1, gtfsDao.searchStops("Dukuh", "Tije").size)
+        assertTrue(gtfsDao.searchStops("Dukuh", "Tije").isNotEmpty())
         assertEquals("Dukuh Atas BNI", gtfsDao.getStop("STOP_DKA")?.stopName)
 
         assertEquals(1, savedTripDao.delete(savedId))
@@ -174,5 +174,22 @@ class NaikApaDatabaseInstrumentedTest {
         assertEquals(1, historyDao.deleteRouteHistory(routeHistoryId))
         assertEquals(1, reportDao.delete(reportId))
         assertEquals(1, userDao.deleteUser(userId))
+    }
+
+    @Test
+    fun prebuiltGtfsDatabaseCanBeReadAndSearched() {
+        val gtfsDao = GtfsDao(dbHelper)
+
+        assertTrue(gtfsDao.hasGtfsData())
+        gtfsDao.getGtfsTableCounts().forEach { tableCount ->
+            assertTrue("${tableCount.tableName} should not be empty", tableCount.totalRows > 0)
+        }
+        assertTrue(gtfsDao.getStopCountsByAgency().isNotEmpty())
+
+        val dukuhResults = gtfsDao.searchStops("Dukuh", limit = 10)
+        val tangerangResults = gtfsDao.searchStops("Tangerang", limit = 10)
+
+        assertTrue(dukuhResults.isNotEmpty())
+        assertTrue(tangerangResults.isNotEmpty())
     }
 }

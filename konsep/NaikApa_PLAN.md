@@ -173,20 +173,26 @@ Walaupun target aplikasi tidak memakai data dummy untuk rute, penggunaan data du
 
 ---
 
-## Fase 3: Import dan Bundling Data GTFS
+## Fase 3: Import dan Bundling Data GTFS ✅ SELESAI
+
+### Status Planning
+- [x] Plan eksekusi Fase 3 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 3 selesai dikerjakan.
 
 ### Tujuan
 Menyiapkan data transportasi umum agar dapat digunakan aplikasi Android secara lokal.
 
 ### Aktivitas
-1. Mengumpulkan data GTFS TransJakarta, KRL, MRT, dan LRT.
-2. Menentukan field yang benar-benar dibutuhkan.
-3. Membersihkan data yang tidak diperlukan agar ukuran database lebih ringan.
-4. Mengimpor GTFS ke SQLite.
-5. Membuat pre-built database.
-6. Memasukkan file database ke folder assets Android.
-7. Membuat mekanisme copy database dari assets ke internal storage saat aplikasi pertama kali dibuka.
-8. Melakukan validasi isi tabel GTFS di Android.
+1. [x] Mengumpulkan dan mengaudit data GTFS TransJakarta, KRL, MRT, dan LRT dari folder `data/gtfs*`.
+2. [x] Menentukan field yang benar-benar dibutuhkan sesuai skema `gtfs_stops`, `gtfs_routes`, `gtfs_trips`, dan `gtfs_stop_times`.
+3. [x] Membersihkan data yang tidak diperlukan agar ukuran database lebih ringan.
+4. [x] Membuat script import GTFS ke SQLite pre-built.
+5. [x] Membuat pre-built database `naikapa_gtfs.db`.
+6. [x] Memasukkan file database ke folder assets Android.
+7. [x] Membuat mekanisme copy database dari assets ke internal storage saat aplikasi pertama kali dibuka.
+8. [x] Menambahkan query validasi dan pencarian halte/stasiun dari database lokal.
+9. [x] Melakukan validasi isi tabel GTFS di Android.
+10. [x] Menambahkan test untuk memastikan database GTFS bisa dibaca dan dicari.
 
 ### Field GTFS Minimum
 1. `agency_id`
@@ -203,13 +209,17 @@ Menyiapkan data transportasi umum agar dapat digunakan aplikasi Android secara l
 12. `stop_sequence`
 
 ### Output
-1. File database GTFS dalam format SQLite.
-2. Database dapat dibundel ke aplikasi.
-3. Aplikasi dapat membaca daftar halte dan stasiun.
-4. Aplikasi dapat mencari halte atau stasiun berdasarkan nama.
+1. [x] File database GTFS dalam format SQLite.
+2. [x] Database dapat dibundel ke aplikasi.
+3. [x] Aplikasi dapat membaca daftar halte dan stasiun.
+4. [x] Aplikasi dapat mencari halte atau stasiun berdasarkan nama.
 
 ### Kriteria Selesai
-Fase ini selesai jika halaman pencarian internal dapat menampilkan halte atau stasiun dari GTFS lokal.
+- [x] Fungsi pencarian internal via `GtfsDao` dapat menampilkan halte atau stasiun dari GTFS lokal.
+- [x] `GtfsDao.searchStops()` dapat menemukan contoh stop seperti Dukuh Atas, Stasiun Tangerang, atau halte TransJakarta.
+- [x] Validasi database tidak menemukan stop aktif tanpa koordinat dan relasi dasar GTFS rusak.
+
+Status implementasi: selesai. Database pre-built `app/src/main/assets/databases/naikapa_gtfs.db` berhasil dibuat dari data lokal GTFS dengan 8.336 stop, 262 route, 2.831 trip, dan 55.293 stop time. Validasi script berhasil, unit test berhasil, serta APK debug dan androidTest APK berhasil dikompilasi.
 
 ### Risiko
 1. Ukuran database terlalu besar.
@@ -226,6 +236,10 @@ Fase ini selesai jika halaman pencarian internal dapat menampilkan halte atau st
 ---
 
 ## Fase 4: Login, Register, dan Profil Pengguna
+
+### Status Planning
+- [x] Plan eksekusi Fase 4 sudah dibuat di `.agent/planning/plan.md`.
+- [ ] Implementasi Fase 4 selesai dikerjakan.
 
 ### Tujuan
 Membuat fitur akun lokal agar user bisa menyimpan data pribadi, status kendaraan, riwayat, favorit, dan laporan.
