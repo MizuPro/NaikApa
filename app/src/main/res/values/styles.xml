@@ -161,4 +161,27 @@
         <item name="navigationIconTint">@color/colorTextPrimary</item>
     </style>
 
+    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <style name="BottomNavTextActive" parent="@style/TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BottomNavTextInactive" parent="@style/TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- Indikator aktif yang lebih kecil dan rapi (pill shape, bukan bulat besar) -->
+    <style name="BottomNavActiveIndicator" parent="@style/Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">52dp</item>
+        <item name="android:height">28dp</item>
+        <item name="shapeAppearance">@style/BottomNavIndicatorShape</item>
+        <item name="android:color">@color/colorPrimaryLight</item>
+    </style>
+
+    <style name="BottomNavIndicatorShape" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerSize">50%</item>
+    </style>
+
 </resources>

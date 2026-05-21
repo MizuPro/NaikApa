@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="48dp"
         android:layout_marginEnd="16dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="16dp"
@@ -126,6 +126,31 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Tombol Tampilkan Panel (muncul saat cardSearch di-hide) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnShowPanel"
+        style="@style/Widget.Material3.Button.ElevatedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="16dp"
+        android:minHeight="0dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="@string/btn_show_panel"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:backgroundTint="@color/white"
+        app:cornerRadius="18dp"
+        app:icon="@drawable/ic_directions"
+        app:iconSize="14dp"
+        app:iconTint="@color/colorPrimary"
+        app:iconPadding="4dp"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/cardHeader"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!-- 3. Floating Search Card (Tengah-Atas) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSearch"
@@ -146,6 +171,39 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <!-- Tombol Collapse/Expand Panel -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCollapsePanel"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="@string/btn_hide_panel"
+                    android:textColor="@color/colorTextSecondary"
+                    android:textSize="11sp"
+                    app:icon="@drawable/ic_close"
+                    app:iconGravity="textEnd"
+                    app:iconSize="14dp"
+                    app:iconTint="@color/colorTextSecondary"
+                    app:iconPadding="4dp" />
+            </LinearLayout>
+
+            <!-- Konten yang bisa di-collapse -->
+            <LinearLayout
+                android:id="@+id/layoutPanelContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
             <!-- Route Inputs Container with connection line and swap button -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -193,6 +251,8 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="12dp"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:layout_constraintEnd_toStartOf="@id/btnSwap"
                     app:layout_constraintStart_toEndOf="@id/dotStart"
                     app:layout_constraintTop_toTopOf="parent">
@@ -227,6 +287,30 @@
                         android:textColor="@color/colorTextSecondary"
                         android:textSize="11sp" />
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilOriginSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="@string/search_origin_hint"
+                        android:visibility="gone"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxStrokeColor="@color/colorPrimary"
+                        app:startIconDrawable="@drawable/ic_my_location">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etOriginSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionSearch"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:textSize="13sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                 </LinearLayout>
 
                 <View
@@ -250,6 +334,8 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
                     android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:layout_constraintEnd_toStartOf="@id/btnSwap"
                     app:layout_constraintStart_toEndOf="@id/dotEnd"
                     app:layout_constraintTop_toBottomOf="@id/dividerSearch">
@@ -767,6 +853,8 @@
                     app:indicatorColor="@color/colorAccentOrange"
                     app:trackThickness="3dp" />
             </FrameLayout>
+
+            </LinearLayout><!-- end layoutPanelContent -->
 
         </LinearLayout>
 

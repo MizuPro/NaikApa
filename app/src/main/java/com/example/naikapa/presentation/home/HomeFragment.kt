@@ -108,10 +108,15 @@ class HomeFragment : Fragment() {
     private var selectedOriginStop: SearchLocation? = null
     private var selectedDestination: SearchLocation? = null
     private var destinationSearchJob: Job? = null
+    private var originSearchJob: Job? = null
     private var currentMapStyle = MapStyle.POSITRON
     private val routeOverlays = mutableListOf<Overlay>()
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
+    private var isPanelVisible = true
+
+    // Enum untuk melacak field mana yang sedang aktif di-edit
+    private enum class ActiveSearchField { NONE, ORIGIN, DESTINATION }
 
     // List untuk mengelola visual mode transportasi
     private lateinit var modeCards: List<MaterialCardView>
@@ -196,8 +201,10 @@ class HomeFragment : Fragment() {
         initMap()
         setupTransitModes()
         setupSortChips()
+        setupOriginSearch()
         setupDestinationSearch()
         setupRouteActions()
+        setupPanelToggle()
     }
 
     private fun initMap() {
@@ -309,6 +316,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupDestinationSearch() {
+        // Klik pada area tujuan (tvDestination/tvDestinationSub) → aktifkan input tujuan
+        binding.layoutDestinationField.setOnClickListener {
+            activateDestinationSearch()
+        }
+        binding.tvDestination.setOnClickListener {
+            activateDestinationSearch()
+        }
+        binding.tvDestinationSub.setOnClickListener {
+            activateDestinationSearch()
+        }
+
         binding.etDestinationSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
 
@@ -318,6 +336,199 @@ class HomeFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable?) = Unit
         })
+    }
+
+    private fun activateDestinationSearch() {
+        binding.tilDestinationSearch.visibility = View.VISIBLE
+        binding.etDestinationSearch.requestFocus()
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(binding.etDestinationSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        // Tutup origin search jika sedang terbuka
+        binding.tilOriginSearch.visibility = View.GONE
+        hideSearchResults()
+    }
+
+    private fun setupOriginSearch() {
+        // Klik pada area asal (tvOrigin/tvOriginSub) → aktifkan input asal
+        binding.layoutOriginField.setOnClickListener {
+            activateOriginSearch()
+        }
+        binding.tvOrigin.setOnClickListener {
+            activateOriginSearch()
+        }
+        binding.tvOriginSub.setOnClickListener {
+            activateOriginSearch()
+        }
+
+        binding.etOriginSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                scheduleOriginSearch(s?.toString().orEmpty())
+            }
+
+            override fun afterTextChanged(s: Editable?) = Unit
+        })
+    }
+
+    private fun activateOriginSearch() {
+        binding.tilOriginSearch.visibility = View.VISIBLE
+        binding.etOriginSearch.requestFocus()
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(binding.etOriginSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        // Tutup destination search jika sedang terbuka
+        binding.tilDestinationSearch.visibility = View.GONE
+        hideSearchResults()
+    }
+
+    private fun scheduleOriginSearch(query: String) {
+        originSearchJob?.cancel()
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.length < AppConstants.GTFS_MIN_QUERY_LENGTH) {
+            hideSearchResults()
+            return
+        }
+
+        originSearchJob = homeScope.launch {
+            delay(AppConstants.TOMTOM_SEARCH_DEBOUNCE_MS)
+            performOriginSearch(trimmedQuery)
+        }
+    }
+
+    private suspend fun performOriginSearch(query: String) {
+        showSearchStatus(getString(R.string.search_destination_loading), isError = false)
+
+        val latBias = AppConstants.MAP_DEFAULT_LAT
+        val lonBias = AppConstants.MAP_DEFAULT_LON
+        val combined = mutableListOf<SearchLocation>()
+
+        coroutineScope {
+            val gtfsDeferred = async(Dispatchers.IO) {
+                gtfsSearchRepository.search(query, null, null, null)
+            }
+            val tomtomDeferred = if (BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+                async(Dispatchers.IO) {
+                    searchRepository.search(
+                        query = query,
+                        apiKey = BuildConfig.TOMTOM_API_KEY,
+                        latitudeBias = latBias,
+                        longitudeBias = lonBias
+                    )
+                }
+            } else null
+
+            combined.addAll(gtfsDeferred.await())
+            tomtomDeferred?.await()?.onSuccess { locations ->
+                combined.addAll(locations.take(AppConstants.TOMTOM_SEARCH_LIMIT))
+            }
+        }
+
+        if (combined.isEmpty()) {
+            showSearchStatus(getString(R.string.search_combined_empty), isError = false)
+        } else {
+            renderOriginSearchResults(query, combined)
+        }
+    }
+
+    private fun renderOriginSearchResults(query: String, locations: List<SearchLocation>) {
+        binding.tvSearchStatus.visibility = View.GONE
+        binding.layoutSearchResults.removeAllViews()
+        locations.take(AppConstants.TOMTOM_SEARCH_LIMIT).forEach { location ->
+            binding.layoutSearchResults.addView(createOriginResultView(query, location))
+        }
+        binding.layoutSearchResults.visibility = View.VISIBLE
+    }
+
+    private fun createOriginResultView(query: String, location: SearchLocation): View {
+        val isGtfs = location.source == SearchLocation.SOURCE_GTFS
+        val card = MaterialCardView(requireContext()).apply {
+            radius = dpToPx(10f).toFloat()
+            cardElevation = 0f
+            strokeWidth = dpToPx(1f)
+            strokeColor = ContextCompat.getColor(
+                requireContext(),
+                if (isGtfs) R.color.colorPrimary else R.color.colorCardOutline
+            )
+            setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+            setOnClickListener { selectOriginFromSearch(query, location) }
+        }
+        val content = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(12f), dpToPx(9f), dpToPx(12f), dpToPx(9f))
+        }
+        val title = TextView(requireContext()).apply {
+            text = location.name
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextPrimary))
+            textSize = 13f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        val subtitle = TextView(requireContext()).apply {
+            text = location.address ?: formatCoordinates(location.latitude, location.longitude)
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextSecondary))
+            textSize = 11f
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        content.addView(title)
+        content.addView(subtitle)
+        if (isGtfs) {
+            val badge = TextView(requireContext()).apply {
+                text = GtfsStopSearchRepository.agencyIdToLabel(location.agencyId)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                textSize = 10f
+                setPadding(dpToPx(6f), dpToPx(2f), dpToPx(6f), dpToPx(2f))
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(requireContext(), R.color.colorPrimaryLight))
+                    cornerRadius = dpToPx(4f).toFloat()
+                    setStroke(dpToPx(1f), ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                }
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dpToPx(4f) }
+            }
+            content.addView(badge)
+        }
+        card.addView(content)
+        card.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = dpToPx(8f) }
+        return card
+    }
+
+    private fun selectOriginFromSearch(query: String, location: SearchLocation) {
+        originSearchJob?.cancel()
+        selectedOrigin = LocationPoint(
+            label = location.name,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            isFromGps = false
+        )
+        selectedOriginStop = location
+        binding.tvOrigin.text = location.name
+        binding.tvOriginSub.text = location.address ?: formatCoordinates(location.latitude, location.longitude)
+        binding.etOriginSearch.setText("")
+        binding.tilOriginSearch.visibility = View.GONE
+        hideSearchResults()
+
+        val originPoint = MapPoint(
+            label = getString(R.string.map_marker_origin),
+            latitude = location.latitude,
+            longitude = location.longitude,
+            description = location.name,
+            markerType = MapMarkerType.ORIGIN
+        )
+        showOriginMarker(originPoint)
+        binding.mapView.controller.apply {
+            setZoom(AppConstants.MAP_LOCATION_ZOOM)
+            animateTo(pointToGeoPoint(originPoint))
+        }
+        // Sembunyikan keyboard
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etOriginSearch.windowToken, 0)
     }
 
     private fun setupSortChips() {
@@ -513,6 +724,7 @@ class HomeFragment : Fragment() {
         binding.tvDestination.text = location.name
         binding.tvDestinationSub.text = location.address ?: formatCoordinates(location.latitude, location.longitude)
         binding.etDestinationSearch.setText("")
+        binding.tilDestinationSearch.visibility = View.GONE
         hideSearchResults()
 
         val destinationPoint = MapPoint(
@@ -528,6 +740,9 @@ class HomeFragment : Fragment() {
             animateTo(pointToGeoPoint(destinationPoint))
         }
         saveSearchHistory(query, location)
+        // Sembunyikan keyboard
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etDestinationSearch.windowToken, 0)
         toast(getString(R.string.search_destination_selected))
     }
 
@@ -631,6 +846,46 @@ class HomeFragment : Fragment() {
         binding.btnNotification.setOnClickListener {
             toast("Tidak ada notifikasi baru")
         }
+    }
+
+    private fun setupPanelToggle() {
+        binding.btnCollapsePanel.setOnClickListener {
+            hidePanel()
+        }
+        binding.btnShowPanel.setOnClickListener {
+            showPanel()
+        }
+    }
+
+    private fun hidePanel() {
+        isPanelVisible = false
+        binding.cardSearch.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction {
+                binding.cardSearch.visibility = View.GONE
+                binding.btnShowPanel.visibility = View.VISIBLE
+                binding.btnShowPanel.alpha = 0f
+                binding.btnShowPanel.animate().alpha(1f).setDuration(200).start()
+            }
+            .start()
+        // Sembunyikan keyboard jika ada
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+    }
+
+    private fun showPanel() {
+        isPanelVisible = true
+        binding.btnShowPanel.animate()
+            .alpha(0f)
+            .setDuration(150)
+            .withEndAction {
+                binding.btnShowPanel.visibility = View.GONE
+                binding.cardSearch.visibility = View.VISIBLE
+                binding.cardSearch.alpha = 0f
+                binding.cardSearch.animate().alpha(1f).setDuration(200).start()
+            }
+            .start()
     }
 
     private fun handleFindRouteClick() {
