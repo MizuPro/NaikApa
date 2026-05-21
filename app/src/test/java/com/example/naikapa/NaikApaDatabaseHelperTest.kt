@@ -83,6 +83,16 @@ class NaikApaDatabaseHelperTest {
         assertEquals(300L, AppConstants.TOMTOM_SEARCH_DEBOUNCE_MS)
         assertEquals("isi_api_key_kamu_di_sini", AppConstants.TOMTOM_API_KEY_PLACEHOLDER)
     }
+
+    @Test
+    fun tomTomRoutingConstantsAreConfigured() {
+        assertEquals("fastest", AppConstants.TOMTOM_ROUTING_ROUTE_TYPE_FASTEST)
+        assertEquals("motorcycle", AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_MOTORCYCLE)
+        assertEquals("car", AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_CAR)
+        assertEquals("tollRoads", AppConstants.TOMTOM_ROUTING_AVOID_TOLL_ROADS)
+        assertEquals(2, AppConstants.TOMTOM_MAX_ALTERNATIVES)
+    }
+
     @Test
     fun gtfsSearchConstantsAreConfigured() {
         // Limit hasil lokal cukup besar untuk menampilkan pilihan yang relevan

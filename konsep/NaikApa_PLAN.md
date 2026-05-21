@@ -519,45 +519,55 @@ Status implementasi: selesai. `RouteMetrics` sudah membawa `estimatedFare`, `est
 
 ## Fase 12: Integrasi TomTom Routing untuk Motor dan Mobil
 
+### Status Planning
+- [x] Plan eksekusi Fase 12 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 12 selesai dikerjakan.
+
 ### Tujuan
 Menghitung rute kendaraan pribadi menggunakan TomTom Routing API.
 
 ### Aktivitas
-1. Membuat service TomTom Routing.
-2. Membuat request rute motor.
-3. Membuat request rute mobil.
-4. Mengambil jarak dan waktu dari response.
-5. Mengambil titik polyline dari response.
-6. Menampilkan rute kendaraan pribadi pada peta.
-7. Menghitung estimasi BBM.
-8. Menyediakan alternatif rute jika response mendukung.
+1. [x] Membuat service TomTom Routing.
+2. [x] Membuat request rute motor.
+3. [x] Membuat request rute mobil.
+4. [x] Mengambil jarak dan waktu dari response.
+5. [x] Mengambil titik polyline dari response.
+6. [x] Menampilkan rute kendaraan pribadi pada peta.
+7. [x] Menghitung estimasi BBM.
+8. [x] Menyediakan alternatif rute jika response mendukung.
 
 ### Output
-1. User dapat mencari rute motor.
-2. User dapat mencari rute mobil.
-3. Aplikasi menampilkan estimasi waktu, jarak, BBM, dan polyline.
-4. Aplikasi dapat membandingkan rute kendaraan pribadi dengan transportasi umum.
+1. [x] User dapat mencari rute motor.
+2. [x] User dapat mencari rute mobil.
+3. [x] Aplikasi menampilkan estimasi waktu, jarak, BBM, dan polyline.
+4. [x] Aplikasi dapat membandingkan rute kendaraan pribadi dengan transportasi umum.
 
 ### Kriteria Selesai
 Fase ini selesai jika input asal dan tujuan koordinat dapat menghasilkan rute motor atau mobil yang terlihat di peta.
+
+Status implementasi: selesai. `TomTomRoutingApi` dan `TomTomRoutingRepository` sudah tersedia untuk mode motor/mobil, response TomTom Routing dipetakan ke hasil kendaraan pribadi dengan jarak, waktu, estimasi BBM, total biaya, dan polyline. Home menjalankan flow kendaraan pribadi saat mode Motor/Mobil dipilih, menampilkan marker, polyline, estimasi waktu, biaya/BBM, walking 0 m, dan transit 0x. Unit test, build debug, dan compile androidTest berhasil dijalankan.
 
 ---
 
 ## Fase 13: Rute Gabungan Kendaraan Pribadi dan Transportasi Umum
 
+### Status Planning
+- [x] Plan eksekusi Fase 13 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 13 selesai dikerjakan.
+
 ### Tujuan
 Mengimplementasikan fitur utama yang membuat NaikApa lebih unggul, yaitu gabungan kendaraan pribadi dan transportasi umum.
 
 ### Aktivitas
-1. Mencari beberapa titik GTFS terdekat dari lokasi user.
-2. Mencari beberapa titik GTFS terdekat dari tujuan.
-3. Menghitung rute motor atau mobil dari lokasi user ke titik GTFS awal.
-4. Menghitung rute transit dari titik GTFS awal ke titik GTFS akhir.
-5. Menghitung jalan kaki dari titik GTFS akhir ke tujuan.
-6. Menggabungkan semua segmen.
-7. Menghitung total waktu, biaya, BBM, jalan kaki, dan transit.
-8. Membuat hasil rute gabungan.
-9. Menampilkan hasil sebagai kandidat rekomendasi.
+1. [x] Mencari beberapa titik GTFS terdekat dari lokasi user.
+2. [x] Mencari beberapa titik GTFS terdekat dari tujuan.
+3. [x] Menghitung rute motor atau mobil dari lokasi user ke titik GTFS awal.
+4. [x] Menghitung rute transit dari titik GTFS awal ke titik GTFS akhir.
+5. [x] Menghitung jalan kaki dari titik GTFS akhir ke tujuan.
+6. [x] Menggabungkan semua segmen.
+7. [x] Menghitung total waktu, biaya, BBM, jalan kaki, dan transit.
+8. [x] Membuat hasil rute gabungan.
+9. [x] Menampilkan hasil sebagai kandidat rekomendasi.
 
 ### Strategi Agar Tidak Terlalu Berat
 1. Ambil maksimal 3 sampai 5 titik transportasi terdekat dari asal.
@@ -568,8 +578,8 @@ Mengimplementasikan fitur utama yang membuat NaikApa lebih unggul, yaitu gabunga
 
 ### Output
 1. Sistem dapat membuat rute “motor ke stasiun, lanjut KRL, jalan kaki ke tujuan”.
-2. Sistem dapat membandingkan rute gabungan dengan rute kendaraan pribadi penuh dan transportasi umum penuh.
-3. Sistem dapat menampilkan langkah perjalanan gabungan.
+2. [x] Sistem dapat membandingkan rute gabungan dengan rute kendaraan pribadi penuh dan transportasi umum penuh.
+3. [x] Sistem dapat menampilkan langkah perjalanan gabungan.
 
 ### Kriteria Selesai
 Fase ini selesai jika aplikasi bisa menghasilkan minimal satu rute gabungan yang valid dari lokasi user ke tujuan.

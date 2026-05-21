@@ -144,4 +144,19 @@
     <string name="route_duration_minute_format">%1$d mnt</string>
     <string name="route_transit_count_format">%1$dx</string>
     <string name="route_cost_rupiah_format">Rp %1$s</string>
+    <string name="route_private_motor">Motor</string>
+    <string name="route_private_car">Mobil</string>
+    <string name="route_private_loading">Menghitung rute kendaraan pribadi...</string>
+    <string name="route_private_ready">Rute kendaraan pribadi ditemukan</string>
+    <string name="route_private_not_found">Rute kendaraan pribadi belum ditemukan.</string>
+    <string name="route_private_error">Gagal menghitung rute kendaraan pribadi.</string>
+    <string name="route_private_api_key_missing">Isi TOMTOM_API_KEY di local.properties untuk memakai rute motor atau mobil.</string>
+    <string name="route_private_requires_coordinates">Gunakan lokasi asal dan pilih tujuan terlebih dahulu.</string>
+    <string name="route_private_summary_format">%1$s langsung, jarak %2$s, estimasi BBM %3$s.</string>
+    <string name="route_combined_loading">Menghitung rute gabungan...</string>
+    <string name="route_combined_ready">Rute gabungan ditemukan</string>
+    <string name="route_combined_not_found">Rute gabungan belum ditemukan.</string>
+    <string name="route_combined_error">Gagal menghitung rute gabungan.</string>
+    <string name="route_combined_requires_coordinates">Gunakan lokasi asal dan pilih tujuan terlebih dahulu.</string>
+    <string name="route_combined_summary_format">%1$s ke %2$s, lanjut transit ke %3$s. BBM %4$s, tarif %5$s.</string>
 </resources>

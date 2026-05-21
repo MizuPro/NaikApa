@@ -18,6 +18,10 @@ object AppConstants {
     const val TOMTOM_MIN_QUERY_LENGTH = 3
     const val TOMTOM_SEARCH_DEBOUNCE_MS = 300L
     const val TOMTOM_API_KEY_PLACEHOLDER = "isi_api_key_kamu_di_sini"
+    const val TOMTOM_ROUTING_ROUTE_TYPE_FASTEST = "fastest"
+    const val TOMTOM_ROUTING_TRAVEL_MODE_MOTORCYCLE = "motorcycle"
+    const val TOMTOM_ROUTING_TRAVEL_MODE_CAR = "car"
+    const val TOMTOM_ROUTING_AVOID_TOLL_ROADS = "tollRoads"
     const val MAP_USER_AGENT = "NaikApa/1.0"
     const val MAP_DEFAULT_LAT = -6.2088
     const val MAP_DEFAULT_LON = 106.8456
@@ -40,6 +44,14 @@ object AppConstants {
     const val ROUTING_TRANSFER_COST = 500
     const val ROUTING_DURATION_TIEBREAKER = 0.00001
     const val ROUTING_WALKING_DISTANCE_WEIGHT = 10.0
+
+    // Combined route
+    const val COMBINED_ROUTE_LOG_TAG = "CombinedRoute"
+    const val COMBINED_ROUTE_STOP_CANDIDATE_LIMIT = 3
+    const val COMBINED_ROUTE_MAX_COMBINATIONS = 9
+    const val COMBINED_ROUTE_ORIGIN_RADIUS_M = 8000.0
+    const val COMBINED_ROUTE_DESTINATION_RADIUS_M = 2500.0
+    const val WALKING_SECONDS_PER_METER = 0.9
 
     // Transit fares
     const val FARE_TRANSJAKARTA_FLAT = 3500

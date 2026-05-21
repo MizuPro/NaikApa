@@ -1,0 +1,250 @@
+package com.example.naikapa.data.repository
+
+import com.example.naikapa.common.AppConstants
+import com.example.naikapa.data.model.CombinedRouteResult
+import com.example.naikapa.data.model.CombinedRouteSegment
+import com.example.naikapa.data.model.CombinedRouteSegmentType
+import com.example.naikapa.data.model.CombinedRouteStopCandidate
+import com.example.naikapa.data.model.MapMarkerType
+import com.example.naikapa.data.model.MapPoint
+import com.example.naikapa.data.model.PrivateVehicleMode
+import com.example.naikapa.data.model.PrivateVehicleRouteResult
+import com.example.naikapa.data.model.RouteMetrics
+import com.example.naikapa.data.model.SortPreference
+import com.example.naikapa.data.model.TransitMode
+import com.example.naikapa.data.model.TransitRouteResult
+import com.example.naikapa.domain.routing.GeoDistanceCalculator
+import kotlin.math.roundToInt
+
+class CombinedRouteRepository(
+    private val nearbyTransitStopRepository: NearbyTransitStopRepository,
+    private val privateVehicleRouteProvider: suspend (
+        originLat: Double,
+        originLon: Double,
+        destinationLat: Double,
+        destinationLon: Double,
+        mode: PrivateVehicleMode
+    ) -> Result<List<PrivateVehicleRouteResult>>,
+    private val transitRouteProvider: (
+        startStopId: String,
+        endStopId: String,
+        mode: TransitMode,
+        sortPreference: SortPreference
+    ) -> TransitRouteResult?
+) {
+    constructor(
+        nearbyTransitStopRepository: NearbyTransitStopRepository,
+        tomTomRoutingRepository: TomTomRoutingRepository,
+        transitRoutingRepository: TransitRoutingRepository,
+        apiKey: String,
+        avoidTollRoads: Boolean = false
+    ) : this(
+        nearbyTransitStopRepository = nearbyTransitStopRepository,
+        privateVehicleRouteProvider = { originLat, originLon, destinationLat, destinationLon, mode ->
+            tomTomRoutingRepository.calculateRoute(
+                originLat = originLat,
+                originLon = originLon,
+                destinationLat = destinationLat,
+                destinationLon = destinationLon,
+                mode = mode,
+                apiKey = apiKey,
+                avoidTollRoads = avoidTollRoads
+            )
+        },
+        transitRouteProvider = { startStopId, endStopId, mode, sortPreference ->
+            transitRoutingRepository.findRoute(startStopId, endStopId, mode, sortPreference)
+        }
+    )
+
+    suspend fun findCombinedRoutes(
+        originLat: Double,
+        originLon: Double,
+        destinationLat: Double,
+        destinationLon: Double,
+        privateVehicleMode: PrivateVehicleMode,
+        transitMode: TransitMode,
+        sortPreference: SortPreference,
+        agencyId: String? = null,
+        limit: Int = AppConstants.COMBINED_ROUTE_STOP_CANDIDATE_LIMIT
+    ): Result<List<CombinedRouteResult>> = runCatching {
+        val originStops = nearbyTransitStopRepository.findNearestStops(
+            latitude = originLat,
+            longitude = originLon,
+            maxDistanceMeters = AppConstants.COMBINED_ROUTE_ORIGIN_RADIUS_M,
+            limit = limit,
+            agencyId = agencyId
+        )
+        val destinationStops = nearbyTransitStopRepository.findNearestStops(
+            latitude = destinationLat,
+            longitude = destinationLon,
+            maxDistanceMeters = AppConstants.COMBINED_ROUTE_DESTINATION_RADIUS_M,
+            limit = limit,
+            agencyId = agencyId
+        )
+
+        if (originStops.isEmpty() || destinationStops.isEmpty()) {
+            error("Tidak ada titik transit terdekat yang sesuai")
+        }
+
+        val candidates = mutableListOf<CombinedRouteResult>()
+        var checkedCombinations = 0
+        for (originStop in originStops) {
+            val vehicleRoute = privateVehicleRouteProvider(
+                originLat,
+                originLon,
+                originStop.latitude,
+                originStop.longitude,
+                privateVehicleMode
+            ).getOrNull()?.firstOrNull() ?: continue
+
+            for (destinationStop in destinationStops) {
+                if (checkedCombinations >= AppConstants.COMBINED_ROUTE_MAX_COMBINATIONS) break
+                checkedCombinations += 1
+
+                val transitRoute = transitRouteProvider(
+                    originStop.stopId,
+                    destinationStop.stopId,
+                    transitMode,
+                    sortPreference
+                ) ?: continue
+
+                candidates.add(
+                    buildResult(
+                        privateVehicleMode = privateVehicleMode,
+                        originLat = originLat,
+                        originLon = originLon,
+                        destinationLat = destinationLat,
+                        destinationLon = destinationLon,
+                        originStop = originStop,
+                        destinationStop = destinationStop,
+                        vehicleRoute = vehicleRoute,
+                        transitRoute = transitRoute
+                    )
+                )
+            }
+        }
+
+        if (candidates.isEmpty()) error("Rute gabungan belum ditemukan")
+        candidates.sortedWith(
+            compareBy<CombinedRouteResult> { sortPrimaryMetric(it, sortPreference) }
+                .thenBy { it.metrics.totalDurationSeconds }
+        )
+    }
+
+    private fun buildResult(
+        privateVehicleMode: PrivateVehicleMode,
+        originLat: Double,
+        originLon: Double,
+        destinationLat: Double,
+        destinationLon: Double,
+        originStop: CombinedRouteStopCandidate,
+        destinationStop: CombinedRouteStopCandidate,
+        vehicleRoute: PrivateVehicleRouteResult,
+        transitRoute: TransitRouteResult
+    ): CombinedRouteResult {
+        val walkingDistanceMeters = GeoDistanceCalculator.haversineMeters(
+            destinationStop.latitude,
+            destinationStop.longitude,
+            destinationLat,
+            destinationLon
+        )
+        val walkingDurationSeconds = (walkingDistanceMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
+        val walkingPoints = listOf(
+            MapPoint(
+                label = destinationStop.stopName,
+                latitude = destinationStop.latitude,
+                longitude = destinationStop.longitude,
+                description = destinationStop.agencyId,
+                markerType = MapMarkerType.TRANSIT
+            ),
+            MapPoint(
+                label = "Tujuan",
+                latitude = destinationLat,
+                longitude = destinationLon,
+                description = "Jalan kaki",
+                markerType = MapMarkerType.DESTINATION
+            )
+        )
+
+        val vehicleSegment = CombinedRouteSegment(
+            type = CombinedRouteSegmentType.PRIVATE_VEHICLE,
+            title = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor ke transit" else "Mobil ke transit",
+            durationSeconds = vehicleRoute.travelTimeSeconds,
+            distanceMeters = vehicleRoute.distanceMeters.toDouble(),
+            estimatedBbm = vehicleRoute.estimatedBbm,
+            points = vehicleRoute.points,
+            privateVehicleResult = vehicleRoute
+        )
+        val transitSegment = CombinedRouteSegment(
+            type = CombinedRouteSegmentType.TRANSIT,
+            title = "Transportasi umum",
+            durationSeconds = transitRoute.metrics.totalDurationSeconds,
+            distanceMeters = transitRoute.metrics.totalDistanceMeters,
+            estimatedFare = transitRoute.metrics.estimatedFare,
+            points = transitRoute.steps.toTransitPoints(),
+            transitResult = transitRoute
+        )
+        val walkingSegment = CombinedRouteSegment(
+            type = CombinedRouteSegmentType.WALKING,
+            title = "Jalan kaki ke tujuan",
+            durationSeconds = walkingDurationSeconds,
+            distanceMeters = walkingDistanceMeters,
+            points = walkingPoints
+        )
+        val segments = listOf(vehicleSegment, transitSegment, walkingSegment)
+        val transitWalkingMeters = transitRoute.metrics.walkingDistanceMeters
+        val totalWalkingMeters = transitWalkingMeters + walkingDistanceMeters
+        val estimatedFare = transitRoute.metrics.estimatedFare
+        val estimatedBbm = vehicleRoute.estimatedBbm
+
+        return CombinedRouteResult(
+            privateVehicleMode = privateVehicleMode,
+            originStop = originStop,
+            destinationStop = destinationStop,
+            segments = segments,
+            metrics = RouteMetrics(
+                totalDurationSeconds = segments.sumOf { it.durationSeconds },
+                totalDistanceMeters = segments.sumOf { it.distanceMeters },
+                walkingDistanceMeters = totalWalkingMeters,
+                transitCount = transitRoute.metrics.transitCount,
+                estimatedFare = estimatedFare,
+                estimatedBbm = estimatedBbm,
+                estimatedTotalCost = estimatedFare + estimatedBbm
+            )
+        )
+    }
+
+    private fun List<com.example.naikapa.data.model.RouteStep>.toTransitPoints(): List<MapPoint> {
+        if (isEmpty()) return emptyList()
+        val points = mutableListOf<MapPoint>()
+        points.add(
+            MapPoint(
+                label = first().fromStop.stopName,
+                latitude = first().fromStop.lat,
+                longitude = first().fromStop.lon,
+                description = first().fromStop.agencyId,
+                markerType = MapMarkerType.TRANSIT
+            )
+        )
+        forEach { step ->
+            points.add(
+                MapPoint(
+                    label = step.toStop.stopName,
+                    latitude = step.toStop.lat,
+                    longitude = step.toStop.lon,
+                    description = step.routeShortName,
+                    markerType = MapMarkerType.TRANSIT
+                )
+            )
+        }
+        return points
+    }
+
+    private fun sortPrimaryMetric(result: CombinedRouteResult, sortPreference: SortPreference): Double =
+        when (sortPreference) {
+            SortPreference.CHEAPEST -> result.metrics.estimatedTotalCost.toDouble()
+            SortPreference.MIN_WALKING -> result.metrics.walkingDistanceMeters
+            SortPreference.FEWEST_TRANSFERS -> result.metrics.transitCount.toDouble()
+            SortPreference.FASTEST -> result.metrics.totalDurationSeconds.toDouble()
+        }
+}

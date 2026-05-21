@@ -35,6 +35,9 @@ import com.example.naikapa.data.model.LocationPoint
 import com.example.naikapa.data.model.MapMarkerType
 import com.example.naikapa.data.model.MapPoint
 import com.example.naikapa.data.model.MapStyle
+import com.example.naikapa.data.model.CombinedRouteResult
+import com.example.naikapa.data.model.PrivateVehicleMode
+import com.example.naikapa.data.model.PrivateVehicleRouteResult
 import com.example.naikapa.data.model.RouteStep
 import com.example.naikapa.data.model.SearchHistory
 import com.example.naikapa.data.model.SearchLocation
@@ -42,8 +45,11 @@ import com.example.naikapa.data.model.SortPreference
 import com.example.naikapa.data.model.TransitMode
 import com.example.naikapa.data.model.TransitRouteResult
 import com.example.naikapa.data.remote.RemoteClient
+import com.example.naikapa.data.repository.CombinedRouteRepository
+import com.example.naikapa.data.repository.NearbyTransitStopRepository
 import com.example.naikapa.data.repository.TransitGraphRepository
 import com.example.naikapa.data.repository.TransitRoutingRepository
+import com.example.naikapa.data.repository.TomTomRoutingRepository
 import com.example.naikapa.data.repository.TomTomSearchRepository
 import com.example.naikapa.databinding.FragmentHomeBinding
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -78,8 +84,10 @@ class HomeFragment : Fragment() {
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var historyDao: HistoryDao
     private val searchRepository = TomTomSearchRepository(RemoteClient.tomTomSearchApi)
+    private val tomTomRoutingRepository = TomTomRoutingRepository(RemoteClient.tomTomRoutingApi)
     private lateinit var gtfsSearchRepository: GtfsStopSearchRepository
     private lateinit var transitRoutingRepository: TransitRoutingRepository
+    private lateinit var combinedRouteRepository: CombinedRouteRepository
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
     private var selectedOrigin: LocationPoint? = null
@@ -131,6 +139,12 @@ class HomeFragment : Fragment() {
         val gtfsDao = GtfsDao(dbHelper)
         gtfsSearchRepository = GtfsStopSearchRepository(gtfsDao)
         transitRoutingRepository = TransitRoutingRepository(TransitGraphRepository(gtfsDao))
+        combinedRouteRepository = CombinedRouteRepository(
+            nearbyTransitStopRepository = NearbyTransitStopRepository(gtfsDao),
+            tomTomRoutingRepository = tomTomRoutingRepository,
+            transitRoutingRepository = transitRoutingRepository,
+            apiKey = BuildConfig.TOMTOM_API_KEY
+        )
         homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
         // Mengubah sapaan di header dengan nama user
@@ -529,15 +543,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun handleFindRouteClick() {
+        getSelectedPrivateVehicleMode()?.let { mode ->
+            handlePrivateVehicleRouteClick(mode)
+            return
+        }
+
         val originStopId = selectedOriginStop?.stopId
         val destinationStopId = selectedDestination?.stopId
         if (originStopId.isNullOrBlank() || destinationStopId.isNullOrBlank()) {
-            val origin = binding.tvOrigin.text.toString()
-            val destination = binding.tvDestination.text.toString()
-            toast(getString(R.string.route_transit_requires_gtfs_stops))
-            toast("Mencari rute dari $origin ke $destination...")
-            showDemoRoutePreview()
-            showRecommendationCard()
+            handleCombinedRouteClick()
             return
         }
 
@@ -558,6 +572,94 @@ class HomeFragment : Fragment() {
             } else {
                 showTransitRouteResult(result)
             }
+        }
+    }
+
+    private fun handleCombinedRouteClick() {
+        val origin = selectedOrigin
+        val destination = selectedDestination
+        if (origin == null || destination == null) {
+            toast(getString(R.string.route_combined_requires_coordinates))
+            showDemoRoutePreview()
+            showRecommendationCard()
+            return
+        }
+        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+            toast(getString(R.string.route_private_api_key_missing))
+            return
+        }
+
+        binding.btnTemukanRute.isEnabled = false
+        toast(getString(R.string.route_combined_loading))
+        homeScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                combinedRouteRepository.findCombinedRoutes(
+                    originLat = origin.latitude,
+                    originLon = origin.longitude,
+                    destinationLat = destination.latitude,
+                    destinationLon = destination.longitude,
+                    privateVehicleMode = getCombinedPrivateVehicleMode(),
+                    transitMode = getTransitModeForCurrentMode(),
+                    sortPreference = getSelectedSortPreference(),
+                    agencyId = getAgencyFilterForCurrentMode()
+                )
+            }
+            binding.btnTemukanRute.isEnabled = true
+            result
+                .onSuccess { routes ->
+                    val mainRoute = routes.firstOrNull()
+                    if (mainRoute == null) {
+                        toast(getString(R.string.route_combined_not_found))
+                    } else {
+                        showCombinedRouteResult(origin, destination, mainRoute)
+                    }
+                }
+                .onFailure {
+                    toast(getString(R.string.route_combined_error))
+                }
+        }
+    }
+
+    private fun handlePrivateVehicleRouteClick(mode: PrivateVehicleMode) {
+        val origin = selectedOrigin
+        val destination = selectedDestination
+        if (origin == null || destination == null) {
+            toast(getString(R.string.route_private_requires_coordinates))
+            showDemoRoutePreview()
+            showRecommendationCard()
+            return
+        }
+        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+            toast(getString(R.string.route_private_api_key_missing))
+            return
+        }
+
+        binding.btnTemukanRute.isEnabled = false
+        toast(getString(R.string.route_private_loading))
+        homeScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                tomTomRoutingRepository.calculateRoute(
+                    originLat = origin.latitude,
+                    originLon = origin.longitude,
+                    destinationLat = destination.latitude,
+                    destinationLon = destination.longitude,
+                    mode = mode,
+                    apiKey = BuildConfig.TOMTOM_API_KEY
+                )
+            }
+            binding.btnTemukanRute.isEnabled = true
+            result
+                .onSuccess { routes ->
+                    val mainRoute = routes.firstOrNull()
+                    if (mainRoute == null) {
+                        toast(getString(R.string.route_private_not_found))
+                    } else {
+                        showPrivateVehicleRouteResult(origin, destination, mainRoute)
+                    }
+                }
+                .onFailure {
+                    toast(getString(R.string.route_private_error))
+                }
         }
     }
 
@@ -594,6 +696,143 @@ class HomeFragment : Fragment() {
         binding.tvRecommendationInfo.text = buildRouteSummary(result)
         showRecommendationCard()
         toast(getString(R.string.route_transit_ready))
+    }
+
+    private fun showPrivateVehicleRouteResult(
+        origin: LocationPoint,
+        destination: SearchLocation,
+        result: PrivateVehicleRouteResult
+    ) {
+        clearRouteOverlays()
+        val originPoint = MapPoint(
+            label = getString(R.string.map_marker_origin),
+            latitude = origin.latitude,
+            longitude = origin.longitude,
+            description = origin.label,
+            markerType = MapMarkerType.ORIGIN
+        )
+        val destinationPoint = MapPoint(
+            label = getString(R.string.map_marker_destination),
+            latitude = destination.latitude,
+            longitude = destination.longitude,
+            description = destination.name,
+            markerType = MapMarkerType.DESTINATION
+        )
+        showOriginMarker(originPoint)
+        showDestinationMarker(destinationPoint)
+        drawRoutePolyline(
+            points = result.points,
+            color = ContextCompat.getColor(
+                requireContext(),
+                if (result.mode == PrivateVehicleMode.MOTOR) R.color.colorMotor else R.color.colorMobil
+            )
+        )
+        binding.mapView.controller.apply {
+            setZoom(12.0)
+            animateTo(pointToGeoPoint(originPoint))
+        }
+
+        binding.tvRecommendationTime.text = formatDuration(result.travelTimeSeconds)
+        binding.tvRecommendationCost.text = formatRupiah(result.estimatedTotalCost)
+        binding.tvRecommendationWalking.text = formatDistance(0.0)
+        binding.tvRecommendationTransit.text = getString(R.string.route_transit_count_format, 0)
+        binding.tvRecommendationInfo.text = getString(
+            R.string.route_private_summary_format,
+            if (result.mode == PrivateVehicleMode.MOTOR) {
+                getString(R.string.route_private_motor)
+            } else {
+                getString(R.string.route_private_car)
+            },
+            formatDistance(result.distanceMeters.toDouble()),
+            formatRupiah(result.estimatedBbm)
+        )
+        showRecommendationCard()
+        toast(getString(R.string.route_private_ready))
+    }
+
+    private fun showCombinedRouteResult(
+        origin: LocationPoint,
+        destination: SearchLocation,
+        result: CombinedRouteResult
+    ) {
+        clearRouteOverlays()
+        val originPoint = MapPoint(
+            label = getString(R.string.map_marker_origin),
+            latitude = origin.latitude,
+            longitude = origin.longitude,
+            description = origin.label,
+            markerType = MapMarkerType.ORIGIN
+        )
+        val destinationPoint = MapPoint(
+            label = getString(R.string.map_marker_destination),
+            latitude = destination.latitude,
+            longitude = destination.longitude,
+            description = destination.name,
+            markerType = MapMarkerType.DESTINATION
+        )
+        val originStopPoint = MapPoint(
+            label = result.originStop.stopName,
+            latitude = result.originStop.latitude,
+            longitude = result.originStop.longitude,
+            description = result.originStop.agencyId,
+            markerType = MapMarkerType.TRANSIT
+        )
+        val destinationStopPoint = MapPoint(
+            label = result.destinationStop.stopName,
+            latitude = result.destinationStop.latitude,
+            longitude = result.destinationStop.longitude,
+            description = result.destinationStop.agencyId,
+            markerType = MapMarkerType.TRANSIT
+        )
+
+        showOriginMarker(originPoint)
+        showDestinationMarker(destinationPoint)
+        showTransitMarkers(listOf(originStopPoint, destinationStopPoint).distinctBy { it.label })
+        result.privateVehicleResult?.let { vehicle ->
+            drawRoutePolyline(
+                points = vehicle.points,
+                color = ContextCompat.getColor(
+                    requireContext(),
+                    if (result.privateVehicleMode == PrivateVehicleMode.MOTOR) R.color.colorMotor else R.color.colorMobil
+                )
+            )
+        }
+        result.transitResult?.steps?.toMapPoints()?.let { transitPoints ->
+            drawRoutePolyline(
+                points = transitPoints,
+                color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+            )
+        }
+        drawRoutePolyline(
+            points = listOf(destinationStopPoint, destinationPoint),
+            color = ContextCompat.getColor(requireContext(), R.color.colorAccentOrange)
+        )
+        binding.mapView.controller.apply {
+            setZoom(11.0)
+            animateTo(pointToGeoPoint(originPoint))
+        }
+
+        binding.tvRecommendationTime.text = formatDuration(result.metrics.totalDurationSeconds)
+        binding.tvRecommendationCost.text = formatRupiah(result.metrics.estimatedTotalCost)
+        binding.tvRecommendationWalking.text = formatDistance(result.metrics.walkingDistanceMeters)
+        binding.tvRecommendationTransit.text = getString(
+            R.string.route_transit_count_format,
+            result.metrics.transitCount
+        )
+        binding.tvRecommendationInfo.text = getString(
+            R.string.route_combined_summary_format,
+            if (result.privateVehicleMode == PrivateVehicleMode.MOTOR) {
+                getString(R.string.route_private_motor)
+            } else {
+                getString(R.string.route_private_car)
+            },
+            result.originStop.stopName,
+            result.destinationStop.stopName,
+            formatRupiah(result.metrics.estimatedBbm),
+            formatRupiah(result.metrics.estimatedFare)
+        )
+        showRecommendationCard()
+        toast(getString(R.string.route_combined_ready))
     }
 
     private fun List<RouteStep>.toMapPoints(): List<MapPoint> {
@@ -652,6 +891,14 @@ class HomeFragment : Fragment() {
         binding.chipMinimTransit.isChecked -> SortPreference.FEWEST_TRANSFERS
         else -> SortPreference.FASTEST
     }
+
+    private fun getSelectedPrivateVehicleMode(): PrivateVehicleMode? = when (selectedModeCardId) {
+        R.id.modeMotor -> PrivateVehicleMode.MOTOR
+        R.id.modeMobil -> PrivateVehicleMode.CAR
+        else -> null
+    }
+
+    private fun getCombinedPrivateVehicleMode(): PrivateVehicleMode = PrivateVehicleMode.MOTOR
 
     private fun showDemoRoutePreview() {
         val originPoint = selectedOrigin?.let {

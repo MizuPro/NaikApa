@@ -1,9 +1,15 @@
 package com.example.naikapa.domain.routing
 
 import com.example.naikapa.common.AppConstants
+import com.example.naikapa.data.model.PrivateVehicleMode
 import kotlin.math.roundToInt
 
 class FuelCostCalculator {
+    fun calculateFuelCost(distanceKm: Double, mode: PrivateVehicleMode): Int = when (mode) {
+        PrivateVehicleMode.MOTOR -> calculateMotorFuelCost(distanceKm)
+        PrivateVehicleMode.CAR -> calculateCarFuelCost(distanceKm)
+    }
+
     fun calculateMotorFuelCost(distanceKm: Double): Int =
         calculateFuelCost(distanceKm, AppConstants.MOTOR_CONSUMPTION_KM_PER_LITER)
 

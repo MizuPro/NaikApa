@@ -22,4 +22,5 @@ object RemoteClient {
         .build()
 
     val tomTomSearchApi: TomTomSearchApi = retrofit.create(TomTomSearchApi::class.java)
+    val tomTomRoutingApi: TomTomRoutingApi = retrofit.create(TomTomRoutingApi::class.java)
 }

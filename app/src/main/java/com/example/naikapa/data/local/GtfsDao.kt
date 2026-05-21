@@ -146,6 +146,24 @@ class GtfsDao(private val dbHelper: NaikApaDatabaseHelper) {
         }
     }
 
+    fun getStopsForNearestSearch(limit: Int? = null): List<GtfsStop> {
+        val safeLimit = limit?.coerceAtLeast(1)
+        val limitClause = safeLimit?.toString()
+        dbHelper.readableDatabase.query(
+            NaikApaDbContract.GtfsStops.TABLE,
+            null,
+            "${NaikApaDbContract.GtfsStops.STOP_LAT} BETWEEN -90 AND 90 AND " +
+                "${NaikApaDbContract.GtfsStops.STOP_LON} BETWEEN -180 AND 180",
+            null,
+            null,
+            null,
+            "${NaikApaDbContract.GtfsStops.STOP_ID} ASC",
+            limitClause
+        ).use { cursor ->
+            return cursor.toStopList()
+        }
+    }
+
     fun getAdjacentStopConnections(limit: Int? = null): List<GtfsAdjacentStopConnection> {
         val safeLimit = limit?.coerceAtLeast(1)
         val limitClause = safeLimit?.let { " LIMIT $it" }.orEmpty()
