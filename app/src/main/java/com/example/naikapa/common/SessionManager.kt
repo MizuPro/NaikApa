@@ -24,6 +24,10 @@ class SessionManager(context: Context) {
         }
     }
 
+    fun saveSession(userId: Long, name: String, email: String) {
+        saveSession(userId.toInt(), name, email)
+    }
+
     fun isLoggedIn(): Boolean {
         return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }

@@ -127,22 +127,22 @@ Fase ini selesai jika aplikasi dapat dibuka tanpa error dan struktur project sud
 
 ---
 
-## Fase 2: Desain Database SQLite Lokal
+## Fase 2: Desain Database SQLite Lokal âœ… SELESAI
 
 ### Tujuan
 Membuat struktur database lokal untuk menyimpan user, profil, riwayat, favorit, laporan gangguan, dan data GTFS.
 
 ### Aktivitas
-1. Membuat database helper SQLite.
-2. Membuat tabel user.
-3. Membuat tabel profil user.
-4. Membuat tabel riwayat pencarian.
-5. Membuat tabel riwayat perjalanan.
-6. Membuat tabel perjalanan favorit.
-7. Membuat tabel laporan gangguan.
-8. Membuat tabel GTFS utama.
-9. Membuat query insert, select, update, dan delete.
-10. Membuat index untuk tabel GTFS agar pencarian lebih cepat.
+1. [x] Membuat database helper SQLite.
+2. [x] Membuat tabel user.
+3. [x] Membuat tabel profil user.
+4. [x] Membuat tabel riwayat pencarian.
+5. [x] Membuat tabel riwayat perjalanan.
+6. [x] Membuat tabel perjalanan favorit.
+7. [x] Membuat tabel laporan gangguan.
+8. [x] Membuat tabel GTFS utama.
+9. [x] Membuat query insert, select, update, dan delete.
+10. [x] Membuat index untuk tabel GTFS agar pencarian lebih cepat.
 
 ### Tabel MVP
 1. `users`
@@ -158,13 +158,15 @@ Membuat struktur database lokal untuk menyimpan user, profil, riwayat, favorit, 
 11. `route_cache`
 
 ### Output
-1. File SQLite helper.
-2. Semua tabel MVP berhasil dibuat.
-3. Query CRUD dasar tersedia.
-4. Database bisa dibuat saat aplikasi pertama kali dijalankan.
+1. [x] File SQLite helper.
+2. [x] Semua tabel MVP berhasil dibuat.
+3. [x] Query CRUD dasar tersedia.
+4. [x] Database bisa dibuat saat aplikasi pertama kali dijalankan.
 
 ### Kriteria Selesai
 Fase ini selesai jika data dummy internal untuk user, favorit, history, dan laporan bisa dibuat, dibaca, diubah, dan dihapus lewat fungsi database.
+
+Status implementasi: selesai. Unit test berhasil dijalankan, dan instrumentation test database berhasil dikompilasi. Eksekusi instrumentation test penuh tetap membutuhkan emulator atau perangkat Android aktif.
 
 ### Catatan Penting
 Walaupun target aplikasi tidak memakai data dummy untuk rute, penggunaan data dummy kecil masih boleh untuk testing database internal. Data dummy ini hanya untuk pengujian awal, bukan data final aplikasi.

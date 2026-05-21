@@ -34,6 +34,14 @@ class RegisterFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        // Toggling checkboxes when the preference cards are clicked (premium UX)
+        binding.cardMotor.setOnClickListener {
+            binding.cbMotor.isChecked = !binding.cbMotor.isChecked
+        }
+        binding.cardMobil.setOnClickListener {
+            binding.cbMobil.isChecked = !binding.cbMobil.isChecked
+        }
+
         binding.btnRegister.setOnClickListener {
             val name = binding.etName.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()

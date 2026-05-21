@@ -4,55 +4,57 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/white"
     tools:context=".presentation.splash.SplashActivity">
 
+    <!-- Top Right Background Asset -->
+    <ImageView
+        android:id="@+id/imgBgTopRight"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/asset_splashscreen2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <!-- Bottom Left Background Asset -->
+    <ImageView
+        android:id="@+id/imgBgBottomLeft"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/asset_splashscreen1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <!-- Main Logo (Text samping) -->
     <ImageView
         android:id="@+id/imgLogo"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
-        android:src="@drawable/ic_logo_naikapa"
-        app:layout_constraintBottom_toTopOf="@id/tvAppName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
-
-    <TextView
-        android:id="@+id/tvAppName"
-        android:layout_width="wrap_content"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="NaikApa"
-        android:textColor="@color/white"
-        android:textSize="36sp"
-        android:textStyle="bold"
+        android:adjustViewBounds="true"
+        android:src="@drawable/logo_textsamping"
         app:layout_constraintBottom_toTopOf="@id/tvTagline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imgLogo" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:ignore="ContentDescription" />
 
+    <!-- Tagline -->
     <TextView
         android:id="@+id/tvTagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Sebaiknya naik apa?"
-        android:textColor="#E0E0E0"
-        android:textSize="18sp"
-        android:textStyle="italic"
+        android:layout_marginTop="16dp"
+        android:text="@string/tagline_splash"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvAppName" />
-
-    <ProgressBar
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="48dp"
-        android:indeterminateTint="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imgLogo" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

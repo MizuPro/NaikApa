@@ -1,3 +1,97 @@
 <resources>
     <string name="app_name">NaikApa</string>
+
+    <!-- Splash Screen -->
+    <string name="tagline_splash">Temukan transportasi terbaikmu</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Selamat datang kembali!</string>
+    <string name="login_subtitle">Masuk untuk melanjutkan perjalananmu.</string>
+    <string name="email">Email</string>
+    <string name="email_hint">Masukkan email kamu</string>
+    <string name="password">Password</string>
+    <string name="password_hint">Masukkan password</string>
+    <string name="forgot_password">Lupa password?</string>
+    <string name="login">Masuk</string>
+    <string name="or_divider">atau</string>
+    <string name="no_account">Belum punya akun? </string>
+    <string name="register_link">Daftar</string>
+    <string name="trust_banner">Aman dan terpercaya. Data kamu kami lindungi sepenuh hati.</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Buat akun baru,\nperjalananmu dimulai!</string>
+    <string name="register_subtitle">Daftar sekarang dan temukan cara terbaik bepergian setiap hari.</string>
+    <string name="full_name">Nama Lengkap</string>
+    <string name="confirm_password">Konfirmasi Password</string>
+    <string name="choose_vehicle">Pilih yang sesuai denganmu</string>
+    <string name="own_motor">Punya Motor</string>
+    <string name="own_motor_sub">Untuk perjalanan dengan motor</string>
+    <string name="own_car">Punya Mobil</string>
+    <string name="own_car_sub">Untuk perjalanan dengan mobil</string>
+    <string name="register">Daftar</string>
+    <string name="already_have_account">Sudah punya akun? </string>
+    <string name="login_link">Masuk</string>
+
+    <!-- Home Screen -->
+    <string name="search_dari">Dari</string>
+    <string name="search_dari_val">Lokasi saya</string>
+    <string name="search_dari_sub">Gunakan lokasi saat ini</string>
+    <string name="search_tujuan">Tujuan</string>
+    <string name="search_tujuan_val">UBM Tower</string>
+    <string name="search_tujuan_sub">Jl. Boulevard Gading Serpong, Tangerang</string>
+    <string name="btn_temukan_rute">Temukan Rute</string>
+    <string name="rekomendasi_terbaik">Rekomendasi Terbaik</string>
+    <string name="rute_tercepat">Rute Tercepat</string>
+    <string name="estimasi_waktu">Estimasi Waktu</string>
+    <string name="estimasi_waktu_val">1 j 48 mnt</string>
+    <string name="estimasi_waktu_sub">Tercepat</string>
+    <string name="estimasi_biaya">Estimasi Biaya</string>
+    <string name="estimasi_biaya_val">Rp 13.000</string>
+    <string name="estimasi_biaya_sub">Cash</string>
+    <string name="jarak_jalan_kaki">Jarak Jalan Kaki</string>
+    <string name="jarak_jalan_kaki_val">650 m</string>
+    <string name="jarak_jalan_kaki_sub">Sedikit</string>
+    <string name="jumlah_transit">Jumlah Transit</string>
+    <string name="jumlah_transit_val">1x</string>
+    <string name="jumlah_transit_sub">Sangat efisien</string>
+    <string name="route_info">Rute ini menghindari kemacetan di Jl. Gatot Subroto dan meminimalkan waktu tunggu.</string>
+
+    <!-- History Screen -->
+    <string name="history_eyebrow">Perjalanan Kamu</string>
+    <string name="history_title">Riwayat Perjalanan</string>
+    <string name="history_subtitle">Pantau pencarian rute dan keputusan perjalanan yang terakhir kamu buka.</string>
+    <string name="history_recent_title">Terakhir Dilihat</string>
+    <string name="history_route_title">Lokasi saya ke UBM Tower</string>
+    <string name="history_route_subtitle">KRL Commuter Line + TransJakarta</string>
+    <string name="history_route_badge">REKOMENDASI</string>
+    <string name="history_metric_time">Waktu</string>
+    <string name="history_metric_time_value">1 j 48 mnt</string>
+    <string name="history_metric_cost">Biaya</string>
+    <string name="history_metric_cost_value">Rp 13.000</string>
+    <string name="history_metric_transit">Transit</string>
+    <string name="history_metric_transit_value">1x</string>
+    <string name="history_empty_title">Belum ada perjalanan lain</string>
+    <string name="history_empty_subtitle">Rute yang kamu cari berikutnya akan tersimpan di sini untuk akses cepat.</string>
+
+    <!-- Status Screen -->
+    <string name="status_eyebrow">Info Terkini</string>
+    <string name="status_title">Status Gangguan</string>
+    <string name="status_subtitle">Lihat ringkasan kondisi moda sebelum memilih rute terbaik.</string>
+    <string name="status_ok_title">Semua rute utama normal</string>
+    <string name="status_ok_subtitle">Tidak ada gangguan besar yang memengaruhi rekomendasi saat ini.</string>
+    <string name="status_live_badge">LIVE</string>
+    <string name="status_chip_krl">KRL Normal</string>
+    <string name="status_chip_tj">TJ Lancar</string>
+    <string name="status_report_title">Laporan Pengguna</string>
+    <string name="status_empty_title">Belum ada laporan aktif</string>
+    <string name="status_empty_subtitle">Gangguan transit atau lalu lintas yang masuk akan tampil sebagai kartu prioritas.</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_eyebrow">Akun Saya</string>
+    <string name="profile_summary">Preferensi kendaraan membantu NaikApa memilih rute yang paling masuk akal untuk perjalanan harianmu.</string>
+    <string name="profile_vehicle_title">Preferensi Kendaraan</string>
+    <string name="profile_motor_hint">Dipakai untuk opsi park and ride dan perjalanan pendek.</string>
+    <string name="profile_car_hint">Dipakai untuk opsi gabungan kendaraan pribadi.</string>
+    <string name="profile_privacy_note">Data akun dan preferensi hanya digunakan untuk menyesuaikan rekomendasi rute.</string>
+    <string name="profile_logout">Keluar Akun</string>
 </resources>

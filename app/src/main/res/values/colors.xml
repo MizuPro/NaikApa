@@ -6,14 +6,18 @@
     <!-- Primary & Secondary (NaikApa Brand) -->
     <color name="colorPrimary">#1A6FE8</color>
     <color name="colorPrimaryDark">#1254B5</color>
+    <color name="colorPrimaryLight">#E8F0FE</color>
+    <color name="colorAccentOrange">#FF6F00</color>
+    <color name="colorAccentOrangeLight">#FFF3E0</color>
     <color name="colorSecondary">#00C2A8</color>
     <color name="colorBackground">#F4F6FA</color>
     <color name="colorSurface">#FFFFFF</color>
     <color name="colorError">#E53935</color>
-    <color name="colorTextPrimary">#1A1A1A</color>
-    <color name="colorTextSecondary">#757575</color>
-    <color name="colorTextHint">#BDBDBD</color>
-    <color name="colorBorder">#E0E0E0</color>
+    <color name="colorTextPrimary">#1E293B</color>
+    <color name="colorTextSecondary">#64748B</color>
+    <color name="colorTextHint">#94A3B8</color>
+    <color name="colorBorder">#E2E8F0</color>
+    <color name="colorCardOutline">#E2E8F0</color>
 
     <!-- Transit Modes -->
     <color name="colorTransjakarta">#E31E24</color>

@@ -1,6 +1,8 @@
 package com.example.naikapa.common
 
 object AppConstants {
+    const val DATABASE_NAME = "naikapa.db"
+    const val DATABASE_VERSION = 1
     const val WALKING_SPEED_KMH = 4.0
     const val WALKING_TRANSFER_RADIUS_M = 350
     const val DISRUPTION_ACTIVE_DURATION_HOURS = 1
