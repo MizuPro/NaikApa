@@ -56,5 +56,9 @@ class NaikApaDatabaseHelperTest {
                 NaikApaDbContract.indexStatements.any { it.contains(indexName) }
             )
         }
+        assertTrue(
+            "Missing user email index",
+            NaikApaDbContract.indexStatements.any { it.contains("idx_users_email") }
+        )
     }
 }

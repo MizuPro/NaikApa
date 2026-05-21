@@ -64,7 +64,9 @@ class NaikApaDatabaseInstrumentedTest {
         )
         assertTrue(userId > 0)
         assertTrue(userDao.isEmailExists("tester@naikapa.local"))
+        assertTrue(userDao.isEmailExists("TESTER@naikapa.local"))
         assertNotNull(userDao.login("tester@naikapa.local", "secret"))
+        assertNotNull(userDao.login("TESTER@naikapa.local", "secret"))
 
         userDao.upsertProfile(
             UserProfile(
@@ -77,6 +79,21 @@ class NaikApaDatabaseInstrumentedTest {
             )
         )
         assertEquals("Rumah", userDao.getProfile(userId)?.homeLabel)
+
+        val otherUserId = userDao.insertUser(
+            User(
+                nama = "Akun Lain",
+                email = "other@naikapa.local",
+                password = "secret",
+                hasMotor = false,
+                hasCar = true
+            )
+        )
+        assertTrue(otherUserId > 0)
+        assertTrue(userDao.isEmailUsedByOtherUser("other@naikapa.local", userId))
+        assertEquals(1, userDao.updateUser(userDao.getUserById(userId)!!.copy(nama = "Tester Update", hasCar = true)))
+        assertEquals("Tester Update", userDao.getUserById(userId)?.nama)
+        assertEquals(true, userDao.getUserById(userId)?.hasCar)
 
         val savedId = savedTripDao.insert(
             SavedTrip(
@@ -174,6 +191,7 @@ class NaikApaDatabaseInstrumentedTest {
         assertEquals(1, historyDao.deleteRouteHistory(routeHistoryId))
         assertEquals(1, reportDao.delete(reportId))
         assertEquals(1, userDao.deleteUser(userId))
+        assertEquals(1, userDao.deleteUser(otherUserId))
     }
 
     @Test

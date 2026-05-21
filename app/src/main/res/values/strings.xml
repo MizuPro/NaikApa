@@ -89,9 +89,17 @@
     <!-- Profile Screen -->
     <string name="profile_eyebrow">Akun Saya</string>
     <string name="profile_summary">Preferensi kendaraan membantu NaikApa memilih rute yang paling masuk akal untuk perjalanan harianmu.</string>
+    <string name="profile_edit_title">Edit Profil</string>
+    <string name="profile_new_password">Password baru (opsional)</string>
+    <string name="profile_save">Simpan Perubahan</string>
     <string name="profile_vehicle_title">Preferensi Kendaraan</string>
     <string name="profile_motor_hint">Dipakai untuk opsi park and ride dan perjalanan pendek.</string>
     <string name="profile_car_hint">Dipakai untuk opsi gabungan kendaraan pribadi.</string>
     <string name="profile_privacy_note">Data akun dan preferensi hanya digunakan untuk menyesuaikan rekomendasi rute.</string>
+    <string name="profile_delete_account">Hapus Akun Lokal</string>
     <string name="profile_logout">Keluar Akun</string>
+    <string name="profile_delete_title">Hapus akun?</string>
+    <string name="profile_delete_message">Akun lokal dan data yang terhubung akan dihapus dari perangkat ini.</string>
+    <string name="cancel">Batal</string>
+    <string name="delete">Hapus</string>
 </resources>

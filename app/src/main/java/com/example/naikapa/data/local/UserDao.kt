@@ -22,8 +22,23 @@ class UserDao(private val dbHelper: NaikApaDatabaseHelper) {
         dbHelper.readableDatabase.query(
             NaikApaDbContract.Users.TABLE,
             arrayOf(NaikApaDbContract.Users.ID),
-            "${NaikApaDbContract.Users.EMAIL} = ?",
-            arrayOf(email),
+            "LOWER(${NaikApaDbContract.Users.EMAIL}) = LOWER(?)",
+            arrayOf(email.trim()),
+            null,
+            null,
+            null,
+            "1"
+        ).use { cursor ->
+            return cursor.moveToFirst()
+        }
+    }
+
+    fun isEmailUsedByOtherUser(email: String, currentUserId: Long): Boolean {
+        dbHelper.readableDatabase.query(
+            NaikApaDbContract.Users.TABLE,
+            arrayOf(NaikApaDbContract.Users.ID),
+            "LOWER(${NaikApaDbContract.Users.EMAIL}) = LOWER(?) AND ${NaikApaDbContract.Users.ID} != ?",
+            arrayOf(email.trim(), currentUserId.toString()),
             null,
             null,
             null,
@@ -35,8 +50,8 @@ class UserDao(private val dbHelper: NaikApaDatabaseHelper) {
 
     fun login(email: String, password: String): User? {
         return getUser(
-            selection = "${NaikApaDbContract.Users.EMAIL} = ? AND ${NaikApaDbContract.Users.PASSWORD} = ?",
-            selectionArgs = arrayOf(email, password)
+            selection = "LOWER(${NaikApaDbContract.Users.EMAIL}) = LOWER(?) AND ${NaikApaDbContract.Users.PASSWORD} = ?",
+            selectionArgs = arrayOf(email.trim(), password)
         )
     }
 

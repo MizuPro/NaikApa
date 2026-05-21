@@ -127,7 +127,7 @@ Fase ini selesai jika aplikasi dapat dibuka tanpa error dan struktur project sud
 
 ---
 
-## Fase 2: Desain Database SQLite Lokal âœ… SELESAI
+## Fase 2: Desain Database SQLite Lokal ✅ SELESAI
 
 ### Tujuan
 Membuat struktur database lokal untuk menyimpan user, profil, riwayat, favorit, laporan gangguan, dan data GTFS.
@@ -239,21 +239,21 @@ Status implementasi: selesai. Database pre-built `app/src/main/assets/databases/
 
 ### Status Planning
 - [x] Plan eksekusi Fase 4 sudah dibuat di `.agent/planning/plan.md`.
-- [ ] Implementasi Fase 4 selesai dikerjakan.
+- [x] Implementasi Fase 4 selesai dikerjakan.
 
 ### Tujuan
 Membuat fitur akun lokal agar user bisa menyimpan data pribadi, status kendaraan, riwayat, favorit, dan laporan.
 
 ### Aktivitas
-1. Membuat halaman Login.
-2. Membuat halaman Register.
-3. Membuat validasi input.
-4. Menyimpan data user ke SQLite.
-5. Membuat session lokal sederhana.
-6. Membuat halaman Profil.
-7. Membuat fitur update data profil.
-8. Membuat fitur update status memiliki motor dan mobil.
-9. Membuat fitur delete akun lokal.
+1. [x] Membuat halaman Login.
+2. [x] Membuat halaman Register.
+3. [x] Membuat validasi input.
+4. [x] Menyimpan data user ke SQLite.
+5. [x] Membuat session lokal sederhana.
+6. [x] Membuat halaman Profil.
+7. [x] Membuat fitur update data profil.
+8. [x] Membuat fitur update status memiliki motor dan mobil.
+9. [x] Membuat fitur delete akun lokal.
 
 ### Data User
 1. Nama.
@@ -263,14 +263,16 @@ Membuat fitur akun lokal agar user bisa menyimpan data pribadi, status kendaraan
 5. Status memiliki mobil.
 
 ### Output
-1. User dapat register.
-2. User dapat login.
-3. User dapat melihat profil.
-4. User dapat mengubah profil.
-5. User dapat menghapus akun lokal.
+1. [x] User dapat register.
+2. [x] User dapat login.
+3. [x] User dapat melihat profil.
+4. [x] User dapat mengubah profil.
+5. [x] User dapat menghapus akun lokal.
 
 ### Kriteria Selesai
 Fase ini selesai jika CRUD data pengguna berjalan stabil di SQLite.
+
+Status implementasi: selesai. Login dan register sudah memakai `UserDao`/SQLite, session menyimpan user id asli, profil membaca data user aktif dari SQLite, update nama/email/password/status kendaraan tersedia, dan delete akun lokal membersihkan session. Unit test dan build debug berhasil dijalankan. Instrumentation test berhasil dikompilasi, tetapi eksekusi penuh belum berjalan karena tidak ada emulator atau perangkat Android tersambung.
 
 ---
 
