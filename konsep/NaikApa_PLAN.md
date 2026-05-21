@@ -53,6 +53,7 @@ Menentukan fondasi awal agar seluruh anggota kelompok memahami arah aplikasi, fi
 8. Menentukan style UI modern minimalis dengan gaya transport app.
 
 ### Output
+1. [x] Sistem dapat membuat rute gabungan kendaraan pribadi ke titik transit, lanjut transportasi umum, lalu jalan kaki ke tujuan.
 1. Scope MVP final.
 2. Pembagian tugas kelompok.
 3. API key TomTom tersedia.
@@ -577,12 +578,13 @@ Mengimplementasikan fitur utama yang membuat NaikApa lebih unggul, yaitu gabunga
 5. Cache hasil TomTom sementara jika origin dan destination sama.
 
 ### Output
-1. Sistem dapat membuat rute “motor ke stasiun, lanjut KRL, jalan kaki ke tujuan”.
 2. [x] Sistem dapat membandingkan rute gabungan dengan rute kendaraan pribadi penuh dan transportasi umum penuh.
 3. [x] Sistem dapat menampilkan langkah perjalanan gabungan.
 
 ### Kriteria Selesai
 Fase ini selesai jika aplikasi bisa menghasilkan minimal satu rute gabungan yang valid dari lokasi user ke tujuan.
+
+Status implementasi: selesai. `NearbyTransitStopRepository` mencari kandidat stop GTFS terdekat dengan batas radius dan limit kandidat, `CombinedRouteRepository` menggabungkan segmen kendaraan pribadi TomTom, transit Dijkstra, dan jalan kaki akhir, lalu menghitung total waktu, biaya, BBM, walking, dan transit. Home menjalankan flow rute gabungan untuk asal GPS/koordinat ke tujuan koordinat pada mode campur/transit, menampilkan marker transit, polyline kendaraan/transit/walking, serta ringkasan rekomendasi. Unit test dan build debug berhasil dijalankan.
 
 ---
 
