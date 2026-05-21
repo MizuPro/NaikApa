@@ -2,6 +2,7 @@ package com.example.naikapa.data.local
 
 import android.content.ContentValues
 import android.database.Cursor
+import com.example.naikapa.data.model.GtfsAdjacentStopConnection
 import com.example.naikapa.data.model.GtfsAgencyCount
 import com.example.naikapa.data.model.GtfsRoute
 import com.example.naikapa.data.model.GtfsStop
@@ -131,6 +132,71 @@ class GtfsDao(private val dbHelper: NaikApaDatabaseHelper) {
         }
     }
 
+    fun getAllStopsForGraph(): List<GtfsStop> {
+        dbHelper.readableDatabase.query(
+            NaikApaDbContract.GtfsStops.TABLE,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "${NaikApaDbContract.GtfsStops.STOP_ID} ASC"
+        ).use { cursor ->
+            return cursor.toStopList()
+        }
+    }
+
+    fun getAdjacentStopConnections(limit: Int? = null): List<GtfsAdjacentStopConnection> {
+        val safeLimit = limit?.coerceAtLeast(1)
+        val limitClause = safeLimit?.let { " LIMIT $it" }.orEmpty()
+        dbHelper.readableDatabase.rawQuery(
+            """
+            SELECT
+                from_stop.${NaikApaDbContract.GtfsStops.STOP_ID} AS from_stop_id,
+                from_stop.${NaikApaDbContract.GtfsStops.STOP_NAME} AS from_stop_name,
+                from_stop.${NaikApaDbContract.GtfsStops.STOP_LAT} AS from_stop_lat,
+                from_stop.${NaikApaDbContract.GtfsStops.STOP_LON} AS from_stop_lon,
+                from_stop.${NaikApaDbContract.GtfsStops.AGENCY_ID} AS from_agency_id,
+                from_stop.${NaikApaDbContract.GtfsStops.STOP_TYPE} AS from_stop_type,
+                to_stop.${NaikApaDbContract.GtfsStops.STOP_ID} AS to_stop_id,
+                to_stop.${NaikApaDbContract.GtfsStops.STOP_NAME} AS to_stop_name,
+                to_stop.${NaikApaDbContract.GtfsStops.STOP_LAT} AS to_stop_lat,
+                to_stop.${NaikApaDbContract.GtfsStops.STOP_LON} AS to_stop_lon,
+                to_stop.${NaikApaDbContract.GtfsStops.AGENCY_ID} AS to_agency_id,
+                to_stop.${NaikApaDbContract.GtfsStops.STOP_TYPE} AS to_stop_type,
+                st1.${NaikApaDbContract.GtfsStopTimes.TRIP_ID} AS trip_id,
+                routes.${NaikApaDbContract.GtfsRoutes.ROUTE_ID} AS route_id,
+                routes.${NaikApaDbContract.GtfsRoutes.ROUTE_SHORT_NAME} AS route_short_name,
+                routes.${NaikApaDbContract.GtfsRoutes.ROUTE_LONG_NAME} AS route_long_name,
+                routes.${NaikApaDbContract.GtfsRoutes.ROUTE_COLOR} AS route_color,
+                routes.${NaikApaDbContract.GtfsRoutes.ROUTE_TEXT_COLOR} AS route_text_color,
+                routes.${NaikApaDbContract.GtfsRoutes.AGENCY_ID} AS agency_id,
+                st1.${NaikApaDbContract.GtfsStopTimes.DEPARTURE_TIME} AS departure_time,
+                st2.${NaikApaDbContract.GtfsStopTimes.ARRIVAL_TIME} AS arrival_time
+            FROM ${NaikApaDbContract.GtfsStopTimes.TABLE} st1
+            JOIN ${NaikApaDbContract.GtfsStopTimes.TABLE} st2
+                ON st1.${NaikApaDbContract.GtfsStopTimes.TRIP_ID} = st2.${NaikApaDbContract.GtfsStopTimes.TRIP_ID}
+                AND st2.${NaikApaDbContract.GtfsStopTimes.STOP_SEQUENCE} = st1.${NaikApaDbContract.GtfsStopTimes.STOP_SEQUENCE} + 1
+            JOIN ${NaikApaDbContract.GtfsTrips.TABLE} trips
+                ON st1.${NaikApaDbContract.GtfsStopTimes.TRIP_ID} = trips.${NaikApaDbContract.GtfsTrips.TRIP_ID}
+            JOIN ${NaikApaDbContract.GtfsRoutes.TABLE} routes
+                ON trips.${NaikApaDbContract.GtfsTrips.ROUTE_ID} = routes.${NaikApaDbContract.GtfsRoutes.ROUTE_ID}
+            JOIN ${NaikApaDbContract.GtfsStops.TABLE} from_stop
+                ON st1.${NaikApaDbContract.GtfsStopTimes.STOP_ID} = from_stop.${NaikApaDbContract.GtfsStops.STOP_ID}
+            JOIN ${NaikApaDbContract.GtfsStops.TABLE} to_stop
+                ON st2.${NaikApaDbContract.GtfsStopTimes.STOP_ID} = to_stop.${NaikApaDbContract.GtfsStops.STOP_ID}
+            ORDER BY st1.${NaikApaDbContract.GtfsStopTimes.TRIP_ID} ASC,
+                st1.${NaikApaDbContract.GtfsStopTimes.STOP_SEQUENCE} ASC
+            $limitClause
+            """.trimIndent(),
+            null
+        ).use { cursor ->
+            val result = mutableListOf<GtfsAdjacentStopConnection>()
+            while (cursor.moveToNext()) result.add(cursor.toAdjacentStopConnection())
+            return result
+        }
+    }
+
     fun hasGtfsData(): Boolean = countRows(NaikApaDbContract.GtfsStops.TABLE) > 0 &&
         countRows(NaikApaDbContract.GtfsRoutes.TABLE) > 0 &&
         countRows(NaikApaDbContract.GtfsTrips.TABLE) > 0 &&
@@ -195,6 +261,30 @@ class GtfsDao(private val dbHelper: NaikApaDatabaseHelper) {
         routeLongName = getNullableString(NaikApaDbContract.GtfsRoutes.ROUTE_LONG_NAME),
         routeColor = getNullableString(NaikApaDbContract.GtfsRoutes.ROUTE_COLOR),
         routeTextColor = getNullableString(NaikApaDbContract.GtfsRoutes.ROUTE_TEXT_COLOR)
+    )
+
+    private fun Cursor.toAdjacentStopConnection(): GtfsAdjacentStopConnection = GtfsAdjacentStopConnection(
+        fromStopId = getString(getColumnIndexOrThrow("from_stop_id")),
+        fromStopName = getString(getColumnIndexOrThrow("from_stop_name")),
+        fromStopLat = getDouble(getColumnIndexOrThrow("from_stop_lat")),
+        fromStopLon = getDouble(getColumnIndexOrThrow("from_stop_lon")),
+        fromAgencyId = getString(getColumnIndexOrThrow("from_agency_id")),
+        fromStopType = getNullableString("from_stop_type"),
+        toStopId = getString(getColumnIndexOrThrow("to_stop_id")),
+        toStopName = getString(getColumnIndexOrThrow("to_stop_name")),
+        toStopLat = getDouble(getColumnIndexOrThrow("to_stop_lat")),
+        toStopLon = getDouble(getColumnIndexOrThrow("to_stop_lon")),
+        toAgencyId = getString(getColumnIndexOrThrow("to_agency_id")),
+        toStopType = getNullableString("to_stop_type"),
+        tripId = getString(getColumnIndexOrThrow("trip_id")),
+        routeId = getString(getColumnIndexOrThrow("route_id")),
+        routeShortName = getNullableString("route_short_name"),
+        routeLongName = getNullableString("route_long_name"),
+        routeColor = getNullableString("route_color"),
+        routeTextColor = getNullableString("route_text_color"),
+        agencyId = getString(getColumnIndexOrThrow("agency_id")),
+        departureTime = getString(getColumnIndexOrThrow("departure_time")),
+        arrivalTime = getString(getColumnIndexOrThrow("arrival_time"))
     )
 }
 

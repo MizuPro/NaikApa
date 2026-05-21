@@ -35,9 +35,15 @@ import com.example.naikapa.data.model.LocationPoint
 import com.example.naikapa.data.model.MapMarkerType
 import com.example.naikapa.data.model.MapPoint
 import com.example.naikapa.data.model.MapStyle
+import com.example.naikapa.data.model.RouteStep
 import com.example.naikapa.data.model.SearchHistory
 import com.example.naikapa.data.model.SearchLocation
+import com.example.naikapa.data.model.SortPreference
+import com.example.naikapa.data.model.TransitMode
+import com.example.naikapa.data.model.TransitRouteResult
 import com.example.naikapa.data.remote.RemoteClient
+import com.example.naikapa.data.repository.TransitGraphRepository
+import com.example.naikapa.data.repository.TransitRoutingRepository
 import com.example.naikapa.data.repository.TomTomSearchRepository
 import com.example.naikapa.databinding.FragmentHomeBinding
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -73,9 +79,11 @@ class HomeFragment : Fragment() {
     private lateinit var historyDao: HistoryDao
     private val searchRepository = TomTomSearchRepository(RemoteClient.tomTomSearchApi)
     private lateinit var gtfsSearchRepository: GtfsStopSearchRepository
+    private lateinit var transitRoutingRepository: TransitRoutingRepository
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
     private var selectedOrigin: LocationPoint? = null
+    private var selectedOriginStop: SearchLocation? = null
     private var selectedDestination: SearchLocation? = null
     private var destinationSearchJob: Job? = null
     private var currentMapStyle = MapStyle.POSITRON
@@ -120,7 +128,9 @@ class HomeFragment : Fragment() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         dbHelper = NaikApaDatabaseHelper(requireContext())
         historyDao = HistoryDao(dbHelper)
-        gtfsSearchRepository = GtfsStopSearchRepository(GtfsDao(dbHelper))
+        val gtfsDao = GtfsDao(dbHelper)
+        gtfsSearchRepository = GtfsStopSearchRepository(gtfsDao)
+        transitRoutingRepository = TransitRoutingRepository(TransitGraphRepository(gtfsDao))
         homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
         // Mengubah sapaan di header dengan nama user
@@ -130,6 +140,7 @@ class HomeFragment : Fragment() {
 
         initMap()
         setupTransitModes()
+        setupSortChips()
         setupDestinationSearch()
         setupRouteActions()
     }
@@ -252,6 +263,20 @@ class HomeFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable?) = Unit
         })
+    }
+
+    private fun setupSortChips() {
+        val chips = listOf(
+            binding.chipTercepat,
+            binding.chipTerhemat,
+            binding.chipMinimJalanKaki,
+            binding.chipMinimTransit
+        )
+        chips.forEach { chip ->
+            chip.setOnClickListener {
+                chips.forEach { it.isChecked = it == chip }
+            }
+        }
     }
 
     private fun scheduleDestinationSearch(query: String) {
@@ -462,12 +487,23 @@ class HomeFragment : Fragment() {
         binding.btnSwap.setOnClickListener {
             val tempTitle = binding.tvOrigin.text.toString()
             val tempSub = binding.tvOriginSub.text.toString()
+            val tempOriginStop = selectedOriginStop
 
             binding.tvOrigin.text = binding.tvDestination.text
             binding.tvOriginSub.text = binding.tvDestinationSub.text
 
             binding.tvDestination.text = tempTitle
             binding.tvDestinationSub.text = tempSub
+            selectedOriginStop = selectedDestination
+            selectedDestination = tempOriginStop
+            selectedOriginStop?.let { location ->
+                selectedOrigin = LocationPoint(
+                    label = location.name,
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    isFromGps = false
+                )
+            }
 
             toast("Rute asal-tujuan ditukar")
         }
@@ -483,21 +519,138 @@ class HomeFragment : Fragment() {
 
         // Tombol Cari Rute
         binding.btnTemukanRute.setOnClickListener {
-            val origin = binding.tvOrigin.text.toString()
-            val destination = binding.tvDestination.text.toString()
-            toast("Mencari rute dari $origin ke $destination...")
-            showDemoRoutePreview()
-            
-            // Animasikan panel rekomendasi agar terlihat dinamis
-            binding.cardRecommendation.visibility = View.VISIBLE
-            binding.cardRecommendation.alpha = 0f
-            binding.cardRecommendation.animate().alpha(1f).setDuration(500).start()
+            handleFindRouteClick()
         }
 
         // Notifikasi click
         binding.btnNotification.setOnClickListener {
             toast("Tidak ada notifikasi baru")
         }
+    }
+
+    private fun handleFindRouteClick() {
+        val originStopId = selectedOriginStop?.stopId
+        val destinationStopId = selectedDestination?.stopId
+        if (originStopId.isNullOrBlank() || destinationStopId.isNullOrBlank()) {
+            val origin = binding.tvOrigin.text.toString()
+            val destination = binding.tvDestination.text.toString()
+            toast(getString(R.string.route_transit_requires_gtfs_stops))
+            toast("Mencari rute dari $origin ke $destination...")
+            showDemoRoutePreview()
+            showRecommendationCard()
+            return
+        }
+
+        binding.btnTemukanRute.isEnabled = false
+        toast(getString(R.string.route_transit_loading))
+        homeScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                transitRoutingRepository.findRoute(
+                    startStopId = originStopId,
+                    endStopId = destinationStopId,
+                    mode = getTransitModeForCurrentMode(),
+                    sortPreference = getSelectedSortPreference()
+                )
+            }
+            binding.btnTemukanRute.isEnabled = true
+            if (result == null) {
+                toast(getString(R.string.route_transit_not_found))
+            } else {
+                showTransitRouteResult(result)
+            }
+        }
+    }
+
+    private fun showRecommendationCard() {
+        binding.cardRecommendation.visibility = View.VISIBLE
+        binding.cardRecommendation.alpha = 0f
+        binding.cardRecommendation.animate().alpha(1f).setDuration(500).start()
+    }
+
+    private fun showTransitRouteResult(result: TransitRouteResult) {
+        clearRouteOverlays()
+        val routePoints = result.steps.toMapPoints()
+        if (routePoints.isNotEmpty()) {
+            showOriginMarker(routePoints.first().copy(label = getString(R.string.map_marker_origin)))
+            showDestinationMarker(routePoints.last().copy(label = getString(R.string.map_marker_destination)))
+            showTransitMarkers(routePoints.drop(1).dropLast(1))
+            drawRoutePolyline(
+                points = routePoints,
+                color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+            )
+            binding.mapView.controller.apply {
+                setZoom(11.0)
+                animateTo(pointToGeoPoint(routePoints.first()))
+            }
+        }
+
+        binding.tvRecommendationTime.text = formatDuration(result.metrics.totalDurationSeconds)
+        binding.tvRecommendationCost.text = getString(R.string.route_cost_phase_11_placeholder)
+        binding.tvRecommendationWalking.text = formatDistance(result.metrics.walkingDistanceMeters)
+        binding.tvRecommendationTransit.text = getString(
+            R.string.route_transit_count_format,
+            result.metrics.transitCount
+        )
+        binding.tvRecommendationInfo.text = buildRouteSummary(result)
+        showRecommendationCard()
+        toast(getString(R.string.route_transit_ready))
+    }
+
+    private fun List<RouteStep>.toMapPoints(): List<MapPoint> {
+        if (isEmpty()) return emptyList()
+        val points = mutableListOf<MapPoint>()
+        first().fromStop.let { stop ->
+            points.add(
+                MapPoint(
+                    label = stop.stopName,
+                    latitude = stop.lat,
+                    longitude = stop.lon,
+                    description = stop.agencyId,
+                    markerType = MapMarkerType.ORIGIN
+                )
+            )
+        }
+        forEach { step ->
+            points.add(
+                MapPoint(
+                    label = step.toStop.stopName,
+                    latitude = step.toStop.lat,
+                    longitude = step.toStop.lon,
+                    description = step.routeShortName,
+                    markerType = if (step == last()) MapMarkerType.DESTINATION else MapMarkerType.TRANSIT
+                )
+            )
+        }
+        return points
+    }
+
+    private fun buildRouteSummary(result: TransitRouteResult): String {
+        val firstStep = result.steps.firstOrNull()
+        return if (firstStep == null) {
+            getString(R.string.route_transit_same_stop)
+        } else {
+            getString(
+                R.string.route_transit_summary_format,
+                firstStep.routeShortName,
+                result.steps.size,
+                formatDistance(result.metrics.totalDistanceMeters)
+            )
+        }
+    }
+
+    private fun getTransitModeForCurrentMode(): TransitMode = when (selectedModeCardId) {
+        R.id.modeTJ -> TransitMode.TRANSJAKARTA
+        R.id.modeKRL -> TransitMode.KRL
+        R.id.modeMRT -> TransitMode.MRT
+        R.id.modeLRT -> TransitMode.LRT
+        else -> TransitMode.ALL
+    }
+
+    private fun getSelectedSortPreference(): SortPreference = when {
+        binding.chipTerhemat.isChecked -> SortPreference.CHEAPEST
+        binding.chipMinimJalanKaki.isChecked -> SortPreference.MIN_WALKING
+        binding.chipMinimTransit.isChecked -> SortPreference.FEWEST_TRANSFERS
+        else -> SortPreference.FASTEST
     }
 
     private fun showDemoRoutePreview() {
@@ -721,6 +874,7 @@ class HomeFragment : Fragment() {
             isFromGps = true
         )
         selectedOrigin = origin
+        selectedOriginStop = null
 
         binding.tvOrigin.text = origin.label
         binding.tvOriginSub.text = formatCoordinates(origin.latitude, origin.longitude)
@@ -742,6 +896,25 @@ class HomeFragment : Fragment() {
 
     private fun formatCoordinates(latitude: Double, longitude: Double): String {
         return String.format(Locale.US, "%.5f, %.5f", latitude, longitude)
+    }
+
+    private fun formatDuration(seconds: Int): String {
+        val minutes = (seconds + 59) / 60
+        val hours = minutes / 60
+        val remainingMinutes = minutes % 60
+        return if (hours > 0) {
+            getString(R.string.route_duration_hour_minute_format, hours, remainingMinutes)
+        } else {
+            getString(R.string.route_duration_minute_format, minutes)
+        }
+    }
+
+    private fun formatDistance(distanceMeters: Double): String {
+        return if (distanceMeters >= 1000.0) {
+            getString(R.string.search_gtfs_distance_km, distanceMeters / 1000.0)
+        } else {
+            getString(R.string.search_gtfs_distance_m, distanceMeters.toInt())
+        }
     }
 
     override fun onResume() {

@@ -397,18 +397,22 @@ Fase ini selesai jika pencarian “Stasiun Tangerang”, “Dukuh Atas”, atau 
 
 ## Fase 9: Membangun Graph Transportasi Umum
 
+### Status Planning
+- [x] Plan eksekusi Fase 9 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 9 selesai dikerjakan.
+
 ### Tujuan
 Membangun graph rute transportasi umum dari data GTFS.
 
 ### Aktivitas
-1. Mengambil pasangan stop berurutan dari `stop_times`.
-2. Menghubungkan `stop_times` dengan `trips` dan `routes`.
-3. Menghitung durasi antar stop.
-4. Membuat model `Node`, `Edge`, dan `RouteSegment`.
-5. Membuat graph di memori.
-6. Membuat edge antar stop dalam rute yang sama.
-7. Membuat walking transfer antar titik transportasi yang dekat.
-8. Menyimpan cache graph jika diperlukan.
+1. [x] Mengambil pasangan stop berurutan dari `stop_times`.
+2. [x] Menghubungkan `stop_times` dengan `trips` dan `routes`.
+3. [x] Menghitung durasi antar stop.
+4. [x] Membuat model `Node`, `Edge`, dan `RouteSegment`.
+5. [x] Membuat graph di memori.
+6. [x] Membuat edge antar stop dalam rute yang sama.
+7. [x] Membuat walking transfer antar titik transportasi yang dekat.
+8. [x] Menyimpan cache graph jika diperlukan.
 
 ### Model Sederhana
 
@@ -419,13 +423,15 @@ Weight = biaya perhitungan berdasarkan prioritas
 ```
 
 ### Output
-1. Graph transportasi umum berhasil dibuat.
-2. Setiap stop memiliki daftar edge.
-3. Walking transfer antar moda tersedia.
-4. Graph siap dipakai oleh algoritma Dijkstra.
+1. [x] Graph transportasi umum berhasil dibuat.
+2. [x] Setiap stop aktif memiliki daftar edge.
+3. [x] Walking transfer antar moda tersedia.
+4. [x] Graph siap dipakai oleh algoritma Dijkstra.
 
 ### Kriteria Selesai
 Fase ini selesai jika aplikasi dapat membangun graph tanpa crash dan jumlah node serta edge dapat ditampilkan di log.
+
+Status implementasi: selesai. `GtfsDao` sudah memiliki query adjacency GTFS dari pasangan stop berurutan, model graph domain sudah tersedia, graph builder membuat edge transit dan walking transfer, durasi GTFS mendukung waktu lintas hari dan format di atas 24 jam, serta `TransitGraphRepository` menyediakan cache in-memory. Unit test, build debug, dan compile androidTest berhasil dijalankan.
 
 ### Risiko
 Graph terlalu besar dan membuat aplikasi lambat.
@@ -440,20 +446,24 @@ Graph terlalu besar dan membuat aplikasi lambat.
 
 ## Fase 10: Implementasi Dijkstra Multimodal
 
+### Status Planning
+- [x] Plan eksekusi Fase 10 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 10 selesai dikerjakan.
+
 ### Tujuan
 Menghitung rute transportasi umum berdasarkan graph GTFS.
 
 ### Aktivitas
-1. Membuat class `DijkstraAlgorithm`.
-2. Membuat enum `TransitMode`.
-3. Membuat enum `SortPreference`.
-4. Membuat fungsi filter edge berdasarkan moda.
-5. Membuat fungsi bobot untuk tercepat.
-6. Membuat fungsi bobot untuk terhemat.
-7. Membuat fungsi bobot untuk minim jalan kaki.
-8. Membuat fungsi bobot untuk minim transit.
-9. Membuat rekonstruksi path dari start ke end.
-10. Mengubah path menjadi langkah perjalanan yang mudah dibaca.
+1. [x] Membuat class `DijkstraAlgorithm`.
+2. [x] Membuat enum `TransitMode`.
+3. [x] Membuat enum `SortPreference`.
+4. [x] Membuat fungsi filter edge berdasarkan moda.
+5. [x] Membuat fungsi bobot untuk tercepat.
+6. [x] Membuat fungsi bobot untuk terhemat.
+7. [x] Membuat fungsi bobot untuk minim jalan kaki.
+8. [x] Membuat fungsi bobot untuk minim transit.
+9. [x] Membuat rekonstruksi path dari start ke end.
+10. [x] Mengubah path menjadi langkah perjalanan yang mudah dibaca.
 
 ### Prioritas yang Didukung
 1. Tercepat.
@@ -462,13 +472,15 @@ Menghitung rute transportasi umum berdasarkan graph GTFS.
 4. Minim transit.
 
 ### Output
-1. Sistem dapat menghitung rute transportasi umum.
-2. Sistem dapat menampilkan langkah perjalanan.
-3. Sistem dapat menghitung estimasi waktu, biaya, jalan kaki, dan transit.
-4. Sistem dapat mencari minimal satu rute valid.
+1. [x] Sistem dapat menghitung rute transportasi umum.
+2. [x] Sistem dapat menampilkan langkah perjalanan.
+3. [x] Sistem dapat menghitung estimasi waktu, jarak jalan kaki, dan transit. Estimasi biaya detail dilanjutkan pada Fase 11.
+4. [x] Sistem dapat mencari minimal satu rute valid.
 
 ### Kriteria Selesai
 Fase ini selesai jika user dapat memilih asal dan tujuan berupa halte atau stasiun, lalu aplikasi menampilkan rute transportasi umum.
+
+Status implementasi: selesai. `DijkstraAlgorithm` sudah berjalan di atas `TransitGraph`, filter `TransitMode` dan `SortPreference` tersedia, path direkonstruksi menjadi `RouteStep`, metrics dasar dihitung, dan `TransitRoutingRepository` menjadi entry point dari UI. Home sudah bisa mencoba rute transit jika asal dan tujuan berasal dari stop GTFS. Unit test dan build perlu divalidasi ulang setelah perubahan ini.
 
 ---
 
@@ -1123,5 +1135,3 @@ FASE 8 menambahkan pencarian halte dan stasiun berbasis data GTFS lokal ke fitur
 | Pilihan GTFS mengisi selectedDestination + marker + history | ✅ selectDestination() dipanggil sama seperti TomTom |
 | Unit test repository lulus | ✅ 11 test case di GtfsStopSearchRepositoryTest |
 | Build debug berhasil | Perlu divalidasi dengan `gradlew assembleDebug` |
-
-

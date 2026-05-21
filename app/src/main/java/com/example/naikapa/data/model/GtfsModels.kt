@@ -34,6 +34,30 @@ data class GtfsStopTime(
     val stopSequence: Int
 )
 
+data class GtfsAdjacentStopConnection(
+    val fromStopId: String,
+    val fromStopName: String,
+    val fromStopLat: Double,
+    val fromStopLon: Double,
+    val fromAgencyId: String,
+    val fromStopType: String?,
+    val toStopId: String,
+    val toStopName: String,
+    val toStopLat: Double,
+    val toStopLon: Double,
+    val toAgencyId: String,
+    val toStopType: String?,
+    val tripId: String,
+    val routeId: String,
+    val routeShortName: String?,
+    val routeLongName: String?,
+    val routeColor: String?,
+    val routeTextColor: String?,
+    val agencyId: String,
+    val departureTime: String,
+    val arrivalTime: String
+)
+
 data class GtfsAgencyCount(
     val agencyId: String,
     val totalStops: Int

@@ -30,4 +30,14 @@ object AppConstants {
     const val GTFS_SEARCH_LIMIT = 10
     const val GTFS_MIN_QUERY_LENGTH = 2
     const val GTFS_SOURCE = "gtfs"
+
+    // Transit graph
+    const val TRANSIT_GRAPH_LOG_TAG = "TransitGraph"
+    const val WALKING_ROUTE_ID = "WALKING"
+    const val WALKING_ROUTE_NAME = "Jalan Kaki"
+    const val ROUTING_TRANSFER_PENALTY_SECONDS = 300
+    const val ROUTING_AGENCY_ENTRY_COST = 3500
+    const val ROUTING_TRANSFER_COST = 500
+    const val ROUTING_DURATION_TIEBREAKER = 0.00001
+    const val ROUTING_WALKING_DISTANCE_WEIGHT = 10.0
 }

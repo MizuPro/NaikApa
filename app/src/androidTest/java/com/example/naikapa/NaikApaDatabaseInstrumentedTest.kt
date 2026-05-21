@@ -16,8 +16,12 @@ import com.example.naikapa.data.model.RouteCache
 import com.example.naikapa.data.model.RouteHistory
 import com.example.naikapa.data.model.SavedTrip
 import com.example.naikapa.data.model.SearchHistory
+import com.example.naikapa.data.model.SortPreference
+import com.example.naikapa.data.model.TransitMode
 import com.example.naikapa.data.model.User
 import com.example.naikapa.data.model.UserProfile
+import com.example.naikapa.data.repository.TransitGraphRepository
+import com.example.naikapa.domain.routing.DijkstraAlgorithm
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -209,5 +213,34 @@ class NaikApaDatabaseInstrumentedTest {
 
         assertTrue(dukuhResults.isNotEmpty())
         assertTrue(tangerangResults.isNotEmpty())
+    }
+
+    @Test
+    fun prebuiltGtfsDatabaseCanBuildLimitedTransitGraph() {
+        val gtfsDao = GtfsDao(dbHelper)
+        val connections = gtfsDao.getAdjacentStopConnections(limit = 20)
+
+        assertTrue(connections.isNotEmpty())
+        connections.forEach { connection ->
+            assertTrue(connection.fromStopId.isNotBlank())
+            assertTrue(connection.toStopId.isNotBlank())
+            assertTrue(connection.routeId.isNotBlank())
+            assertTrue(connection.agencyId.isNotBlank())
+        }
+
+        val graph = TransitGraphRepository(gtfsDao).buildGraph(limitConnections = 20)
+        assertTrue(graph.stats.nodeCount > 0)
+        assertTrue(graph.stats.transitEdgeCount > 0)
+        assertTrue(graph.stats.totalEdgeCount >= graph.stats.transitEdgeCount)
+
+        val firstConnection = connections.first()
+        val path = DijkstraAlgorithm().findPath(
+            graph = graph,
+            startStopId = firstConnection.fromStopId,
+            endStopId = firstConnection.toStopId,
+            mode = TransitMode.ALL,
+            sortPreference = SortPreference.FASTEST
+        )
+        assertTrue(path?.isNotEmpty() == true)
     }
 }

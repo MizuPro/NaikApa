@@ -888,6 +888,7 @@
                         android:textSize="10sp" />
 
                     <TextView
+                        android:id="@+id/tvRecommendationTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -928,6 +929,7 @@
                         android:textSize="10sp" />
 
                     <TextView
+                        android:id="@+id/tvRecommendationCost"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -967,6 +969,7 @@
                         android:textSize="10sp" />
 
                     <TextView
+                        android:id="@+id/tvRecommendationWalking"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -1007,6 +1010,7 @@
                         android:textSize="10sp" />
 
                     <TextView
+                        android:id="@+id/tvRecommendationTransit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -1167,6 +1171,7 @@
 
             <!-- Helpful Info Description -->
             <TextView
+                android:id="@+id/tvRecommendationInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/route_info"

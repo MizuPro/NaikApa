@@ -134,4 +134,14 @@
     <string name="search_gtfs_distance_m">%d m</string>
     <string name="search_gtfs_distance_km">%.1f km</string>
     <string name="search_gtfs_source_label">Lokal</string>
+    <string name="route_transit_requires_gtfs_stops">Pilih asal dan tujuan dari halte atau stasiun lokal untuk rute transportasi umum.</string>
+    <string name="route_transit_loading">Menghitung rute transportasi umum...</string>
+    <string name="route_transit_not_found">Rute transportasi umum belum ditemukan untuk pilihan ini.</string>
+    <string name="route_transit_ready">Rute transportasi umum ditemukan</string>
+    <string name="route_transit_same_stop">Asal dan tujuan berada di titik yang sama.</string>
+    <string name="route_transit_summary_format">Mulai dengan %1$s, %2$d langkah perjalanan, total %3$s.</string>
+    <string name="route_duration_hour_minute_format">%1$d j %2$d mnt</string>
+    <string name="route_duration_minute_format">%1$d mnt</string>
+    <string name="route_transit_count_format">%1$dx</string>
+    <string name="route_cost_phase_11_placeholder">Fase 11</string>
 </resources>
