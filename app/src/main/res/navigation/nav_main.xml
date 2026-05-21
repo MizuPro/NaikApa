@@ -54,7 +54,7 @@
         tools:layout="@layout/fragment_add_edit_disruption_report">
         <argument
             android:name="reportId"
-            android:defaultValue="0"
+            android:defaultValue="0L"
             app:argType="long" />
         <argument
             android:name="stopId"
