@@ -65,9 +65,7 @@ class RouteResultAdapter(
             else             -> R.color.colorError
         }
         holder.tvScore.setTextColor(ContextCompat.getColor(context, scoreColor))
-        holder.cardScore.setCardBackgroundColor(
-            ContextCompat.getColor(context, if (isMain) R.color.colorPrimaryLight else R.color.colorBackground)
-        )
+        // cardScore sekarang hidden, tidak perlu di-update background-nya
 
         // Metrics
         holder.tvTime.text = formatDuration(m.totalDurationSeconds)

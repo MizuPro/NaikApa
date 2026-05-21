@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="8dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/colorCardOutline"
     app:strokeWidth="1dp">
 
@@ -18,22 +18,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
 
-        <!-- Header: Rank label + Skor -->
+        <!-- Header: Rank badge + Moda label + Skor -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Rank label (Rekomendasi Utama / Alternatif 1) -->
+            <!-- Rank badge -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardRankBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@color/colorPrimaryLight"
-                app:cardCornerRadius="6dp"
+                app:cardCornerRadius="5dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
@@ -41,12 +44,12 @@
                     android:id="@+id/tvRankLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="3dp"
+                    android:paddingStart="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="2dp"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="9sp"
+                    android:textSize="8sp"
                     android:textStyle="bold"
                     tools:text="REKOMENDASI UTAMA" />
 
@@ -64,56 +67,52 @@
                 android:textColor="@color/colorTextPrimary"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                tools:text="Motor + Transit" />
+                tools:text="Motor" />
 
             <!-- Skor chip -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardScore"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/colorPrimaryLight"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvScore"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="4dp">
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="84" />
 
-                    <TextView
-                        android:id="@+id/tvScore"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        tools:text="87" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/100"
+                    android:textColor="@color/colorTextHint"
+                    android:textSize="9sp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="1dp"
-                        android:text="/100"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="9sp" />
+            </LinearLayout>
 
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            <!-- cardScore dummy untuk backward compat dengan adapter -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardScore"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp" />
 
         </LinearLayout>
 
-        <!-- Metrics grid: Waktu | Biaya | Jalan Kaki | Transit -->
+        <!-- Metrics row: Waktu | Biaya | Jalan Kaki | Transit -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/colorSurfaceVariant"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:orientation="horizontal">
 
             <!-- Waktu -->
@@ -128,8 +127,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_metric_time"
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="10sp" />
+                    android:textColor="@color/colorTextHint"
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/tvTime"
@@ -139,13 +138,13 @@
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="45 mnt" />
+                    tools:text="15 mnt" />
 
             </LinearLayout>
 
             <View
                 android:layout_width="1dp"
-                android:layout_height="28dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:background="@color/colorBorder" />
 
@@ -161,8 +160,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_metric_cost"
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="10sp" />
+                    android:textColor="@color/colorTextHint"
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/tvCost"
@@ -172,13 +171,13 @@
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="Rp 3.500" />
+                    tools:text="Rp 1.601" />
 
             </LinearLayout>
 
             <View
                 android:layout_width="1dp"
-                android:layout_height="28dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:background="@color/colorBorder" />
 
@@ -194,8 +193,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_metric_walking"
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="10sp" />
+                    android:textColor="@color/colorTextHint"
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/tvWalking"
@@ -205,13 +204,13 @@
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="350 m" />
+                    tools:text="0 m" />
 
             </LinearLayout>
 
             <View
                 android:layout_width="1dp"
-                android:layout_height="28dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
                 android:background="@color/colorBorder" />
 
@@ -227,8 +226,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/route_metric_transit"
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="10sp" />
+                    android:textColor="@color/colorTextHint"
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/tvTransit"
@@ -238,30 +237,24 @@
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    tools:text="1x" />
+                    tools:text="0x" />
 
             </LinearLayout>
 
         </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@color/colorBorder" />
 
         <!-- Alasan rekomendasi -->
         <TextView
             android:id="@+id/tvReason"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textColor="@color/colorTextSecondary"
             android:textSize="11sp"
-            tools:text="Rute ini dipilih karena memiliki waktu tempuh paling singkat dibanding alternatif lain." />
+            android:lineSpacingMultiplier="1.3"
+            tools:text="Rute ini dipilih karena kombinasi waktu dan biaya paling seimbang." />
 
-        <!-- Warning gangguan (tersembunyi jika tidak ada) -->
+        <!-- Warning gangguan -->
         <TextView
             android:id="@+id/tvDisruptionWarning"
             android:layout_width="match_parent"

@@ -925,15 +925,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp">
 
-            <!-- Header: Judul + label prioritas -->
+            <!-- Header: Judul + label prioritas + tombol tutup -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="10dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -941,23 +944,50 @@
                     android:layout_weight="1"
                     android:text="@string/rekomendasi_terbaik"
                     android:textColor="@color/colorTextPrimary"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvPriorityLabel"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPriorityBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="3dp"
-                    android:textColor="@color/colorAccentOrange"
-                    android:textSize="9sp"
-                    android:textStyle="bold"
-                    android:background="@color/colorAccentOrangeLight"
+                    android:layout_marginEnd="8dp"
                     android:visibility="gone"
-                    tools:text="TERCEPAT" />
+                    app:cardBackgroundColor="@color/colorAccentOrangeLight"
+                    app:cardCornerRadius="6dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <TextView
+                        android:id="@+id/tvPriorityLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="3dp"
+                        android:textColor="@color/colorAccentOrange"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        tools:text="TERCEPAT" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Tombol tutup / reset rekomendasi -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCloseRecommendation"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_close"
+                    app:iconSize="18dp"
+                    app:iconTint="@color/colorTextSecondary"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp" />
 
             </LinearLayout>
 
@@ -966,12 +996,12 @@
                 android:id="@+id/tvEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="12dp"
                 android:gravity="center"
                 android:text="@string/home_empty_state_text"
                 android:textColor="@color/colorTextSecondary"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:visibility="visible" />
 
             <!-- Scrollable Wrapper untuk RecyclerView agar tidak overflow -->
@@ -979,7 +1009,7 @@
                 android:id="@+id/scrollRecommendations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxHeight="320dp"
+                android:maxHeight="300dp"
                 android:visibility="gone"
                 android:fillViewport="true">
 

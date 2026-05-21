@@ -787,6 +787,8 @@ class HomeFragment : Fragment() {
         binding.tvEmptyState.visibility = View.VISIBLE
         binding.scrollRecommendations.visibility = View.GONE
         binding.tvPriorityLabel.visibility = View.GONE
+        binding.cardPriorityBadge.visibility = View.GONE
+        binding.btnCloseRecommendation.visibility = View.GONE
     }
 
     private fun hideLoadingState() {
@@ -800,6 +802,8 @@ class HomeFragment : Fragment() {
         binding.tvEmptyState.visibility = View.VISIBLE
         binding.scrollRecommendations.visibility = View.GONE
         binding.tvPriorityLabel.visibility = View.GONE
+        binding.cardPriorityBadge.visibility = View.GONE
+        binding.btnCloseRecommendation.visibility = View.GONE
     }
 
     private fun setupRouteActions() {
@@ -845,6 +849,11 @@ class HomeFragment : Fragment() {
         // Notifikasi click
         binding.btnNotification.setOnClickListener {
             toast("Tidak ada notifikasi baru")
+        }
+
+        // Tombol tutup rekomendasi
+        binding.btnCloseRecommendation.setOnClickListener {
+            resetRecommendation()
         }
     }
 
@@ -1056,9 +1065,29 @@ class HomeFragment : Fragment() {
         binding.tvEmptyState.visibility = View.GONE
         binding.scrollRecommendations.visibility = View.VISIBLE
         binding.tvPriorityLabel.visibility = View.VISIBLE
+        binding.cardPriorityBadge.visibility = View.VISIBLE
+        binding.btnCloseRecommendation.visibility = View.VISIBLE
         binding.cardRecommendation.visibility = View.VISIBLE
         binding.cardRecommendation.alpha = 0f
         binding.cardRecommendation.animate().alpha(1f).setDuration(500).start()
+    }
+
+    private fun resetRecommendation() {
+        // Reset state rekomendasi ke empty state
+        routeResultAdapter.submitList(emptyList())
+        binding.scrollRecommendations.visibility = View.GONE
+        binding.tvPriorityLabel.visibility = View.GONE
+        binding.cardPriorityBadge.visibility = View.GONE
+        binding.btnCloseRecommendation.visibility = View.GONE
+        binding.tvEmptyState.text = getString(R.string.home_empty_state_text)
+        binding.tvEmptyState.visibility = View.VISIBLE
+        // Bersihkan rute di peta
+        clearRouteOverlays()
+        originMarker?.let { binding.mapView.overlays.remove(it) }
+        destinationMarker?.let { binding.mapView.overlays.remove(it) }
+        originMarker = null
+        destinationMarker = null
+        binding.mapView.invalidate()
     }
 
     /**
