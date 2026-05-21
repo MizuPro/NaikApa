@@ -259,4 +259,80 @@
     <string name="history_replay_started">Memuat ulang rute favorit di halaman utama.</string>
     <string name="route_detail_save_favorite">Simpan ke Favorit</string>
 
+    <!-- FASE 19: Polishing UI — string resource tambahan -->
+    <!-- Route Detail -->
+    <string name="route_detail_toolbar_title">Detail Perjalanan</string>
+    <string name="route_detail_timeline_title">Langkah Perjalanan</string>
+    <string name="route_detail_metric_duration">Estimasi Waktu</string>
+    <string name="route_detail_metric_fare">Estimasi Biaya</string>
+    <string name="route_detail_metric_walking">Jalan Kaki</string>
+    <string name="route_detail_metric_transit">Transit</string>
+    <string name="route_detail_match_score_format">%1$d%% Cocok</string>
+    <string name="route_detail_save_success">Rute berhasil disimpan ke favorit.</string>
+    <string name="route_detail_save_failed">Gagal menyimpan ke favorit.</string>
+    <string name="route_detail_login_required">Login terlebih dahulu untuk menyimpan favorit.</string>
+
+    <!-- Route Recommendation Card Metrics -->
+    <string name="route_metric_time">Waktu</string>
+    <string name="route_metric_cost">Biaya</string>
+    <string name="route_metric_walking">Jalan Kaki</string>
+    <string name="route_metric_transit">Transit</string>
+
+    <!-- Home Mode Labels -->
+    <string name="mode_campur">Campur</string>
+    <string name="mode_tj">TransJakarta</string>
+    <string name="mode_krl">KRL</string>
+    <string name="mode_mrt">MRT</string>
+    <string name="mode_lrt">LRT</string>
+    <string name="mode_motor">Motor</string>
+    <string name="mode_mobil">Mobil</string>
+    <string name="mode_pilihan_label">Pilihan Moda</string>
+    <string name="priority_label">Prioritas</string>
+    <string name="priority_fastest">Tercepat</string>
+    <string name="priority_cheapest">Terhemat</string>
+    <string name="priority_min_walking">Minim Jalan Kaki</string>
+    <string name="priority_min_transit">Minim Transit</string>
+
+    <!-- Profile -->
+    <string name="profile_motor_status_yes">Motor: Ya</string>
+    <string name="profile_motor_status_no">Motor: Tidak</string>
+    <string name="profile_car_status_yes">Mobil: Ya</string>
+    <string name="profile_car_status_no">Mobil: Tidak</string>
+    <string name="profile_save_success">Profil berhasil diperbarui.</string>
+    <string name="profile_save_failed">Gagal menyimpan perubahan.</string>
+    <string name="profile_delete_success">Akun berhasil dihapus.</string>
+    <string name="profile_logout_success">Berhasil keluar dari akun.</string>
+    <string name="profile_name_required">Nama tidak boleh kosong.</string>
+    <string name="profile_email_required">Email tidak boleh kosong.</string>
+    <string name="profile_email_invalid">Format email tidak valid.</string>
+
+    <!-- Auth -->
+    <string name="login_success">Selamat datang kembali!</string>
+    <string name="login_failed">Email atau password salah.</string>
+    <string name="login_email_required">Email tidak boleh kosong.</string>
+    <string name="login_password_required">Password tidak boleh kosong.</string>
+    <string name="register_success">Akun berhasil dibuat. Silakan login.</string>
+    <string name="register_failed">Gagal membuat akun. Coba lagi.</string>
+    <string name="register_email_exists">Email sudah terdaftar.</string>
+    <string name="register_password_mismatch">Password dan konfirmasi tidak cocok.</string>
+    <string name="register_name_required">Nama tidak boleh kosong.</string>
+    <string name="register_email_required">Email tidak boleh kosong.</string>
+    <string name="register_password_required">Password tidak boleh kosong.</string>
+    <string name="register_password_min_length">Password minimal 6 karakter.</string>
+
+    <!-- Status Gangguan -->
+    <string name="status_gangguan_toolbar_title">Status Gangguan</string>
+    <string name="status_gangguan_active_count_format">%1$d laporan aktif</string>
+    <string name="status_gangguan_no_active">Tidak ada gangguan aktif saat ini.</string>
+    <string name="status_gangguan_load_failed">Gagal memuat laporan gangguan.</string>
+
+    <!-- General -->
+    <string name="confirm">Konfirmasi</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+    <string name="loading">Memuat…</string>
+    <string name="error_generic">Terjadi kesalahan. Coba lagi.</string>
+    <string name="no_internet">Tidak ada koneksi internet.</string>
+
 </resources>

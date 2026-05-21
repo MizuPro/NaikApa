@@ -763,36 +763,95 @@ Status implementasi: selesai. `RiwayatFragment` diimplementasikan penuh dengan t
 
 ---
 
-## Fase 19: Polishing UI dan UX
+## Fase 19: Polishing UI dan UX ✅ SELESAI
+
+### Status Planning
+- [x] Plan eksekusi Fase 19 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 19 selesai dikerjakan.
 
 ### Tujuan
 Merapikan tampilan aplikasi agar layak dipresentasikan dan nyaman digunakan.
 
 ### Aktivitas
-1. Menyamakan warna aplikasi.
-2. Menyamakan typography.
-3. Merapikan spacing dan alignment.
-4. Menambahkan ikon moda.
-5. Menambahkan empty state.
-6. Menambahkan loading state.
-7. Menambahkan error state.
-8. Menambahkan dialog konfirmasi hapus.
-9. Menambahkan pesan sukses.
-10. Menyesuaikan tampilan untuk beberapa ukuran layar.
-11. Merapikan halaman hasil rekomendasi.
-12. Merapikan tampilan peta.
+1. [x] Menyamakan warna aplikasi.
+2. [x] Menyamakan typography.
+3. [x] Merapikan spacing dan alignment.
+4. [x] Menambahkan ikon moda (ic_walk, ic_map_layer).
+5. [x] Menambahkan empty state.
+6. [x] Menambahkan loading state.
+7. [x] Menambahkan error state.
+8. [x] Menambahkan dialog konfirmasi hapus.
+9. [x] Menambahkan pesan sukses.
+10. [x] Menyesuaikan tampilan untuk beberapa ukuran layar.
+11. [x] Merapikan halaman hasil rekomendasi.
+12. [x] Merapikan tampilan peta.
 
 ### Output
-1. Aplikasi terlihat modern dan konsisten.
-2. Alur user lebih mudah dipahami.
-3. Aplikasi siap diuji dan didemokan.
+1. [x] Aplikasi terlihat modern dan konsisten.
+2. [x] Alur user lebih mudah dipahami.
+3. [x] Aplikasi siap diuji dan didemokan.
 
 ### Kriteria Selesai
 Fase ini selesai jika semua halaman MVP memiliki tampilan yang konsisten dan tidak berantakan.
 
+Status implementasi: selesai. Token UI final didefinisikan di `dimens.xml` (spacing, radius, elevation, icon size, text size), `styles.xml` (card, button, text, badge, input, mode card, toolbar), dan `colors.xml` (state colors, polyline colors, bottom nav, surface variants). Themes diperbarui dengan ripple, typography, dan color defaults yang konsisten. Night theme di-force ke light mode. Bottom nav item color diperbarui ke token final. Drawable baru ditambahkan: `ic_walk`, `ic_map_layer`, `bg_chip_selected`, `bg_chip_unselected`, `bg_empty_state`, `bg_segment_selected`, `bg_segment_unselected`, `bg_vehicle_status_card`, `bg_warning_banner`, `bg_badge_category`. Teks hardcoded di `fragment_route_detail.xml`, `item_route_recommendation.xml`, dan `item_route_step.xml` dipindahkan ke `strings.xml`. Warning banner di kartu rekomendasi dan detail rute menggunakan `bg_warning_banner` yang konsisten. Tab segmented di Riwayat mendapat visual feedback dengan `bg_segment_selected/unselected`. Vehicle status card di Profil mendapat border via `bg_vehicle_status_card`. `AndroidManifest.xml` diperbaiki dengan `uses-feature camera required=false`. `UiResourceContractTest` ditambahkan sebagai unit test ringan. `testDebugUnitTest`, `assembleDebug`, dan `lintDebug` semua lulus.
+
 ---
 
-## Fase 20: Testing Fungsional
+## 17. Log Implementasi FASE 19 — Polishing UI dan UX
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 19 menyatukan token UI, memperbaiki inkonsistensi visual, dan memastikan semua halaman MVP memiliki tampilan yang konsisten tanpa mengubah logika fitur yang sudah selesai.
+
+### Checklist Aktivitas FASE 19
+
+- [x] `values/dimens.xml` — Baru: token dimensi untuk spacing (xs–xxl), corner radius (xs–full), elevation (none–xl), icon size (xs–xl), button/toolbar/input height, map height, card padding/margin, recommendation panel max height, text sizes (xs–title_lg), stroke, badge, avatar.
+- [x] `values/styles.xml` — Baru: style reusable `NaikApaCard`, `NaikApaCardFlat`, `NaikApaCardElevated`, `NaikApaButtonPrimary`, `NaikApaButtonOutlined`, `NaikApaButtonDanger`, `NaikApaTextEyebrow`, `NaikApaTextTitle`, `NaikApaTextSubtitle`, `NaikApaTextLabel`, `NaikApaTextMetricValue`, `NaikApaTextMetricLabel`, `NaikApaBadgePrimary`, `NaikApaBadgeWarning`, `NaikApaEmptyStateTitle`, `NaikApaEmptyStateSubtitle`, `NaikApaTextInput`, `NaikApaTextInputPrimary`, `NaikApaTextInputOrange`, `NaikApaModeCardActive`, `NaikApaModeCardInactive`, `NaikApaToolbar`.
+- [x] `values/colors.xml` — Tambah: state colors (success, warning, error light, info light), surface variants, bottom nav colors, polyline colors (private, transit, walking, combined), dot connector colors.
+- [x] `values/themes.xml` — Perbarui: tambah colorPrimaryVariant, colorError, colorBackground, ripple, typography defaults, targetApi 27 untuk windowLightNavigationBar.
+- [x] `values-night/themes.xml` — Perbarui: force light theme dengan token lengkap, targetApi 27 untuk windowLightNavigationBar.
+- [x] `color/bottom_nav_item_color.xml` — Perbarui: gunakan token `colorBottomNavSelected` dan `colorBottomNavUnselected`.
+- [x] `values/strings.xml` — Tambah 50+ string resource: route detail labels, metric labels, mode labels, priority labels, profile messages, auth messages, status gangguan messages, general messages.
+- [x] `drawable/ic_walk.xml` — Baru: ikon jalan kaki untuk segmen walking di timeline.
+- [x] `drawable/ic_map_layer.xml` — Baru: ikon layer peta untuk kontrol style peta.
+- [x] `drawable/bg_chip_selected.xml` — Baru: background chip prioritas terpilih (oranye).
+- [x] `drawable/bg_chip_unselected.xml` — Baru: background chip prioritas tidak terpilih.
+- [x] `drawable/bg_empty_state.xml` — Baru: background kartu empty state.
+- [x] `drawable/bg_segment_selected.xml` — Baru: background tab segmented terpilih (biru).
+- [x] `drawable/bg_segment_unselected.xml` — Baru: background tab segmented tidak terpilih.
+- [x] `drawable/bg_vehicle_status_card.xml` — Baru: background kartu status kendaraan di profil dengan border.
+- [x] `drawable/bg_warning_banner.xml` — Baru: background banner warning gangguan dengan border oranye.
+- [x] `drawable/bg_badge_category.xml` — Baru: background badge kategori laporan gangguan (biru).
+- [x] `layout/item_route_step.xml` — Perbarui: gunakan `colorConnectorLine`, `colorSurfaceVariant`, `ic_walk`, warna dari resource, layout lebih rapi dengan LinearLayout content.
+- [x] `layout/item_route_recommendation.xml` — Perbarui: warning banner pakai `bg_warning_banner`, metric labels pakai string resource.
+- [x] `layout/fragment_route_detail.xml` — Perbarui: toolbar title ke string resource, timeline title ke string resource, metric labels ke string resource, warning banner pakai `bg_warning_banner` dengan warna oranye konsisten.
+- [x] `layout/fragment_riwayat.xml` — Perbarui: tab segmented pakai `bg_segment_selected/unselected` dengan warna teks dinamis.
+- [x] `layout/fragment_profil.xml` — Perbarui: vehicle status card pakai `bg_vehicle_status_card` dengan border.
+- [x] `layout/item_disruption_report.xml` — Perbarui: badge kategori pakai `bg_badge_category`.
+- [x] `AndroidManifest.xml` — Tambah `uses-feature camera required=false` untuk menghilangkan lint error.
+- [x] `UiResourceContractTest.kt` — Baru: 5 unit test ringan untuk memvalidasi konstanta UI penting.
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| Token UI final di dimens.xml, styles.xml, colors.xml, themes.xml | ✅ Semua token didefinisikan |
+| Teks hardcoded penting dipindahkan ke strings.xml | ✅ 50+ string resource ditambahkan |
+| Warning banner konsisten di kartu rekomendasi dan detail rute | ✅ `bg_warning_banner` dipakai di kedua tempat |
+| Tab segmented Riwayat punya visual feedback | ✅ `bg_segment_selected/unselected` |
+| Vehicle status card di Profil punya border | ✅ `bg_vehicle_status_card` |
+| Ikon jalan kaki tersedia untuk timeline | ✅ `ic_walk.xml` |
+| Ikon layer peta tersedia | ✅ `ic_map_layer.xml` |
+| Lint error kamera di Manifest diperbaiki | ✅ `uses-feature camera required=false` |
+| Unit test lulus | ✅ `testDebugUnitTest` BUILD SUCCESSFUL (28 tests) |
+| Build debug berhasil | ✅ `assembleDebug` BUILD SUCCESSFUL |
+| Lint lulus tanpa error | ✅ `lintDebug` BUILD SUCCESSFUL |
+
+
 
 ### Tujuan
 Memastikan semua fitur utama berjalan sesuai rencana.

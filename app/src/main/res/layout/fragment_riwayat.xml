@@ -110,10 +110,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/colorSurfaceVariant"
+                app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/colorCardOutline"
+                app:strokeColor="@color/colorBorder"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -130,7 +130,9 @@
                         android:gravity="center"
                         android:text="@string/history_tab_favorit"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_segment_selected"
+                        android:textColor="@color/white" />
 
                     <TextView
                         android:id="@+id/tabRiwayatPencarian"
@@ -140,7 +142,9 @@
                         android:gravity="center"
                         android:text="@string/history_tab_pencarian"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_segment_unselected"
+                        android:textColor="@color/colorTextSecondary" />
 
                     <TextView
                         android:id="@+id/tabRiwayatPerjalanan"
@@ -150,7 +154,9 @@
                         android:gravity="center"
                         android:text="@string/history_tab_perjalanan"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_segment_unselected"
+                        android:textColor="@color/colorTextSecondary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

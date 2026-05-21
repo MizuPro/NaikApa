@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== CARD STYLES ===== -->
+    <style name="NaikApaCard" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/colorSurface</item>
+        <item name="cardCornerRadius">@dimen/radius_lg</item>
+        <item name="cardElevation">@dimen/elevation_md</item>
+        <item name="strokeColor">@color/colorCardOutline</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+    </style>
+
+    <style name="NaikApaCardFlat" parent="NaikApaCard">
+        <item name="cardElevation">@dimen/elevation_none</item>
+    </style>
+
+    <style name="NaikApaCardElevated" parent="NaikApaCard">
+        <item name="cardElevation">@dimen/elevation_lg</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- ===== BUTTON STYLES ===== -->
+    <style name="NaikApaButtonPrimary" parent="Widget.Material3.Button">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:textSize">@dimen/text_body_lg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+    </style>
+
+    <style name="NaikApaButtonPrimaryLarge" parent="NaikApaButtonPrimary">
+        <item name="android:layout_height">@dimen/button_height_lg</item>
+        <item name="android:textSize">@dimen/text_subtitle</item>
+    </style>
+
+    <style name="NaikApaButtonOutlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:textSize">@dimen/text_body_lg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+    </style>
+
+    <style name="NaikApaButtonDanger" parent="NaikApaButtonOutlined">
+        <item name="android:textColor">@color/colorError</item>
+        <item name="strokeColor">@color/colorError</item>
+    </style>
+
+    <!-- ===== TEXT STYLES ===== -->
+    <style name="NaikApaTextEyebrow" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+    </style>
+
+    <style name="NaikApaTextTitle" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="NaikApaTextSubtitle" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+    </style>
+
+    <style name="NaikApaTextLabel" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_sm</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+    </style>
+
+    <style name="NaikApaTextMetricValue" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_body_md</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="NaikApaTextMetricLabel" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_xs</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+    </style>
+
+    <!-- ===== BADGE STYLES ===== -->
+    <style name="NaikApaBadgePrimary" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_xs</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingStart">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/badge_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/badge_padding_vertical</item>
+        <item name="android:background">@color/colorPrimaryLight</item>
+    </style>
+
+    <style name="NaikApaBadgeWarning" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_xs</item>
+        <item name="android:textColor">@color/colorAccentOrange</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingStart">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/badge_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/badge_padding_vertical</item>
+        <item name="android:background">@color/colorAccentOrangeLight</item>
+    </style>
+
+    <!-- ===== EMPTY STATE ===== -->
+    <style name="NaikApaEmptyStateTitle" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_body_md</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="NaikApaEmptyStateSubtitle" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- ===== INPUT STYLES ===== -->
+    <style name="NaikApaTextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_md</item>
+        <item name="hintTextColor">@color/colorTextSecondary</item>
+    </style>
+
+    <style name="NaikApaTextInputPrimary" parent="NaikApaTextInput">
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="startIconTint">@color/colorPrimary</item>
+    </style>
+
+    <style name="NaikApaTextInputOrange" parent="NaikApaTextInput">
+        <item name="boxStrokeColor">@color/colorAccentOrange</item>
+        <item name="startIconTint">@color/colorAccentOrange</item>
+    </style>
+
+    <!-- ===== MODE CARD ===== -->
+    <style name="NaikApaModeCardActive" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/colorPrimaryLight</item>
+        <item name="cardCornerRadius">@dimen/radius_sm</item>
+        <item name="cardElevation">@dimen/elevation_none</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="strokeColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="NaikApaModeCardInactive" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/colorSurface</item>
+        <item name="cardCornerRadius">@dimen/radius_sm</item>
+        <item name="cardElevation">@dimen/elevation_none</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+        <item name="strokeColor">@color/colorCardOutline</item>
+    </style>
+
+    <!-- ===== TOOLBAR ===== -->
+    <style name="NaikApaToolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/colorSurface</item>
+        <item name="android:elevation">@dimen/elevation_md</item>
+        <item name="titleTextColor">@color/colorTextPrimary</item>
+        <item name="navigationIconTint">@color/colorTextPrimary</item>
+    </style>
+
+</resources>

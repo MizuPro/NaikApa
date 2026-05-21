@@ -27,4 +27,33 @@
     <color name="colorMotor">#FF6D00</color>
     <color name="colorMobil">#546E7A</color>
     <color name="colorWalking">#8E8E93</color>
+
+    <!-- State Colors -->
+    <color name="colorSuccess">#16A34A</color>
+    <color name="colorSuccessLight">#DCFCE7</color>
+    <color name="colorWarning">#D97706</color>
+    <color name="colorWarningLight">#FEF3C7</color>
+    <color name="colorErrorLight">#FEE2E2</color>
+    <color name="colorInfoLight">#EFF6FF</color>
+
+    <!-- Surface Variants -->
+    <color name="colorSurfaceVariant">#F8FAFC</color>
+    <color name="colorSurfaceElevated">#FFFFFF</color>
+    <color name="colorOnSurface">#1E293B</color>
+    <color name="colorOnSurfaceVariant">#64748B</color>
+
+    <!-- Bottom Nav -->
+    <color name="colorBottomNavSelected">#1A6FE8</color>
+    <color name="colorBottomNavUnselected">#94A3B8</color>
+
+    <!-- Polyline Colors -->
+    <color name="colorPolylinePrivate">#FF6D00</color>
+    <color name="colorPolylineTransit">#1A6FE8</color>
+    <color name="colorPolylineWalking">#8E8E93</color>
+    <color name="colorPolylineCombined">#00C2A8</color>
+
+    <!-- Dot Connector -->
+    <color name="colorDotOrigin">#1A6FE8</color>
+    <color name="colorDotDestination">#FF6F00</color>
+    <color name="colorConnectorLine">#CBD5E1</color>
 </resources>

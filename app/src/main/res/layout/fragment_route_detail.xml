@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="Detail Perjalanan"
+                android:text="@string/route_detail_toolbar_title"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorTextPrimary"
@@ -155,7 +155,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Estimasi Waktu"
+                                android:text="@string/route_detail_metric_duration"
                                 android:textSize="11sp"
                                 android:textColor="@color/colorTextSecondary" />
                             <TextView
@@ -178,7 +178,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Estimasi Biaya"
+                                android:text="@string/route_detail_metric_fare"
                                 android:textSize="11sp"
                                 android:textColor="@color/colorTextSecondary" />
                             <TextView
@@ -201,7 +201,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Jalan Kaki"
+                                android:text="@string/route_detail_metric_walking"
                                 android:textSize="11sp"
                                 android:textColor="@color/colorTextSecondary" />
                             <TextView
@@ -224,7 +224,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Transit"
+                                android:text="@string/route_detail_metric_transit"
                                 android:textSize="11sp"
                                 android:textColor="@color/colorTextSecondary" />
                             <TextView
@@ -244,8 +244,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:background="@drawable/ic_launcher_background"
-                        android:backgroundTint="#FFF0F0"
+                        android:background="@drawable/bg_warning_banner"
                         android:orientation="horizontal"
                         android:padding="10dp"
                         android:visibility="gone"
@@ -257,7 +256,8 @@
                             android:layout_height="16dp"
                             android:layout_gravity="center_vertical"
                             android:src="@drawable/ic_warning"
-                            app:tint="@color/colorError" />
+                            app:tint="@color/colorAccentOrange"
+                            android:contentDescription="@null" />
 
                         <TextView
                             android:id="@+id/tvDisruptionText"
@@ -265,7 +265,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:textSize="12sp"
-                            android:textColor="@color/colorError"
+                            android:textColor="@color/colorAccentOrange"
                             tools:text="Ada gangguan operasional KRL di Stasiun Manggarai." />
                     </LinearLayout>
 
@@ -295,7 +295,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Langkah Perjalanan"
+                android:text="@string/route_detail_timeline_title"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorTextPrimary"

@@ -127,7 +127,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Waktu"
+                    android:text="@string/route_metric_time"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="10sp" />
 
@@ -160,7 +160,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Biaya"
+                    android:text="@string/route_metric_cost"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="10sp" />
 
@@ -193,7 +193,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Jalan Kaki"
+                    android:text="@string/route_metric_walking"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="10sp" />
 
@@ -226,7 +226,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Transit"
+                    android:text="@string/route_metric_transit"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="10sp" />
 
@@ -267,7 +267,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@color/colorAccentOrangeLight"
+            android:background="@drawable/bg_warning_banner"
             android:padding="8dp"
             android:textColor="@color/colorAccentOrange"
             android:textSize="11sp"

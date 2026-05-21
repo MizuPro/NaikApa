@@ -1,16 +1,31 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.NaikApa" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Customize your light theme here. -->
+        <!-- Brand Colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorError">@color/colorError</item>
+
+        <!-- Window & Background -->
         <item name="android:windowBackground">@color/colorBackground</item>
-        
-        <!-- Customize status bar and navigation bar -->
+        <item name="android:colorBackground">@color/colorBackground</item>
+
+        <!-- Status bar & Navigation bar -->
         <item name="android:statusBarColor">@color/colorBackground</item>
         <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!-- Ripple -->
+        <item name="colorControlHighlight">@color/colorPrimaryLight</item>
+        <item name="rippleColor">@color/colorPrimaryLight</item>
+
+        <!-- Typography -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColorPrimary">@color/colorTextPrimary</item>
+        <item name="android:textColorSecondary">@color/colorTextSecondary</item>
+        <item name="android:textColorHint">@color/colorTextHint</item>
     </style>
 
     <style name="Theme.NaikApa" parent="Base.Theme.NaikApa" />
