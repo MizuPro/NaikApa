@@ -75,6 +75,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.example.naikapa.data.local.DisruptionReportDao
+import com.example.naikapa.domain.recommendation.RecommendationEngine
+import com.example.naikapa.domain.recommendation.RecommendationReasonBuilder
+import com.example.naikapa.domain.recommendation.RecommendationScorer
+import com.example.naikapa.data.model.RecommendationResult
+import com.example.naikapa.data.model.ScoredRoute
+import androidx.recyclerview.widget.LinearLayoutManager
+
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
@@ -83,11 +91,14 @@ class HomeFragment : Fragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var historyDao: HistoryDao
+    private lateinit var disruptionReportDao: DisruptionReportDao
     private val searchRepository = TomTomSearchRepository(RemoteClient.tomTomSearchApi)
     private val tomTomRoutingRepository = TomTomRoutingRepository(RemoteClient.tomTomRoutingApi)
     private lateinit var gtfsSearchRepository: GtfsStopSearchRepository
     private lateinit var transitRoutingRepository: TransitRoutingRepository
     private lateinit var combinedRouteRepository: CombinedRouteRepository
+    private lateinit var recommendationEngine: RecommendationEngine
+    private lateinit var routeResultAdapter: RouteResultAdapter
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
     private var selectedOrigin: LocationPoint? = null
@@ -146,6 +157,25 @@ class HomeFragment : Fragment() {
             apiKey = BuildConfig.TOMTOM_API_KEY
         )
         homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+        // Inisialisasi DisruptionReportDao dan RecommendationEngine
+        disruptionReportDao = DisruptionReportDao(dbHelper)
+        recommendationEngine = RecommendationEngine(
+            transitRoutingRepository = transitRoutingRepository,
+            tomTomRoutingRepository = tomTomRoutingRepository,
+            combinedRouteRepository = combinedRouteRepository,
+            disruptionReportDao = disruptionReportDao,
+            scorer = RecommendationScorer(),
+            reasonBuilder = RecommendationReasonBuilder()
+        )
+
+        // Setup RecyclerView rekomendasi
+        routeResultAdapter = RouteResultAdapter(requireContext())
+        binding.rvRecommendations.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = routeResultAdapter
+            isNestedScrollingEnabled = false
+        }
 
         // Mengubah sapaan di header dengan nama user
         val userName = sessionManager.getUserName() ?: "User NaikApa"
@@ -543,35 +573,83 @@ class HomeFragment : Fragment() {
     }
 
     private fun handleFindRouteClick() {
+        val origin = selectedOrigin
+        val destination = selectedDestination
+
+        if (origin == null || destination == null) {
+            toast(getString(R.string.route_combined_requires_coordinates))
+            showDemoRoutePreview()
+            showRecommendationCard()
+            return
+        }
+
+        val sortPreference = getSelectedSortPreference()
+        val transitMode = getTransitModeForCurrentMode()
+        val hasMotor = sessionManager.getUserId().let { uid ->
+            if (uid > 0) {
+                try {
+                    val userDao = com.example.naikapa.data.local.UserDao(dbHelper)
+                    userDao.getUserById(uid)?.hasMotor ?: false
+                } catch (e: Exception) { false }
+            } else false
+        }
+        val hasCar = sessionManager.getUserId().let { uid ->
+            if (uid > 0) {
+                try {
+                    val userDao = com.example.naikapa.data.local.UserDao(dbHelper)
+                    userDao.getUserById(uid)?.hasCar ?: false
+                } catch (e: Exception) { false }
+            } else false
+        }
+
+        // Jika mode kendaraan pribadi saja, gunakan flow lama
         getSelectedPrivateVehicleMode()?.let { mode ->
             handlePrivateVehicleRouteClick(mode)
             return
         }
 
-        val originStopId = selectedOriginStop?.stopId
-        val destinationStopId = selectedDestination?.stopId
-        if (originStopId.isNullOrBlank() || destinationStopId.isNullOrBlank()) {
-            handleCombinedRouteClick()
-            return
+        // Mode transit atau campur → gunakan RecommendationEngine
+        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER &&
+            (hasMotor || hasCar)) {
+            // API key belum diisi, tetap coba transit saja
         }
 
         binding.btnTemukanRute.isEnabled = false
-        toast(getString(R.string.route_transit_loading))
+        toast(getString(R.string.route_recommendation_loading))
+
         homeScope.launch {
             val result = withContext(Dispatchers.IO) {
-                transitRoutingRepository.findRoute(
-                    startStopId = originStopId,
-                    endStopId = destinationStopId,
-                    mode = getTransitModeForCurrentMode(),
-                    sortPreference = getSelectedSortPreference()
+                recommendationEngine.recommend(
+                    origin = origin,
+                    destination = destination,
+                    transitMode = transitMode,
+                    sortPreference = sortPreference,
+                    hasMotor = hasMotor && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
+                    hasCar = hasCar && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
+                    tomTomApiKey = BuildConfig.TOMTOM_API_KEY,
+                    originStopId = selectedOriginStop?.stopId,
+                    destinationStopId = selectedDestination?.stopId
                 )
             }
             binding.btnTemukanRute.isEnabled = true
-            if (result == null) {
-                toast(getString(R.string.route_transit_not_found))
-            } else {
-                showTransitRouteResult(result)
-            }
+            result
+                .onSuccess { recommendation ->
+                    showRecommendationResult(origin, destination, recommendation)
+                }
+                .onFailure {
+                    // Fallback ke flow lama jika engine gagal
+                    val originStopId = selectedOriginStop?.stopId
+                    val destinationStopId = selectedDestination?.stopId
+                    if (!originStopId.isNullOrBlank() && !destinationStopId.isNullOrBlank()) {
+                        val transitResult = withContext(Dispatchers.IO) {
+                            transitRoutingRepository.findRoute(originStopId, destinationStopId, transitMode, sortPreference)
+                        }
+                        if (transitResult != null) showTransitRouteResult(transitResult)
+                        else toast(getString(R.string.route_transit_not_found))
+                    } else {
+                        toast(getString(R.string.route_combined_not_found))
+                    }
+                }
         }
     }
 
@@ -669,6 +747,87 @@ class HomeFragment : Fragment() {
         binding.cardRecommendation.animate().alpha(1f).setDuration(500).start()
     }
 
+    /**
+     * Menampilkan hasil RecommendationEngine: update RecyclerView, peta, dan label prioritas.
+     */
+    private fun showRecommendationResult(
+        origin: LocationPoint,
+        destination: SearchLocation,
+        recommendation: RecommendationResult
+    ) {
+        // Update label prioritas
+        binding.tvPriorityLabel.text = when (recommendation.sortPreference) {
+            com.example.naikapa.data.model.SortPreference.FASTEST          -> "TERCEPAT"
+            com.example.naikapa.data.model.SortPreference.CHEAPEST         -> "TERHEMAT"
+            com.example.naikapa.data.model.SortPreference.MIN_WALKING      -> "MINIM JALAN KAKI"
+            com.example.naikapa.data.model.SortPreference.FEWEST_TRANSFERS -> "MINIM TRANSIT"
+        }
+
+        // Submit daftar ke adapter
+        routeResultAdapter.submitList(recommendation.all)
+
+        // Tampilkan peta berdasarkan rekomendasi utama
+        val mainCandidate = recommendation.main.candidate
+        clearRouteOverlays()
+        val originPoint = MapPoint(
+            label = getString(R.string.map_marker_origin),
+            latitude = origin.latitude,
+            longitude = origin.longitude,
+            description = origin.label,
+            markerType = MapMarkerType.ORIGIN
+        )
+        val destinationPoint = MapPoint(
+            label = getString(R.string.map_marker_destination),
+            latitude = destination.latitude,
+            longitude = destination.longitude,
+            description = destination.name,
+            markerType = MapMarkerType.DESTINATION
+        )
+        showOriginMarker(originPoint)
+        showDestinationMarker(destinationPoint)
+
+        when (mainCandidate) {
+            is com.example.naikapa.data.model.RouteCandidate.Transit -> {
+                val routePoints = mainCandidate.result.steps.toMapPoints()
+                if (routePoints.size > 1) {
+                    showTransitMarkers(routePoints.drop(1).dropLast(1))
+                    drawRoutePolyline(routePoints, ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                }
+            }
+            is com.example.naikapa.data.model.RouteCandidate.PrivateVehicle -> {
+                val color = if (mainCandidate.result.mode == PrivateVehicleMode.MOTOR)
+                    ContextCompat.getColor(requireContext(), R.color.colorMotor)
+                else ContextCompat.getColor(requireContext(), R.color.colorMobil)
+                drawRoutePolyline(mainCandidate.result.points, color)
+            }
+            is com.example.naikapa.data.model.RouteCandidate.Combined -> {
+                val vehicleResult = mainCandidate.result.privateVehicleResult
+                val transitResult = mainCandidate.result.transitResult
+                if (vehicleResult != null) {
+                    val color = if (vehicleResult.mode == PrivateVehicleMode.MOTOR)
+                        ContextCompat.getColor(requireContext(), R.color.colorMotor)
+                    else ContextCompat.getColor(requireContext(), R.color.colorMobil)
+                    drawRoutePolyline(vehicleResult.points, color)
+                }
+                if (transitResult != null) {
+                    val transitPoints = transitResult.steps.toMapPoints()
+                    if (transitPoints.size > 1) {
+                        showTransitMarkers(transitPoints.drop(1).dropLast(1))
+                        drawRoutePolyline(transitPoints, ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                    }
+                }
+            }
+        }
+
+        binding.mapView.controller.apply {
+            setZoom(11.0)
+            animateTo(GeoPoint(origin.latitude, origin.longitude))
+        }
+
+        showRecommendationCard()
+        toast(getString(R.string.route_recommendation_ready))
+    }
+
     private fun showTransitRouteResult(result: TransitRouteResult) {
         clearRouteOverlays()
         val routePoints = result.steps.toMapPoints()
@@ -686,14 +845,25 @@ class HomeFragment : Fragment() {
             }
         }
 
-        binding.tvRecommendationTime.text = formatDuration(result.metrics.totalDurationSeconds)
-        binding.tvRecommendationCost.text = formatRupiah(result.metrics.estimatedTotalCost)
-        binding.tvRecommendationWalking.text = formatDistance(result.metrics.walkingDistanceMeters)
-        binding.tvRecommendationTransit.text = getString(
-            R.string.route_transit_count_format,
-            result.metrics.transitCount
+        // Tampilkan sebagai ScoredRoute tunggal di RecyclerView
+        val scorer = com.example.naikapa.domain.recommendation.RecommendationScorer()
+        val reasonBuilder = com.example.naikapa.domain.recommendation.RecommendationReasonBuilder()
+        val candidate = com.example.naikapa.data.model.RouteCandidate.Transit(result)
+        val score = scorer.score(candidate, result.sortPreference, emptyList())
+        val reason = reasonBuilder.buildReason(candidate, listOf(candidate), result.sortPreference, isMain = true)
+        val scoredRoute = com.example.naikapa.data.model.ScoredRoute(
+            candidate = candidate,
+            score = score,
+            reason = reason,
+            rankLabel = "Rekomendasi Utama"
         )
-        binding.tvRecommendationInfo.text = buildRouteSummary(result)
+        binding.tvPriorityLabel.text = when (result.sortPreference) {
+            com.example.naikapa.data.model.SortPreference.FASTEST          -> "TERCEPAT"
+            com.example.naikapa.data.model.SortPreference.CHEAPEST         -> "TERHEMAT"
+            com.example.naikapa.data.model.SortPreference.MIN_WALKING      -> "MINIM JALAN KAKI"
+            com.example.naikapa.data.model.SortPreference.FEWEST_TRANSFERS -> "MINIM TRANSIT"
+        }
+        routeResultAdapter.submitList(listOf(scoredRoute))
         showRecommendationCard()
         toast(getString(R.string.route_transit_ready))
     }
@@ -732,20 +902,23 @@ class HomeFragment : Fragment() {
             animateTo(pointToGeoPoint(originPoint))
         }
 
-        binding.tvRecommendationTime.text = formatDuration(result.travelTimeSeconds)
-        binding.tvRecommendationCost.text = formatRupiah(result.estimatedTotalCost)
-        binding.tvRecommendationWalking.text = formatDistance(0.0)
-        binding.tvRecommendationTransit.text = getString(R.string.route_transit_count_format, 0)
-        binding.tvRecommendationInfo.text = getString(
-            R.string.route_private_summary_format,
-            if (result.mode == PrivateVehicleMode.MOTOR) {
-                getString(R.string.route_private_motor)
-            } else {
-                getString(R.string.route_private_car)
-            },
-            formatDistance(result.distanceMeters.toDouble()),
-            formatRupiah(result.estimatedBbm)
+        // Tampilkan sebagai ScoredRoute di RecyclerView
+        val scorer = com.example.naikapa.domain.recommendation.RecommendationScorer()
+        val reasonBuilder = com.example.naikapa.domain.recommendation.RecommendationReasonBuilder()
+        val candidate = com.example.naikapa.data.model.RouteCandidate.PrivateVehicle(result)
+        val pref = getSelectedSortPreference()
+        val score = scorer.score(candidate, pref, emptyList())
+        val reason = reasonBuilder.buildReason(candidate, listOf(candidate), pref, isMain = true)
+        val modeLabel = if (result.mode == PrivateVehicleMode.MOTOR) getString(R.string.route_private_motor)
+                        else getString(R.string.route_private_car)
+        val scoredRoute = com.example.naikapa.data.model.ScoredRoute(
+            candidate = candidate,
+            score = score,
+            reason = reason,
+            rankLabel = "Rekomendasi Utama"
         )
+        binding.tvPriorityLabel.text = modeLabel.uppercase()
+        routeResultAdapter.submitList(listOf(scoredRoute))
         showRecommendationCard()
         toast(getString(R.string.route_private_ready))
     }
@@ -812,25 +985,26 @@ class HomeFragment : Fragment() {
             animateTo(pointToGeoPoint(originPoint))
         }
 
-        binding.tvRecommendationTime.text = formatDuration(result.metrics.totalDurationSeconds)
-        binding.tvRecommendationCost.text = formatRupiah(result.metrics.estimatedTotalCost)
-        binding.tvRecommendationWalking.text = formatDistance(result.metrics.walkingDistanceMeters)
-        binding.tvRecommendationTransit.text = getString(
-            R.string.route_transit_count_format,
-            result.metrics.transitCount
+        // Tampilkan sebagai ScoredRoute di RecyclerView
+        val scorer = com.example.naikapa.domain.recommendation.RecommendationScorer()
+        val reasonBuilder = com.example.naikapa.domain.recommendation.RecommendationReasonBuilder()
+        val candidate = com.example.naikapa.data.model.RouteCandidate.Combined(result)
+        val pref = getSelectedSortPreference()
+        val score = scorer.score(candidate, pref, emptyList())
+        val reason = reasonBuilder.buildReason(candidate, listOf(candidate), pref, isMain = true)
+        val scoredRoute = com.example.naikapa.data.model.ScoredRoute(
+            candidate = candidate,
+            score = score,
+            reason = reason,
+            rankLabel = "Rekomendasi Utama"
         )
-        binding.tvRecommendationInfo.text = getString(
-            R.string.route_combined_summary_format,
-            if (result.privateVehicleMode == PrivateVehicleMode.MOTOR) {
-                getString(R.string.route_private_motor)
-            } else {
-                getString(R.string.route_private_car)
-            },
-            result.originStop.stopName,
-            result.destinationStop.stopName,
-            formatRupiah(result.metrics.estimatedBbm),
-            formatRupiah(result.metrics.estimatedFare)
-        )
+        binding.tvPriorityLabel.text = when (pref) {
+            com.example.naikapa.data.model.SortPreference.FASTEST          -> "TERCEPAT"
+            com.example.naikapa.data.model.SortPreference.CHEAPEST         -> "TERHEMAT"
+            com.example.naikapa.data.model.SortPreference.MIN_WALKING      -> "MINIM JALAN KAKI"
+            com.example.naikapa.data.model.SortPreference.FEWEST_TRANSFERS -> "MINIM TRANSIT"
+        }
+        routeResultAdapter.submitList(listOf(scoredRoute))
         showRecommendationCard()
         toast(getString(R.string.route_combined_ready))
     }

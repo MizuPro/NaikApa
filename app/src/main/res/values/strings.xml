@@ -159,4 +159,18 @@
     <string name="route_combined_error">Gagal menghitung rute gabungan.</string>
     <string name="route_combined_requires_coordinates">Gunakan lokasi asal dan pilih tujuan terlebih dahulu.</string>
     <string name="route_combined_summary_format">%1$s ke %2$s, lanjut transit ke %3$s. BBM %4$s, tarif %5$s.</string>
+
+    <!-- Recommendation Engine -->
+    <string name="route_recommendation_loading">Menghitung rekomendasi terbaik...</string>
+    <string name="route_recommendation_ready">Rekomendasi siap</string>
+    <string name="route_recommendation_not_found">Tidak ada rekomendasi yang ditemukan untuk pilihan ini.</string>
+    <string name="recommendation_score_label">Skor Kecocokan</string>
+    <string name="recommendation_main_label">Rekomendasi Utama</string>
+    <string name="recommendation_alt_label_format">Alternatif %1$d</string>
+    <string name="recommendation_disruption_warning">⚠ Ada laporan gangguan aktif pada rute ini.</string>
+    <string name="recommendation_priority_fastest">TERCEPAT</string>
+    <string name="recommendation_priority_cheapest">TERHEMAT</string>
+    <string name="recommendation_priority_min_walking">MINIM JALAN KAKI</string>
+    <string name="recommendation_priority_min_transit">MINIM TRANSIT</string>
+
 </resources>

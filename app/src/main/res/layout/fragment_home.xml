@@ -803,7 +803,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 5. Bottom Recommendation Card -->
+    <!-- 5. Bottom Recommendation Panel -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRecommendation"
         android:layout_width="match_parent"
@@ -824,12 +824,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title & Badge -->
+            <!-- Header: Judul + label prioritas -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -840,343 +841,30 @@
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
-                <!-- Badge Tercepat -->
-                <com.google.android.material.card.MaterialCardView
+                <TextView
+                    android:id="@+id/tvPriorityLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/colorAccentOrangeLight"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="8dp"
-                        android:paddingTop="3dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="3dp"
-                        android:text="TERCEPAT"
-                        android:textColor="@color/colorAccentOrange"
-                        android:textSize="9sp"
-                        android:textStyle="bold" />
-
-                </com.google.android.material.card.MaterialCardView>
+                    android:paddingStart="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="@color/colorAccentOrange"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:background="@color/colorAccentOrangeLight"
+                    tools:text="TERCEPAT" />
 
             </LinearLayout>
 
-            <!-- Column Matrix Grid Details -->
-            <LinearLayout
+            <!-- RecyclerView untuk daftar rekomendasi -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecommendations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
-
-                <!-- Estimasi Waktu -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Estimasi Waktu"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvRecommendationTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/estimasi_waktu_val"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/estimasi_waktu_sub"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="9sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/colorBorder" />
-
-                <!-- Estimasi Biaya -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Estimasi Biaya"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvRecommendationCost"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/estimasi_biaya_val"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/estimasi_biaya_sub"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="9sp" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/colorBorder" />
-
-                <!-- Jarak Jalan Kaki -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Jalan Kaki"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvRecommendationWalking"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/jarak_jalan_kaki_val"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/jarak_jalan_kaki_sub"
-                        android:textColor="@color/colorSecondary"
-                        android:textSize="9sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/colorBorder" />
-
-                <!-- Jumlah Transit -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Transit"
-                        android:textColor="@color/colorTextSecondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvRecommendationTransit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/jumlah_transit_val"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Efisien"
-                        android:textColor="@color/colorSecondary"
-                        android:textSize="9sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
-                android:background="@color/colorBorder" />
-
-            <!-- Route Timeline Visual representation (SUPER PREMIUM FEATURE) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
-
-                <!-- Step 1: Jalan Kaki -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_person"
-                        app:tint="@color/colorWalking"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="150m"
-                        android:textColor="@color/colorWalking"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <!-- Arrow -->
-                <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_register"
-                    android:rotation="270"
-                    app:tint="@color/colorTextHint"
-                    tools:ignore="ContentDescription" />
-
-                <!-- Step 2: KRL -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/colorPrimaryLight"
-                    app:cardCornerRadius="6dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="6dp"
-                        android:paddingTop="3dp"
-                        android:paddingEnd="6dp"
-                        android:paddingBottom="3dp">
-
-                        <ImageView
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:src="@drawable/ic_train"
-                            app:tint="@color/colorKRL"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="KRL Commuter Line"
-                            android:textColor="@color/colorKRL"
-                            android:textSize="9sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Arrow -->
-                <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_register"
-                    android:rotation="270"
-                    app:tint="@color/colorTextHint"
-                    tools:ignore="ContentDescription" />
-
-                <!-- Step 3: TransJakarta -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardBackgroundColor="#FEE2E2"
-                    app:cardCornerRadius="6dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="6dp"
-                        android:paddingTop="3dp"
-                        android:paddingEnd="6dp"
-                        android:paddingBottom="3dp">
-
-                        <ImageView
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:src="@drawable/ic_bus"
-                            app:tint="@color/colorTransjakarta"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="TJ Koridor 9"
-                            android:textColor="@color/colorTransjakarta"
-                            android:textSize="9sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
-
-            <!-- Helpful Info Description -->
-            <TextView
-                android:id="@+id/tvRecommendationInfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/route_info"
-                android:textColor="@color/colorTextSecondary"
-                android:textSize="11sp" />
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_route_recommendation" />
 
         </LinearLayout>
 

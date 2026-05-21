@@ -53,6 +53,42 @@ object AppConstants {
     const val COMBINED_ROUTE_DESTINATION_RADIUS_M = 2500.0
     const val WALKING_SECONDS_PER_METER = 0.9
 
+    // ── Recommendation scoring ────────────────────────────────────────────────
+    // Bobot per dimensi untuk setiap prioritas (total = 100)
+    // Format: SCORE_W_<PRIORITAS>_<DIMENSI>
+    const val SCORE_W_FASTEST_TIME      = 45
+    const val SCORE_W_FASTEST_COST      = 15
+    const val SCORE_W_FASTEST_WALKING   = 15
+    const val SCORE_W_FASTEST_TRANSIT   = 15
+    const val SCORE_W_FASTEST_DISRUPTION = 10
+
+    const val SCORE_W_CHEAPEST_COST     = 45
+    const val SCORE_W_CHEAPEST_TIME     = 20
+    const val SCORE_W_CHEAPEST_WALKING  = 15
+    const val SCORE_W_CHEAPEST_TRANSIT  = 10
+    const val SCORE_W_CHEAPEST_DISRUPTION = 10
+
+    const val SCORE_W_MINWALK_WALKING   = 45
+    const val SCORE_W_MINWALK_TIME      = 20
+    const val SCORE_W_MINWALK_COST      = 15
+    const val SCORE_W_MINWALK_TRANSIT   = 10
+    const val SCORE_W_MINWALK_DISRUPTION = 10
+
+    const val SCORE_W_MINTRANSIT_TRANSIT  = 45
+    const val SCORE_W_MINTRANSIT_TIME     = 20
+    const val SCORE_W_MINTRANSIT_COST     = 15
+    const val SCORE_W_MINTRANSIT_WALKING  = 10
+    const val SCORE_W_MINTRANSIT_DISRUPTION = 10
+
+    // Penalti gangguan aktif (dikurangi dari skor)
+    const val SCORE_DISRUPTION_PENALTY  = 15
+
+    // Referensi normalisasi (nilai "buruk" = skor 0 untuk dimensi tersebut)
+    const val SCORE_REF_MAX_DURATION_SEC   = 7200   // 2 jam
+    const val SCORE_REF_MAX_COST_IDR       = 50000  // Rp 50.000
+    const val SCORE_REF_MAX_WALKING_M      = 3000   // 3 km
+    const val SCORE_REF_MAX_TRANSIT_COUNT  = 5      // 5 kali transit
+
     // Transit fares
     const val FARE_TRANSJAKARTA_FLAT = 3500
     const val FARE_KRL_BASE = 3000
