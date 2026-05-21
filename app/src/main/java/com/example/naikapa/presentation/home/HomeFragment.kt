@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.naikapa.BuildConfig
 import com.example.naikapa.R
+import com.example.naikapa.common.applyStatusBarTopPadding
 import com.example.naikapa.common.AppConstants
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
@@ -205,6 +206,8 @@ class HomeFragment : Fragment() {
         setupDestinationSearch()
         setupRouteActions()
         setupPanelToggle()
+        
+        binding.cardHeader.applyStatusBarTopPadding()
     }
 
     private fun initMap() {
@@ -260,59 +263,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupTransitModes() {
-        // Daftarkan semua Card moda transit
-        modeCards = listOf(
-            binding.modeCampur,
-            binding.modeTJ,
-            binding.modeKRL,
-            binding.modeMRT,
-            binding.modeLRT,
-            binding.modeMotor,
-            binding.modeMobil
-        )
-
-        // Set klik listener untuk masing-masing card moda
-        modeCards.forEach { card ->
-            card.setOnClickListener {
-                selectTransitMode(card)
+        binding.chipGroupModes.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
+                selectedModeCardId = checkedIds.first()
             }
         }
-    }
-
-    private fun selectTransitMode(selectedCard: MaterialCardView) {
-        selectedModeCardId = selectedCard.id
-        modeCards.forEach { card ->
-            val innerLayout = card.getChildAt(0) as ViewGroup
-            val iconView = innerLayout.getChildAt(0) as ImageView
-            val textView = innerLayout.getChildAt(1) as TextView
-
-            if (card == selectedCard) {
-                // Tampilan Aktif
-                card.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimaryLight))
-                card.strokeColor = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
-                card.strokeWidth = dpToPx(1.5f)
-                iconView.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
-                textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
-            } else {
-                // Tampilan Inaktif
-                card.setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
-                card.strokeColor = ContextCompat.getColor(requireContext(), R.color.colorCardOutline)
-                card.strokeWidth = dpToPx(1f)
-                
-                // Cari warna ikon default berdasarkan jenis modanya
-                val defaultIconColor = when (card.id) {
-                    R.id.modeTJ -> R.color.colorTransjakarta
-                    R.id.modeKRL -> R.color.colorKRL
-                    R.id.modeMRT -> R.color.colorMRT
-                    R.id.modeLRT -> R.color.colorLRT
-                    R.id.modeMotor -> R.color.colorMotor
-                    R.id.modeMobil -> R.color.colorMobil
-                    else -> R.color.colorTextSecondary
-                }
-                iconView.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), defaultIconColor))
-                textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextPrimary))
-            }
-        }
+        selectedModeCardId = R.id.modeCampur
     }
 
     private fun setupDestinationSearch() {
@@ -532,43 +488,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupSortChips() {
-        val chips = listOf(
-            binding.chipTercepat,
-            binding.chipTerhemat,
-            binding.chipMinimJalanKaki,
-            binding.chipMinimTransit
-        )
-        chips.forEach { chip ->
-            chip.setOnClickListener {
-                chips.forEach { it.isChecked = it == chip }
-                updateChipStyles()
-
-                // Jika hasil rekomendasi sudah tampil, cari rute ulang secara otomatis dengan prioritas baru
-                if (selectedOrigin != null && selectedDestination != null && binding.scrollRecommendations.visibility == View.VISIBLE) {
-                    handleFindRouteClick()
-                }
-            }
-        }
-        updateChipStyles()
-    }
-
-    private fun updateChipStyles() {
-        val chips = listOf(
-            binding.chipTercepat,
-            binding.chipTerhemat,
-            binding.chipMinimJalanKaki,
-            binding.chipMinimTransit
-        )
-        chips.forEach { chip ->
-            if (chip.isChecked) {
-                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorAccentOrangeLight))
-                chip.chipStrokeWidth = 0f
-                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorAccentOrange))
-            } else {
-                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
-                chip.chipStrokeWidth = dpToPx(1f).toFloat()
-                chip.chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorCardOutline))
-                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextPrimary))
+        binding.chipGroupCriteria.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (selectedOrigin != null && selectedDestination != null && binding.scrollRecommendations.visibility == View.VISIBLE) {
+                handleFindRouteClick()
             }
         }
     }
@@ -1784,25 +1706,17 @@ class HomeFragment : Fragment() {
                 mode.contains("LRT", ignoreCase = true) -> binding.modeLRT
                 else -> binding.modeCampur
             }
-            selectTransitMode(targetCard)
+            targetCard.isChecked = true
         }
 
         // Terapkan priority jika ada
         req.pendingPriority?.let { priority ->
-            val chips = listOf(
-                binding.chipTercepat,
-                binding.chipTerhemat,
-                binding.chipMinimJalanKaki,
-                binding.chipMinimTransit
-            )
-            chips.forEach { it.isChecked = false }
             when {
                 priority.contains("Hemat", ignoreCase = true) -> binding.chipTerhemat.isChecked = true
                 priority.contains("Jalan", ignoreCase = true) -> binding.chipMinimJalanKaki.isChecked = true
                 priority.contains("Transit", ignoreCase = true) -> binding.chipMinimTransit.isChecked = true
                 else -> binding.chipTercepat.isChecked = true
             }
-            updateChipStyles()
         }
 
         req.clear()

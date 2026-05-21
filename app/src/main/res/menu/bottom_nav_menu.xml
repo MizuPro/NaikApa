@@ -6,7 +6,7 @@
         android:title="Beranda" />
     <item
         android:id="@+id/statusGangguanFragment"
-        android:icon="@drawable/ic_warning"
+        android:icon="@drawable/ic_status_alert"
         android:title="Status" />
     <item
         android:id="@+id/riwayatFragment"

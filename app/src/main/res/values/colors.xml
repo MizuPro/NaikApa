@@ -3,13 +3,26 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Primary & Secondary (NaikApa Brand) -->
-    <color name="colorPrimary">#1A6FE8</color>
-    <color name="colorPrimaryDark">#1254B5</color>
-    <color name="colorPrimaryLight">#E8F0FE</color>
+    <!-- Brand Colors (NaikApa Brand) -->
+    <color name="colorPrimary">#FA6206</color>
+    <color name="colorPrimaryDark">#D35400</color>
+    <color name="colorPrimaryLight">#FFEBE0</color>
+    <color name="colorSecondary">#1A6FE8</color>
+
+    <!-- Semantic Colors -->
+    <color name="colorInfo">#1A6FE8</color>
+    <color name="colorIconCircleBg">#F1F5F9</color>
+    <color name="colorAmber">#F59E0B</color>
+    <color name="colorAmberLight">#FEF3C7</color>
+    <color name="colorDestructive">#DC2626</color>
+    <color name="colorDestructiveLight">#FEE2E2</color>
+    <color name="colorNeutralButton">#64748B</color>
+
+    <!-- Legacy Tokens (Backward Compat) -->
     <color name="colorAccentOrange">#FF6F00</color>
     <color name="colorAccentOrangeLight">#FFF3E0</color>
-    <color name="colorSecondary">#00C2A8</color>
+
+    <!-- Surface Colors -->
     <color name="colorBackground">#F4F6FA</color>
     <color name="colorSurface">#FFFFFF</color>
     <color name="colorError">#E53935</color>

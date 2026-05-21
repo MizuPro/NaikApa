@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     tools:context=".presentation.home.HomeFragment">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <!-- 1. Peta osmdroid sebagai background utama -->
     <org.osmdroid.views.MapView
@@ -23,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="16dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="16dp"
@@ -94,8 +98,7 @@
                     android:layout_gravity="top|end"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
-                    android:background="@drawable/ic_warning"
-                    android:backgroundTint="@color/colorAccentOrange" />
+                    android:background="@drawable/bg_notification_dot" />
 
             </FrameLayout>
 
@@ -216,8 +219,7 @@
                     android:layout_width="10dp"
                     android:layout_height="10dp"
                     android:layout_marginStart="4dp"
-                    android:background="@drawable/ic_warning"
-                    android:backgroundTint="@color/colorPrimary"
+                    android:background="@drawable/bg_dot_origin"
                     app:layout_constraintBottom_toTopOf="@id/lineConnector"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="@id/layoutOriginField" />
@@ -236,8 +238,7 @@
                     android:id="@+id/dotEnd"
                     android:layout_width="10dp"
                     android:layout_height="10dp"
-                    android:background="@drawable/ic_warning"
-                    android:backgroundTint="@color/colorAccentOrange"
+                    android:background="@drawable/bg_notification_dot"
                     app:layout_constraintBottom_toBottomOf="@id/layoutDestinationField"
                     app:layout_constraintEnd_toEndOf="@id/dotStart"
                     app:layout_constraintStart_toStartOf="@id/dotStart"
@@ -344,7 +345,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/search_tujuan"
-                        android:textColor="@color/colorAccentOrange"
+                        android:textColor="@color/colorAmber"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -463,293 +464,72 @@
                 android:layout_height="wrap_content"
                 android:scrollbars="none">
 
-                <LinearLayout
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupModes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingBottom="4dp">
-
-                    <!-- Mode: Campur (Aktif Pertama) -->
-                    <com.google.android.material.card.MaterialCardView
+                    android:paddingBottom="4dp"
+                    app:singleSelection="true"
+                    app:singleLine="true">
+                    
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeCampur"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/colorPrimaryLight"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1.5dp"
-                        app:strokeColor="@color/colorPrimary">
+                        android:text="Campur"
+                        app:chipIcon="@drawable/ic_directions"
+                        android:checked="true" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_directions"
-                                app:tint="@color/colorPrimary"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="Campur"
-                                android:textColor="@color/colorPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: TransJakarta -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeTJ"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="TransJakarta"
+                        app:chipIcon="@drawable/ic_bus" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_bus"
-                                app:tint="@color/colorTransjakarta"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="TransJakarta"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: KRL -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeKRL"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="KRL"
+                        app:chipIcon="@drawable/ic_train" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_train"
-                                app:tint="@color/colorKRL"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="KRL"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: MRT -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeMRT"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="MRT"
+                        app:chipIcon="@drawable/ic_train" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_train"
-                                app:tint="@color/colorMRT"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="MRT"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: LRT -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeLRT"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="LRT"
+                        app:chipIcon="@drawable/ic_train" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_train"
-                                app:tint="@color/colorLRT"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="LRT"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: Motor -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeMotor"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="Motor"
+                        app:chipIcon="@drawable/ic_motorcycle" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_motorcycle"
-                                app:tint="@color/colorMotor"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="Motor"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Mode: Mobil -->
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.chip.Chip
                         android:id="@+id/modeMobil"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/colorCardOutline">
+                        android:text="Mobil"
+                        app:chipIcon="@drawable/ic_car" />
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="6dp">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/ic_car"
-                                app:tint="@color/colorMobil"
-                                tools:ignore="ContentDescription" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="Mobil"
-                                android:textColor="@color/colorTextPrimary"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
+                </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
             <!-- Horizontal Route Criteria Scroll -->
@@ -761,11 +541,13 @@
                 android:layout_marginBottom="12dp"
                 android:scrollbars="none">
 
-                <LinearLayout
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupCriteria"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingBottom="4dp">
+                    android:paddingBottom="4dp"
+                    app:singleSelection="true"
+                    app:singleLine="true">
 
                     <!-- Tercepat (Active) -->
                     <com.google.android.material.chip.Chip
@@ -780,7 +562,7 @@
                         app:chipCornerRadius="16dp"
                         app:chipStrokeWidth="0dp"
                         app:chipBackgroundColor="@color/colorAccentOrangeLight"
-                        android:textColor="@color/colorAccentOrange" />
+                        android:textColor="@color/colorAmber" />
 
                     <!-- Terhemat -->
                     <com.google.android.material.chip.Chip
@@ -823,7 +605,7 @@
                         app:chipStrokeColor="@color/colorCardOutline"
                         android:textColor="@color/colorTextPrimary" />
 
-                </LinearLayout>
+                </com.google.android.material.chip.ChipGroup>
 
             </HorizontalScrollView>
 
@@ -906,6 +688,8 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+</androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- 5. Bottom Recommendation Panel -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRecommendation"
@@ -913,13 +697,16 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:behavior_peekHeight="120dp"
+        app:behavior_hideable="false"
+        
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp"
         app:strokeWidth="1dp"
         app:strokeColor="@color/colorCardOutline"
-        app:layout_constraintBottom_toBottomOf="parent">
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -929,6 +716,14 @@
             android:paddingTop="14dp"
             android:paddingEnd="16dp"
             android:paddingBottom="16dp">
+            <!-- Drag Handle -->
+            <View
+                android:layout_width="32dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_bottom_sheet_handle" />
+
 
             <!-- Header: Judul + label prioritas + tombol tutup -->
             <LinearLayout
@@ -966,7 +761,7 @@
                         android:paddingTop="3dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="3dp"
-                        android:textColor="@color/colorAccentOrange"
+                        android:textColor="@color/colorAmber"
                         android:textSize="9sp"
                         android:textStyle="bold"
                         tools:text="TERCEPAT" />
@@ -1027,5 +822,4 @@
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

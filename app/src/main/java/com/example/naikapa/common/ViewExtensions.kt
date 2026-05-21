@@ -19,3 +19,29 @@ fun View.invisible() {
 fun Fragment.toast(message: String) {
     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 }
+
+fun View.applyStatusBarTopPadding() {
+    androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
+        val insets = windowInsets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        view.setPadding(
+            view.paddingLeft,
+            insets.top,
+            view.paddingRight,
+            view.paddingBottom
+        )
+        windowInsets
+    }
+}
+
+fun View.applyNavigationBarBottomPadding() {
+    androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
+        val insets = windowInsets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        view.setPadding(
+            view.paddingLeft,
+            view.paddingTop,
+            view.paddingRight,
+            insets.bottom
+        )
+        windowInsets
+    }
+}

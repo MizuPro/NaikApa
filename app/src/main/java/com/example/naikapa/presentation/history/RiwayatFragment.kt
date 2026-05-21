@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.R
+import com.example.naikapa.common.applyStatusBarTopPadding
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
 import com.example.naikapa.data.local.HistoryDao
@@ -89,39 +90,25 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        binding.tabFavorit.setOnClickListener { selectTab(ActiveTab.FAVORIT) }
-        binding.tabRiwayatPencarian.setOnClickListener { selectTab(ActiveTab.PENCARIAN) }
-        binding.tabRiwayatPerjalanan.setOnClickListener { selectTab(ActiveTab.PERJALANAN) }
+        binding.tabLayoutHistory.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> selectTab(ActiveTab.FAVORIT)
+                    1 -> selectTab(ActiveTab.PENCARIAN)
+                    2 -> selectTab(ActiveTab.PERJALANAN)
+                }
+            }
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+        })
         binding.btnClearAll.setOnClickListener { confirmClearAll() }
     }
 
     private fun selectTab(tab: ActiveTab) {
         activeTab = tab
-        updateTabStyles()
         loadCurrentTab()
     }
 
-    private fun updateTabStyles() {
-        val activeColor = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
-        val inactiveColor = ContextCompat.getColor(requireContext(), R.color.colorTextSecondary)
-        val activeBg = ContextCompat.getColor(requireContext(), R.color.colorPrimaryLight)
-        val inactiveBg = android.graphics.Color.TRANSPARENT
-
-        listOf(
-            binding.tabFavorit to (activeTab == ActiveTab.FAVORIT),
-            binding.tabRiwayatPencarian to (activeTab == ActiveTab.PENCARIAN),
-            binding.tabRiwayatPerjalanan to (activeTab == ActiveTab.PERJALANAN)
-        ).forEach { (tab, isActive) ->
-            tab.setTextColor(if (isActive) activeColor else inactiveColor)
-            tab.setBackgroundColor(if (isActive) activeBg else inactiveBg)
-            tab.background = if (isActive) {
-                android.graphics.drawable.GradientDrawable().apply {
-                    setColor(activeBg)
-                    cornerRadius = resources.displayMetrics.density * 8
-                }
-            } else null
-        }
-    }
 
     private fun loadCurrentTab() {
         val userId = sessionManager.getUserId()

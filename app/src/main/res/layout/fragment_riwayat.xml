@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="16dp"
-            android:paddingTop="48dp"
+            android:paddingTop="16dp"
             android:paddingEnd="16dp"
             android:paddingBottom="24dp">
 
@@ -106,59 +106,30 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Segmented Tab Control -->
-            <com.google.android.material.card.MaterialCardView
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayoutHistory"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/colorSurfaceVariant"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/colorBorder"
-                app:strokeWidth="1dp">
+                style="@style/NaikApaSegmentedTab"
+                app:tabBackground="@drawable/bg_segment_unselected">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="4dp">
+                    android:text="@string/history_tab_favorit" />
 
-                    <TextView
-                        android:id="@+id/tabFavorit"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="@string/history_tab_favorit"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/bg_segment_selected"
-                        android:textColor="@color/white" />
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history_tab_pencarian" />
 
-                    <TextView
-                        android:id="@+id/tabRiwayatPencarian"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="@string/history_tab_pencarian"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/bg_segment_unselected"
-                        android:textColor="@color/colorTextSecondary" />
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history_tab_perjalanan" />
 
-                    <TextView
-                        android:id="@+id/tabRiwayatPerjalanan"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="@string/history_tab_perjalanan"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:background="@drawable/bg_segment_unselected"
-                        android:textColor="@color/colorTextSecondary" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.tabs.TabLayout>
 
             <!-- Loading indicator -->
             <com.google.android.material.progressindicator.LinearProgressIndicator

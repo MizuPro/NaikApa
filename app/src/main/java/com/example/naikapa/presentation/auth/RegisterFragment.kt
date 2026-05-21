@@ -45,9 +45,11 @@ class RegisterFragment : Fragment() {
         // Toggling checkboxes when the preference cards are clicked (premium UX)
         binding.cardMotor.setOnClickListener {
             binding.cbMotor.isChecked = !binding.cbMotor.isChecked
+            updateCardState(binding.cardMotor, binding.cbMotor.isChecked)
         }
         binding.cardMobil.setOnClickListener {
             binding.cbMobil.isChecked = !binding.cbMobil.isChecked
+            updateCardState(binding.cardMobil, binding.cbMobil.isChecked)
         }
 
         binding.btnRegister.setOnClickListener {
@@ -114,5 +116,18 @@ class RegisterFragment : Fragment() {
         super.onDestroyView()
         if (::dbHelper.isInitialized) dbHelper.close()
         _binding = null
+    }
+
+    private fun updateCardState(card: com.google.android.material.card.MaterialCardView, isChecked: Boolean) {
+        val context = requireContext()
+        if (isChecked) {
+            card.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(context, com.example.naikapa.R.color.colorPrimaryLight))
+            card.strokeColor = androidx.core.content.ContextCompat.getColor(context, com.example.naikapa.R.color.colorPrimary)
+            card.strokeWidth = resources.getDimensionPixelSize(com.example.naikapa.R.dimen.stroke_medium)
+        } else {
+            card.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(context, com.example.naikapa.R.color.colorSurface))
+            card.strokeColor = androidx.core.content.ContextCompat.getColor(context, com.example.naikapa.R.color.colorCardOutline)
+            card.strokeWidth = resources.getDimensionPixelSize(com.example.naikapa.R.dimen.stroke_thin)
+        }
     }
 }
