@@ -18,7 +18,7 @@ import java.util.Locale
 class RouteResultAdapter(
     private val context: Context,
     private var items: List<ScoredRoute> = emptyList(),
-    private val onItemClick: ((ScoredRoute) -> Unit)? = null
+    var onItemClick: ((ScoredRoute) -> Unit)? = null
 ) : RecyclerView.Adapter<RouteResultAdapter.ViewHolder>() {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {

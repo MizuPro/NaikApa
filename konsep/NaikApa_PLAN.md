@@ -656,10 +656,10 @@ Catatan: Sebagian besar komponen fungsional Home sudah diimplementasikan di fase
 
 ---
 
-## Fase 16: UI Hasil Rekomendasi dan Detail Rute
+## Fase 16: UI Hasil Rekomendasi dan Detail Rute ✅ SELESAI
 
 ### Status Planning
-- [x] Plan eksekusi Fase 16 sebagian sudah diimplementasikan di Fase 14.
+- [x] Plan eksekusi Fase 16 sudah diimplementasikan sepenuhnya (termasuk halaman detail langkah rute).
 
 ### Tujuan
 Menampilkan hasil rute secara jelas dan mudah dipahami.
@@ -675,19 +675,19 @@ Menampilkan hasil rute secara jelas dan mudah dipahami.
 8. [x] Menampilkan jumlah transit.
 9. [x] Menampilkan alasan rekomendasi.
 10. [x] Menampilkan warning jika ada gangguan.
-11. Membuat halaman detail langkah perjalanan.
+11. [x] Membuat halaman detail langkah perjalanan.
 12. [x] Menampilkan peta dan polyline.
 
 ### Output
 1. [x] Hasil rekomendasi tampil rapi.
 2. [x] User dapat membandingkan pilihan rute.
-3. User dapat melihat detail rute.
+3. [x] User dapat melihat detail rute.
 4. [x] User dapat membuka peta rute.
 
 ### Kriteria Selesai
 Fase ini selesai jika hasil rekomendasi utama dan alternatif dapat ditampilkan lengkap.
 
-Catatan: Card rekomendasi (utama + alternatif), skor, alasan, warning gangguan, dan peta sudah diimplementasikan di Fase 14. Yang tersisa adalah halaman detail langkah perjalanan (step-by-step route detail page).
+Catatan: Card rekomendasi (utama + alternatif), skor, alasan, warning gangguan, dan peta sudah diimplementasikan di Fase 14. Halaman detail langkah perjalanan (step-by-step route detail page) selesai diimplementasikan penuh.
 
 ---
 
@@ -1201,4 +1201,39 @@ FASE 15 menambahkan pemolesan visual UI/UX yang premium pada halaman Home. Fitur
 | Efek visual *ripple* pada item kartu rekomendasi | ✅ Ditambahkan efek ripple di foreground kartu rute |
 | Pembatasan tinggi panel rekomendasi agar tidak menutupi peta | ✅ Dibungkus dalam `NestedScrollView` dengan batasan tinggi maks `320dp` |
 | Build debug proyek berhasil dikompilasi | ✅ Diverifikasi sukses dengan `gradlew assembleDebug` |
+
+---
+
+## 14. Log Implementasi FASE 16 — UI Detail Rute
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 16 melengkapi halaman hasil rute dengan menambahkan detail langkah perjalanan yang terperinci (*step-by-step route detail page*), timeline visual perjalanan dengan dot & line connector yang dinamis sesuai moda aktif, visualisasi peta interaktif osmdroid mini dengan penanda lokasi serta rute polyline berwarna, dan fungsionalitas penyimpanan ke database favorit (`SavedTripDao`) bagi pengguna terotentikasi.
+
+### Checklist Aktivitas FASE 16
+
+- [x] `RouteDetailSharedState.kt` — Dibuat untuk menyimpan referensi rute terpilih (`ScoredRoute`), lokasi asal (`LocationPoint`), dan tujuan (`SearchLocation`) untuk navigasi antar fragment.
+- [x] `item_route_step.xml` — Layout item timeline dengan visual connector kiri (dot & line) berwarna dinamis, ikon moda, teks penjelas rute, stasiun asal/tujuan, estimasi durasi, dan jarak tempuh.
+- [x] `RouteStepAdapter.kt` — RecyclerView adapter untuk menampilkan langkah demi langkah perjalanan secara visual berbasis model data `DetailStep`.
+- [x] `fragment_route_detail.xml` — Desain layout detail rute dengan format scroll yang menyajikan summary card (skor & alasan), 4 metrik utama (durasi, tarif/BBM, jalan kaki, transit), timeline langkah perjalanan terperinci, peta osmdroid mini, dan tombol simpan favorit.
+- [x] `RouteDetailFragment.kt` — Logika pengendali halaman detail rute, pembacaan shared state, pembangunan model timeline perjalanan terurai (transit, kendaraan pribadi, gabungan), visualisasi peta interaktif (marker & polyline dinamis), navigasi kembali, dan penyimpanan rute favorit ke database via `SavedTripDao`.
+- [x] `nav_main.xml` — Registrasi `RouteDetailFragment` beserta aksi navigasi dari `HomeFragment` ke `RouteDetailFragment`.
+- [x] `HomeFragment.kt` & `RouteResultAdapter.kt` — Integrasi aksi klik item hasil rute di RecyclerView utama untuk menyimpan data ke shared state dan meluncurkan navigasi ke halaman detail rute.
+- [x] `strings.xml` — Penambahan string resource pendukung halaman detail (format, tombol favorit, marker peta, dan label).
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| Navigasi dari halaman Home ke halaman Detail Rute saat card ditekan | ✅ Diimplementasikan di HomeFragment dan RouteResultAdapter |
+| Tampilan ringkasan header (nama rute, persentase cocok, alasan rekomendasi) | ✅ Ditampilkan pada bindSummaryCard() |
+| Tampilan 4 metrik utama (estimasi waktu, estimasi biaya/BBM, jarak jalan kaki, jumlah transit) | ✅ Ditampilkan pada bindMetrics() dengan format ramah pengguna |
+| Timeline visual perjalanan step-by-step dengan konektor dinamis | ✅ Dikelola oleh RouteStepAdapter berdasarkan parser buildDetailSteps() |
+| Peta mini osmdroid dengan marker dan polyline berwarna dinamis | ✅ Diintegrasikan dengan peta CartoDB Positron di setupMap() |
+| Tombol "Simpan ke Favorit" terhubung ke SavedTripDao secara asinkron | ✅ Setup setupFavoriteButton() terintegrasi dengan UserDao & Room/SQLite |
+| Navigasi kembali (back) berjalan dengan lancar | ✅ Ditangani oleh setupToolbar() popBackStack() |
+| Proyek berhasil dikompilasi tanpa ada kesalahan build | ✅ Terverifikasi dengan `gradlew assembleDebug` |
 

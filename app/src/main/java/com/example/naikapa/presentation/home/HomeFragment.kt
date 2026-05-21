@@ -171,6 +171,14 @@ class HomeFragment : Fragment() {
 
         // Setup RecyclerView rekomendasi
         routeResultAdapter = RouteResultAdapter(requireContext())
+        routeResultAdapter.onItemClick = { scoredRoute ->
+            com.example.naikapa.presentation.route_detail.RouteDetailSharedState.selectedRoute = scoredRoute
+            com.example.naikapa.presentation.route_detail.RouteDetailSharedState.origin = selectedOrigin
+            com.example.naikapa.presentation.route_detail.RouteDetailSharedState.destination = selectedDestination
+            androidx.navigation.fragment.NavHostFragment.findNavController(this@HomeFragment).navigate(
+                R.id.action_homeFragment_to_routeDetailFragment
+            )
+        }
         binding.rvRecommendations.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = routeResultAdapter

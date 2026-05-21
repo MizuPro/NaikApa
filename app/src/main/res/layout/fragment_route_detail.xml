@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+
+    <!-- 1. Custom Toolbar Premium -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="0dp"
+        app:strokeWidth="0dp"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                app:tint="@color/colorTextPrimary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tvToolbarTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Detail Perjalanan"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorTextPrimary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/btnBack" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 2. Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/cardToolbar"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Card Summary / Header -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <!-- Title & Score Match -->
+                    <TextView
+                        android:id="@+id/tvSummaryTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorTextPrimary"
+                        tools:text="TransJakarta + KRL"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/tvMatchScore" />
+
+                    <TextView
+                        android:id="@+id/tvMatchScore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_launcher_background"
+                        android:backgroundTint="@color/colorAccentOrangeLight"
+                        android:textColor="@color/colorAccentOrange"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        tools:text="92% Cocok"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <!-- Alasan Rekomendasi -->
+                    <TextView
+                        android:id="@+id/tvSummaryReason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="13sp"
+                        android:textColor="@color/colorTextSecondary"
+                        tools:text="Rute ini paling hemat biaya dan minim transit, namun memerlukan sedikit jalan kaki tambahan."
+                        app:layout_constraintTop_toBottomOf="@id/tvSummaryTitle" />
+
+                    <!-- Divider -->
+                    <View
+                        android:id="@+id/dividerSummary"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/colorBorder"
+                        android:layout_marginTop="12dp"
+                        app:layout_constraintTop_toBottomOf="@id/tvSummaryReason" />
+
+                    <!-- Metrics Section -->
+                    <GridLayout
+                        android:id="@+id/gridMetrics"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:columnCount="2"
+                        android:rowCount="2"
+                        android:useDefaultMargins="true"
+                        app:layout_constraintTop_toBottomOf="@id/dividerSummary">
+
+                        <!-- Duration -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Estimasi Waktu"
+                                android:textSize="11sp"
+                                android:textColor="@color/colorTextSecondary" />
+                            <TextView
+                                android:id="@+id/tvDurationValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorTextPrimary"
+                                tools:text="45 mnt" />
+                        </LinearLayout>
+
+                        <!-- Fare / BBM -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Estimasi Biaya"
+                                android:textSize="11sp"
+                                android:textColor="@color/colorTextSecondary" />
+                            <TextView
+                                android:id="@+id/tvFareValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorTextPrimary"
+                                tools:text="Rp 6.500" />
+                        </LinearLayout>
+
+                        <!-- Walking -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Jalan Kaki"
+                                android:textSize="11sp"
+                                android:textColor="@color/colorTextSecondary" />
+                            <TextView
+                                android:id="@+id/tvWalkingValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorTextPrimary"
+                                tools:text="450 m" />
+                        </LinearLayout>
+
+                        <!-- Transit -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Transit"
+                                android:textSize="11sp"
+                                android:textColor="@color/colorTextSecondary" />
+                            <TextView
+                                android:id="@+id/tvTransitValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorTextPrimary"
+                                tools:text="1x transit" />
+                        </LinearLayout>
+                    </GridLayout>
+
+                    <!-- Warning Disruption (Hidden by default) -->
+                    <LinearLayout
+                        android:id="@+id/layoutDisruptionWarning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/ic_launcher_background"
+                        android:backgroundTint="#FFF0F0"
+                        android:orientation="horizontal"
+                        android:padding="10dp"
+                        android:visibility="gone"
+                        app:layout_constraintTop_toBottomOf="@id/gridMetrics"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/ic_warning"
+                            app:tint="@color/colorError" />
+
+                        <TextView
+                            android:id="@+id/tvDisruptionText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorError"
+                            tools:text="Ada gangguan operasional KRL di Stasiun Manggarai." />
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Map View Container -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardMap"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                app:layout_constraintTop_toBottomOf="@id/cardSummary">
+
+                <org.osmdroid.views.MapView
+                    android:id="@+id/detailMapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Route Timeline Section -->
+            <TextView
+                android:id="@+id/tvTimelineTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Langkah Perjalanan"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorTextPrimary"
+                app:layout_constraintTop_toBottomOf="@id/cardMap"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTimeline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/tvTimelineTitle">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTimelineSteps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    tools:listitem="@layout/item_route_step" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Save Favorite Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveFavorite"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:text="Simpan ke Favorit"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/colorPrimary"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_heart"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:layout_constraintTop_toBottomOf="@id/cardTimeline"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
