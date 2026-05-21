@@ -591,86 +591,103 @@ Status implementasi: selesai. `NearbyTransitStopRepository` mencari kandidat sto
 
 ## Fase 14: Sistem Skor Kecocokan dan Rekomendasi
 
+### Status Planning
+- [x] Plan eksekusi Fase 14 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 14 selesai dikerjakan.
+
 ### Tujuan
 Mengurutkan semua kandidat rute menjadi rekomendasi utama dan alternatif.
 
 ### Aktivitas
-1. Membuat class `RecommendationEngine`.
-2. Mengumpulkan kandidat rute dari transportasi umum, kendaraan pribadi, dan rute gabungan.
-3. Menghitung skor kecocokan.
-4. Memberi penalti waktu, biaya, jalan kaki, transit, dan gangguan.
-5. Memberi bonus sesuai prioritas user.
-6. Mengurutkan hasil dari skor tertinggi.
-7. Memilih rekomendasi utama, alternatif 1, dan alternatif 2.
-8. Membuat alasan rekomendasi secara otomatis.
+1. [x] Membuat class `RecommendationEngine`.
+2. [x] Mengumpulkan kandidat rute dari transportasi umum, kendaraan pribadi, dan rute gabungan.
+3. [x] Menghitung skor kecocokan.
+4. [x] Memberi penalti waktu, biaya, jalan kaki, transit, dan gangguan.
+5. [x] Memberi bonus sesuai prioritas user.
+6. [x] Mengurutkan hasil dari skor tertinggi.
+7. [x] Memilih rekomendasi utama, alternatif 1, dan alternatif 2.
+8. [x] Membuat alasan rekomendasi secara otomatis.
 
 ### Output
-1. Rekomendasi utama tersedia.
-2. Alternatif 1 dan 2 tersedia.
-3. Skor kecocokan tampil.
-4. Alasan rekomendasi tampil.
-5. Prioritas user memengaruhi urutan hasil.
+1. [x] Rekomendasi utama tersedia.
+2. [x] Alternatif 1 dan 2 tersedia.
+3. [x] Skor kecocokan tampil.
+4. [x] Alasan rekomendasi tampil.
+5. [x] Prioritas user memengaruhi urutan hasil.
 
 ### Kriteria Selesai
 Fase ini selesai jika perubahan prioritas dari tercepat ke terhemat atau minim jalan kaki dapat mengubah urutan rekomendasi dengan logis.
+
+Status implementasi: selesai. `RecommendationEngine` mengumpulkan kandidat dari transit, kendaraan pribadi, dan gabungan secara paralel, `RecommendationScorer` menghitung skor 0–100 dengan bobot per prioritas dan penalti gangguan, `RecommendationReasonBuilder` menghasilkan alasan rekomendasi otomatis dalam Bahasa Indonesia, dan `RouteResultAdapter` menampilkan card rekomendasi utama + alternatif di RecyclerView. Unit test (10 test case) dan build debug berhasil dijalankan.
 
 ---
 
 ## Fase 15: UI Home dan Form Pencarian Rute
 
+### Status Planning
+- [x] Plan eksekusi Fase 15 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 15 selesai dikerjakan (UI/UX Polishing).
+
 ### Tujuan
 Membuat halaman utama aplikasi yang nyaman digunakan.
 
 ### Aktivitas
-1. Membuat layout Home.
-2. Membuat pilihan moda.
-3. Membuat pilihan prioritas.
-4. Membuat input lokasi asal.
-5. Membuat tombol gunakan GPS.
-6. Membuat input tujuan.
-7. Membuat tombol cari rute.
-8. Membuat loading state.
-9. Membuat error state jika rute tidak ditemukan.
-10. Membuat desain modern minimalis dengan gaya transport app.
+1. [x] Membuat layout Home.
+2. [x] Membuat pilihan moda.
+3. [x] Membuat pilihan prioritas.
+4. [x] Membuat input lokasi asal.
+5. [x] Membuat tombol gunakan GPS.
+6. [x] Membuat input tujuan.
+7. [x] Membuat tombol cari rute.
+8. [x] Membuat loading state.
+9. [x] Membuat error state jika rute tidak ditemukan.
+10. [x] Membuat desain modern minimalis dengan gaya transport app.
 
 ### Output
-1. Home siap digunakan.
-2. User dapat memilih moda dan prioritas.
-3. User dapat mengisi asal dan tujuan.
-4. User dapat memulai proses cari rute.
+1. [x] Home siap digunakan.
+2. [x] User dapat memilih moda dan prioritas.
+3. [x] User dapat mengisi asal dan tujuan.
+4. [x] User dapat memulai proses cari rute.
 
 ### Kriteria Selesai
 Fase ini selesai jika user dapat menjalankan alur pencarian dari Home sampai ke halaman hasil.
+
+Catatan: Sebagian besar komponen fungsional Home sudah diimplementasikan di fase sebelumnya (Fase 5–14). Yang tersisa untuk Fase 15 adalah polishing UX: loading indicator visual, error state banner, empty state, chip sort visual feedback, dan scroll behavior card rekomendasi.
 
 ---
 
 ## Fase 16: UI Hasil Rekomendasi dan Detail Rute
 
+### Status Planning
+- [x] Plan eksekusi Fase 16 sebagian sudah diimplementasikan di Fase 14.
+
 ### Tujuan
 Menampilkan hasil rute secara jelas dan mudah dipahami.
 
 ### Aktivitas
-1. Membuat card rekomendasi utama.
-2. Membuat card alternatif 1 dan 2.
-3. Menampilkan skor kecocokan.
-4. Menampilkan estimasi waktu.
-5. Menampilkan estimasi biaya.
-6. Menampilkan estimasi BBM.
-7. Menampilkan jarak jalan kaki.
-8. Menampilkan jumlah transit.
-9. Menampilkan alasan rekomendasi.
-10. Menampilkan warning jika ada gangguan.
+1. [x] Membuat card rekomendasi utama.
+2. [x] Membuat card alternatif 1 dan 2.
+3. [x] Menampilkan skor kecocokan.
+4. [x] Menampilkan estimasi waktu.
+5. [x] Menampilkan estimasi biaya.
+6. [x] Menampilkan estimasi BBM.
+7. [x] Menampilkan jarak jalan kaki.
+8. [x] Menampilkan jumlah transit.
+9. [x] Menampilkan alasan rekomendasi.
+10. [x] Menampilkan warning jika ada gangguan.
 11. Membuat halaman detail langkah perjalanan.
-12. Menampilkan peta dan polyline.
+12. [x] Menampilkan peta dan polyline.
 
 ### Output
-1. Hasil rekomendasi tampil rapi.
-2. User dapat membandingkan pilihan rute.
+1. [x] Hasil rekomendasi tampil rapi.
+2. [x] User dapat membandingkan pilihan rute.
 3. User dapat melihat detail rute.
-4. User dapat membuka peta rute.
+4. [x] User dapat membuka peta rute.
 
 ### Kriteria Selesai
 Fase ini selesai jika hasil rekomendasi utama dan alternatif dapat ditampilkan lengkap.
+
+Catatan: Card rekomendasi (utama + alternatif), skor, alasan, warning gangguan, dan peta sudah diimplementasikan di Fase 14. Yang tersisa adalah halaman detail langkah perjalanan (step-by-step route detail page).
 
 ---
 
@@ -1153,4 +1170,35 @@ FASE 8 menambahkan pencarian halte dan stasiun berbasis data GTFS lokal ke fitur
 | Nama stop, agency/moda, dan jarak tampil | ✅ Badge GradientDrawable + address dari buildAddress() |
 | Pilihan GTFS mengisi selectedDestination + marker + history | ✅ selectDestination() dipanggil sama seperti TomTom |
 | Unit test repository lulus | ✅ 11 test case di GtfsStopSearchRepositoryTest |
-| Build debug berhasil | Perlu divalidasi dengan `gradlew assembleDebug` |
+| Build debug berhasil | ✅ Berhasil divalidasi dengan `gradlew assembleDebug` |
+
+---
+
+## 13. Log Implementasi FASE 15 — UI Polishing
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 15 menambahkan pemolesan visual UI/UX yang premium pada halaman Home. Fitur-fitur ini memastikan interaksi pengguna lebih intuitif, dinamis, dan memiliki umpan balik visual yang kokoh.
+
+### Checklist Aktivitas FASE 15
+
+- [x] `strings.xml` — Tambah string untuk *empty state* (`home_empty_state_text`), pesan validasi (`home_validation_select_origin_and_destination`), dan *searching state* (`home_searching_route`).
+- [x] `fragment_home.xml` — Integrasi `CircularProgressIndicator` terpusat (`progressRouteSearch`), pembatasan tinggi maksimal (*overflow*) pada panel rekomendasi via `NestedScrollView` (`scrollRecommendations`), dan penempatan elemen *empty state* (`tvEmptyState`).
+- [x] `item_route_recommendation.xml` — Tambah efek visual riak premium (*foreground ripple*, *clickable*, *focusable*) pada kartu item rekomendasi.
+- [x] `HomeFragment.kt` — Logika validasi input yang kokoh, visual state terpusat (`showLoadingState()`, `hideLoadingState()`, `showSearchErrorState()`), pembaruan visual chip prioritas yang konsisten dengan aksen premium (oranye aktif, border/putih inaktif), dan pengurutan dinamis saat prioritas diubah.
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| Pemuatan rute menampilkan loading indicator visual | ✅ Diimplementasikan via `progressRouteSearch` dan helper `showLoadingState` |
+| Tampilan *empty state* yang informatif saat rekomendasi rute kosong | ✅ `tvEmptyState` tampil saat daftar rute kosong |
+| Validasi input yang kokoh sebelum memulai pencarian rute | ✅ Toast validasi ditampilkan jika asal/tujuan belum dipilih |
+| *Visual feedback* filter chip prioritas perjalanan yang konsisten | ✅ Warna chip oranye light premium saat terpilih, border/putih saat inaktif |
+| Efek visual *ripple* pada item kartu rekomendasi | ✅ Ditambahkan efek ripple di foreground kartu rute |
+| Pembatasan tinggi panel rekomendasi agar tidak menutupi peta | ✅ Dibungkus dalam `NestedScrollView` dengan batasan tinggi maks `320dp` |
+| Build debug proyek berhasil dikompilasi | ✅ Diverifikasi sukses dengan `gradlew assembleDebug` |
+

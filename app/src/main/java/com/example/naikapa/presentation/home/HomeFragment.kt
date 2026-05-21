@@ -319,6 +319,34 @@ class HomeFragment : Fragment() {
         chips.forEach { chip ->
             chip.setOnClickListener {
                 chips.forEach { it.isChecked = it == chip }
+                updateChipStyles()
+
+                // Jika hasil rekomendasi sudah tampil, cari rute ulang secara otomatis dengan prioritas baru
+                if (selectedOrigin != null && selectedDestination != null && binding.scrollRecommendations.visibility == View.VISIBLE) {
+                    handleFindRouteClick()
+                }
+            }
+        }
+        updateChipStyles()
+    }
+
+    private fun updateChipStyles() {
+        val chips = listOf(
+            binding.chipTercepat,
+            binding.chipTerhemat,
+            binding.chipMinimJalanKaki,
+            binding.chipMinimTransit
+        )
+        chips.forEach { chip ->
+            if (chip.isChecked) {
+                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorAccentOrangeLight))
+                chip.chipStrokeWidth = 0f
+                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorAccentOrange))
+            } else {
+                chip.chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+                chip.chipStrokeWidth = dpToPx(1f).toFloat()
+                chip.chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorCardOutline))
+                chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextPrimary))
             }
         }
     }
@@ -526,6 +554,28 @@ class HomeFragment : Fragment() {
         binding.tvSearchStatus.visibility = View.VISIBLE
     }
 
+    private fun showLoadingState(loadingText: String) {
+        binding.btnTemukanRute.visibility = View.INVISIBLE
+        binding.progressRouteSearch.visibility = View.VISIBLE
+        binding.tvEmptyState.text = loadingText
+        binding.tvEmptyState.visibility = View.VISIBLE
+        binding.scrollRecommendations.visibility = View.GONE
+        binding.tvPriorityLabel.visibility = View.GONE
+    }
+
+    private fun hideLoadingState() {
+        binding.btnTemukanRute.visibility = View.VISIBLE
+        binding.progressRouteSearch.visibility = View.GONE
+    }
+
+    private fun showSearchErrorState(message: String) {
+        toast(message)
+        binding.tvEmptyState.text = message
+        binding.tvEmptyState.visibility = View.VISIBLE
+        binding.scrollRecommendations.visibility = View.GONE
+        binding.tvPriorityLabel.visibility = View.GONE
+    }
+
     private fun setupRouteActions() {
         // Tombol Swap Asal-Tujuan
         binding.btnSwap.setOnClickListener {
@@ -577,9 +627,7 @@ class HomeFragment : Fragment() {
         val destination = selectedDestination
 
         if (origin == null || destination == null) {
-            toast(getString(R.string.route_combined_requires_coordinates))
-            showDemoRoutePreview()
-            showRecommendationCard()
+            toast(getString(R.string.home_validation_select_origin_and_destination))
             return
         }
 
@@ -614,8 +662,7 @@ class HomeFragment : Fragment() {
             // API key belum diisi, tetap coba transit saja
         }
 
-        binding.btnTemukanRute.isEnabled = false
-        toast(getString(R.string.route_recommendation_loading))
+        showLoadingState(getString(R.string.route_recommendation_loading))
 
         homeScope.launch {
             val result = withContext(Dispatchers.IO) {
@@ -631,9 +678,9 @@ class HomeFragment : Fragment() {
                     destinationStopId = selectedDestination?.stopId
                 )
             }
-            binding.btnTemukanRute.isEnabled = true
             result
                 .onSuccess { recommendation ->
+                    hideLoadingState()
                     showRecommendationResult(origin, destination, recommendation)
                 }
                 .onFailure {
@@ -644,10 +691,14 @@ class HomeFragment : Fragment() {
                         val transitResult = withContext(Dispatchers.IO) {
                             transitRoutingRepository.findRoute(originStopId, destinationStopId, transitMode, sortPreference)
                         }
+                        hideLoadingState()
                         if (transitResult != null) showTransitRouteResult(transitResult)
-                        else toast(getString(R.string.route_transit_not_found))
+                        else {
+                            showSearchErrorState(getString(R.string.route_transit_not_found))
+                        }
                     } else {
-                        toast(getString(R.string.route_combined_not_found))
+                        hideLoadingState()
+                        showSearchErrorState(getString(R.string.route_combined_not_found))
                     }
                 }
         }
@@ -657,9 +708,7 @@ class HomeFragment : Fragment() {
         val origin = selectedOrigin
         val destination = selectedDestination
         if (origin == null || destination == null) {
-            toast(getString(R.string.route_combined_requires_coordinates))
-            showDemoRoutePreview()
-            showRecommendationCard()
+            toast(getString(R.string.home_validation_select_origin_and_destination))
             return
         }
         if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
@@ -667,8 +716,7 @@ class HomeFragment : Fragment() {
             return
         }
 
-        binding.btnTemukanRute.isEnabled = false
-        toast(getString(R.string.route_combined_loading))
+        showLoadingState(getString(R.string.route_combined_loading))
         homeScope.launch {
             val result = withContext(Dispatchers.IO) {
                 combinedRouteRepository.findCombinedRoutes(
@@ -682,18 +730,18 @@ class HomeFragment : Fragment() {
                     agencyId = getAgencyFilterForCurrentMode()
                 )
             }
-            binding.btnTemukanRute.isEnabled = true
+            hideLoadingState()
             result
                 .onSuccess { routes ->
                     val mainRoute = routes.firstOrNull()
                     if (mainRoute == null) {
-                        toast(getString(R.string.route_combined_not_found))
+                        showSearchErrorState(getString(R.string.route_combined_not_found))
                     } else {
                         showCombinedRouteResult(origin, destination, mainRoute)
                     }
                 }
                 .onFailure {
-                    toast(getString(R.string.route_combined_error))
+                    showSearchErrorState(getString(R.string.route_combined_error))
                 }
         }
     }
@@ -702,9 +750,7 @@ class HomeFragment : Fragment() {
         val origin = selectedOrigin
         val destination = selectedDestination
         if (origin == null || destination == null) {
-            toast(getString(R.string.route_private_requires_coordinates))
-            showDemoRoutePreview()
-            showRecommendationCard()
+            toast(getString(R.string.home_validation_select_origin_and_destination))
             return
         }
         if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
@@ -712,8 +758,7 @@ class HomeFragment : Fragment() {
             return
         }
 
-        binding.btnTemukanRute.isEnabled = false
-        toast(getString(R.string.route_private_loading))
+        showLoadingState(getString(R.string.route_private_loading))
         homeScope.launch {
             val result = withContext(Dispatchers.IO) {
                 tomTomRoutingRepository.calculateRoute(
@@ -725,23 +770,26 @@ class HomeFragment : Fragment() {
                     apiKey = BuildConfig.TOMTOM_API_KEY
                 )
             }
-            binding.btnTemukanRute.isEnabled = true
+            hideLoadingState()
             result
                 .onSuccess { routes ->
                     val mainRoute = routes.firstOrNull()
                     if (mainRoute == null) {
-                        toast(getString(R.string.route_private_not_found))
+                        showSearchErrorState(getString(R.string.route_private_not_found))
                     } else {
                         showPrivateVehicleRouteResult(origin, destination, mainRoute)
                     }
                 }
                 .onFailure {
-                    toast(getString(R.string.route_private_error))
+                    showSearchErrorState(getString(R.string.route_private_error))
                 }
         }
     }
 
     private fun showRecommendationCard() {
+        binding.tvEmptyState.visibility = View.GONE
+        binding.scrollRecommendations.visibility = View.VISIBLE
+        binding.tvPriorityLabel.visibility = View.VISIBLE
         binding.cardRecommendation.visibility = View.VISIBLE
         binding.cardRecommendation.alpha = 0f
         binding.cardRecommendation.animate().alpha(1f).setDuration(500).start()

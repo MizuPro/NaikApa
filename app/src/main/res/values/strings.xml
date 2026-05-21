@@ -173,4 +173,9 @@
     <string name="recommendation_priority_min_walking">MINIM JALAN KAKI</string>
     <string name="recommendation_priority_min_transit">MINIM TRANSIT</string>
 
+    <!-- Polishing UI Fase 15 -->
+    <string name="home_empty_state_text">Pilih asal dan tujuan, lalu ketuk Temukan Rute untuk melihat rekomendasi perjalanan terbaikmu.</string>
+    <string name="home_validation_select_origin_and_destination">Silakan tentukan titik asal dan lokasi tujuan terlebih dahulu.</string>
+    <string name="home_searching_route">Sedang mencari rute terbaik untukmu...</string>
+
 </resources>

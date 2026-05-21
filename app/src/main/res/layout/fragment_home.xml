@@ -741,17 +741,32 @@
 
             </HorizontalScrollView>
 
-            <!-- Temukan Rute Orange Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTemukanRute"
-                style="@style/Widget.Material3.Button"
+            <!-- Temukan Rute Orange Button dengan Progress State -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="@string/btn_temukan_rute"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:backgroundTint="@color/colorAccentOrange"
-                app:cornerRadius="10dp" />
+                android:layout_height="48dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTemukanRute"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/btn_temukan_rute"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/colorAccentOrange"
+                    app:cornerRadius="10dp" />
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/progressRouteSearch"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:indicatorColor="@color/colorAccentOrange"
+                    app:trackThickness="3dp" />
+            </FrameLayout>
 
         </LinearLayout>
 
@@ -853,18 +868,43 @@
                     android:textSize="9sp"
                     android:textStyle="bold"
                     android:background="@color/colorAccentOrangeLight"
+                    android:visibility="gone"
                     tools:text="TERCEPAT" />
 
             </LinearLayout>
 
-            <!-- RecyclerView untuk daftar rekomendasi -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRecommendations"
+            <!-- Empty State TextView -->
+            <TextView
+                android:id="@+id/tvEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                tools:itemCount="2"
-                tools:listitem="@layout/item_route_recommendation" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center"
+                android:text="@string/home_empty_state_text"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="13sp"
+                android:visibility="visible" />
+
+            <!-- Scrollable Wrapper untuk RecyclerView agar tidak overflow -->
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scrollRecommendations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxHeight="320dp"
+                android:visibility="gone"
+                android:fillViewport="true">
+
+                <!-- RecyclerView untuk daftar rekomendasi -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecommendations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="2"
+                    tools:listitem="@layout/item_route_recommendation" />
+
+            </androidx.core.widget.NestedScrollView>
 
         </LinearLayout>
 
