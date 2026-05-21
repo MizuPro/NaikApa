@@ -72,4 +72,15 @@ class NaikApaDatabaseHelperTest {
         assertEquals("CartoDB_Positron", AppConstants.MAP_TILE_POSITRON)
         assertEquals("CartoDB_DarkMatter", AppConstants.MAP_TILE_DARK_MATTER)
     }
+
+    @Test
+    fun tomTomSearchConstantsAreConfigured() {
+        assertEquals("https://api.tomtom.com/", AppConstants.TOMTOM_BASE_URL)
+        assertEquals("ID", AppConstants.TOMTOM_COUNTRY_SET_ID)
+        assertTrue(AppConstants.TOMTOM_TYPEAHEAD)
+        assertEquals(8, AppConstants.TOMTOM_SEARCH_LIMIT)
+        assertEquals(3, AppConstants.TOMTOM_MIN_QUERY_LENGTH)
+        assertEquals(300L, AppConstants.TOMTOM_SEARCH_DEBOUNCE_MS)
+        assertEquals("isi_api_key_kamu_di_sini", AppConstants.TOMTOM_API_KEY_PLACEHOLDER)
+    }
 }

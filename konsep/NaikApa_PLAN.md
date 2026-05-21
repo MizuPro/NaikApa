@@ -340,26 +340,32 @@ Status implementasi: selesai. Home sudah memakai user-agent osmdroid eksplisit, 
 
 ## Fase 7: Integrasi TomTom Search API
 
+### Status Planning
+- [x] Plan eksekusi Fase 7 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 7 selesai dikerjakan.
+
 ### Tujuan
 Membuat fitur pencarian tujuan berdasarkan alamat, tempat, atau nama daerah.
 
 ### Aktivitas
-1. Membuat input pencarian tujuan.
-2. Membuat request ke TomTom Search API.
-3. Menampilkan daftar hasil pencarian.
-4. Menampilkan nama lokasi, alamat, dan koordinat.
-5. User dapat memilih salah satu hasil.
-6. Menyimpan hasil pilihan ke state aplikasi.
-7. Menyimpan keyword dan hasil pencarian ke `search_history`.
+1. [x] Membuat input pencarian tujuan.
+2. [x] Membuat request ke TomTom Search API.
+3. [x] Menampilkan daftar hasil pencarian.
+4. [x] Menampilkan nama lokasi, alamat, dan koordinat.
+5. [x] User dapat memilih salah satu hasil.
+6. [x] Menyimpan hasil pilihan ke state aplikasi.
+7. [x] Menyimpan keyword dan hasil pencarian ke `search_history`.
 
 ### Output
-1. User dapat mengetik tujuan.
-2. Aplikasi menampilkan hasil pencarian TomTom.
-3. User dapat memilih lokasi tujuan.
-4. Riwayat pencarian tersimpan di SQLite.
+1. [x] User dapat mengetik tujuan.
+2. [x] Aplikasi menampilkan hasil pencarian TomTom.
+3. [x] User dapat memilih lokasi tujuan.
+4. [x] Riwayat pencarian tersimpan di SQLite.
 
 ### Kriteria Selesai
 Fase ini selesai jika user dapat memilih tujuan dari hasil TomTom dan koordinat tujuan siap digunakan untuk routing.
+
+Status implementasi: selesai. Home sudah memiliki input pencarian tujuan, debounce request ke TomTom Fuzzy Search via Retrofit, daftar hasil, pemilihan tujuan, marker tujuan di peta, state `selectedDestination`, dan penyimpanan pilihan ke `search_history` untuk user aktif. Unit test dan build debug berhasil dijalankan. Instrumentation test berhasil dikompilasi, tetapi eksekusi penuh belum berjalan karena emulator `emulator-5562` berstatus OFFLINE.
 
 ---
 

@@ -50,6 +50,12 @@
     <string name="map_marker_transit">Transit</string>
     <string name="map_route_preview_ready">Preview peta rute ditampilkan</string>
     <string name="search_tujuan">Tujuan</string>
+    <string name="search_destination_hint">Cari alamat atau tempat tujuan</string>
+    <string name="search_destination_loading">Mencari tujuan...</string>
+    <string name="search_destination_empty">Tidak ada hasil. Coba kata kunci lain.</string>
+    <string name="search_destination_error">Gagal mencari tujuan. Periksa koneksi internet.</string>
+    <string name="search_destination_api_key_missing">Isi TOMTOM_API_KEY di local.properties untuk memakai pencarian tujuan.</string>
+    <string name="search_destination_selected">Tujuan dipilih</string>
     <string name="search_tujuan_val">UBM Tower</string>
     <string name="search_tujuan_sub">Jl. Boulevard Gading Serpong, Tangerang</string>
     <string name="btn_temukan_rute">Temukan Rute</string>

@@ -6,28 +6,37 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.naikapa.BuildConfig
 import com.example.naikapa.R
 import com.example.naikapa.common.AppConstants
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
+import com.example.naikapa.data.local.HistoryDao
+import com.example.naikapa.data.local.NaikApaDatabaseHelper
 import com.example.naikapa.data.model.LocationPoint
 import com.example.naikapa.data.model.MapMarkerType
 import com.example.naikapa.data.model.MapPoint
 import com.example.naikapa.data.model.MapStyle
+import com.example.naikapa.data.model.SearchHistory
+import com.example.naikapa.data.model.SearchLocation
+import com.example.naikapa.data.remote.RemoteClient
+import com.example.naikapa.data.repository.TomTomSearchRepository
 import com.example.naikapa.databinding.FragmentHomeBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -41,6 +50,14 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polyline
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment() {
 
@@ -48,10 +65,17 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var dbHelper: NaikApaDatabaseHelper
+    private lateinit var historyDao: HistoryDao
+    private val searchRepository = TomTomSearchRepository(RemoteClient.tomTomSearchApi)
+    private lateinit var homeScope: CoroutineScope
     private var selectedOrigin: LocationPoint? = null
+    private var selectedDestination: SearchLocation? = null
+    private var destinationSearchJob: Job? = null
     private var currentMapStyle = MapStyle.POSITRON
     private val routeOverlays = mutableListOf<Overlay>()
     private var originMarker: Marker? = null
+    private var destinationMarker: Marker? = null
 
     // List untuk mengelola visual mode transportasi
     private lateinit var modeCards: List<MaterialCardView>
@@ -88,6 +112,9 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         sessionManager = SessionManager(requireContext())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        dbHelper = NaikApaDatabaseHelper(requireContext())
+        historyDao = HistoryDao(dbHelper)
+        homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
         // Mengubah sapaan di header dengan nama user
         val userName = sessionManager.getUserName() ?: "User NaikApa"
@@ -96,6 +123,7 @@ class HomeFragment : Fragment() {
 
         initMap()
         setupTransitModes()
+        setupDestinationSearch()
         setupRouteActions()
     }
 
@@ -206,6 +234,172 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupDestinationSearch() {
+        binding.etDestinationSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                scheduleDestinationSearch(s?.toString().orEmpty())
+            }
+
+            override fun afterTextChanged(s: Editable?) = Unit
+        })
+    }
+
+    private fun scheduleDestinationSearch(query: String) {
+        destinationSearchJob?.cancel()
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.length < AppConstants.TOMTOM_MIN_QUERY_LENGTH) {
+            hideSearchResults()
+            return
+        }
+        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+            showSearchStatus(getString(R.string.search_destination_api_key_missing), isError = true)
+            return
+        }
+
+        destinationSearchJob = homeScope.launch {
+            delay(AppConstants.TOMTOM_SEARCH_DEBOUNCE_MS)
+            performDestinationSearch(trimmedQuery)
+        }
+    }
+
+    private suspend fun performDestinationSearch(query: String) {
+        showSearchStatus(getString(R.string.search_destination_loading), isError = false)
+        val latitudeBias = selectedOrigin?.latitude ?: AppConstants.MAP_DEFAULT_LAT
+        val longitudeBias = selectedOrigin?.longitude ?: AppConstants.MAP_DEFAULT_LON
+        val result = withContext(Dispatchers.IO) {
+            searchRepository.search(
+                query = query,
+                apiKey = BuildConfig.TOMTOM_API_KEY,
+                latitudeBias = latitudeBias,
+                longitudeBias = longitudeBias
+            )
+        }
+
+        result
+            .onSuccess { locations ->
+                if (locations.isEmpty()) {
+                    showSearchStatus(getString(R.string.search_destination_empty), isError = false)
+                } else {
+                    renderSearchResults(query, locations)
+                }
+            }
+            .onFailure {
+                showSearchStatus(getString(R.string.search_destination_error), isError = true)
+            }
+    }
+
+    private fun renderSearchResults(query: String, locations: List<SearchLocation>) {
+        binding.tvSearchStatus.visibility = View.GONE
+        binding.layoutSearchResults.removeAllViews()
+        locations.take(AppConstants.TOMTOM_SEARCH_LIMIT).forEach { location ->
+            binding.layoutSearchResults.addView(createSearchResultView(query, location))
+        }
+        binding.layoutSearchResults.visibility = View.VISIBLE
+    }
+
+    private fun createSearchResultView(query: String, location: SearchLocation): View {
+        val card = MaterialCardView(requireContext()).apply {
+            radius = dpToPx(10f).toFloat()
+            cardElevation = 0f
+            strokeWidth = dpToPx(1f)
+            strokeColor = ContextCompat.getColor(requireContext(), R.color.colorCardOutline)
+            setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+            setOnClickListener {
+                selectDestination(query, location)
+            }
+        }
+        val content = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dpToPx(12f), dpToPx(9f), dpToPx(12f), dpToPx(9f))
+        }
+        val title = TextView(requireContext()).apply {
+            text = location.name
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextPrimary))
+            textSize = 13f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        val subtitle = TextView(requireContext()).apply {
+            text = location.address ?: formatCoordinates(location.latitude, location.longitude)
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.colorTextSecondary))
+            textSize = 11f
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+
+        content.addView(title)
+        content.addView(subtitle)
+        card.addView(content)
+        card.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            bottomMargin = dpToPx(8f)
+        }
+        return card
+    }
+
+    private fun selectDestination(query: String, location: SearchLocation) {
+        selectedDestination = location
+        destinationSearchJob?.cancel()
+        binding.tvDestination.text = location.name
+        binding.tvDestinationSub.text = location.address ?: formatCoordinates(location.latitude, location.longitude)
+        binding.etDestinationSearch.setText("")
+        hideSearchResults()
+
+        val destinationPoint = MapPoint(
+            label = getString(R.string.map_marker_destination),
+            latitude = location.latitude,
+            longitude = location.longitude,
+            description = location.name,
+            markerType = MapMarkerType.DESTINATION
+        )
+        showDestinationMarker(destinationPoint)
+        binding.mapView.controller.apply {
+            setZoom(AppConstants.MAP_LOCATION_ZOOM)
+            animateTo(pointToGeoPoint(destinationPoint))
+        }
+        saveSearchHistory(query, location)
+        toast(getString(R.string.search_destination_selected))
+    }
+
+    private fun saveSearchHistory(query: String, location: SearchLocation) {
+        val userId = sessionManager.getUserId()
+        if (userId <= 0) return
+        historyDao.insertSearchHistory(
+            SearchHistory(
+                idUser = userId,
+                keyword = query,
+                selectedName = location.name,
+                selectedAddress = location.address,
+                selectedLat = location.latitude,
+                selectedLon = location.longitude
+            )
+        )
+    }
+
+    private fun hideSearchResults() {
+        binding.tvSearchStatus.visibility = View.GONE
+        binding.layoutSearchResults.visibility = View.GONE
+        binding.layoutSearchResults.removeAllViews()
+    }
+
+    private fun showSearchStatus(message: String, isError: Boolean) {
+        binding.layoutSearchResults.visibility = View.GONE
+        binding.layoutSearchResults.removeAllViews()
+        binding.tvSearchStatus.text = message
+        binding.tvSearchStatus.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                if (isError) R.color.colorError else R.color.colorTextSecondary
+            )
+        )
+        binding.tvSearchStatus.visibility = View.VISIBLE
+    }
+
     private fun setupRouteActions() {
         // Tombol Swap Asal-Tujuan
         binding.btnSwap.setOnClickListener {
@@ -272,7 +466,15 @@ class HomeFragment : Fragment() {
             description = "Stasiun Tangerang",
             markerType = MapMarkerType.TRANSIT
         )
-        val destinationPoint = MapPoint(
+        val destinationPoint = selectedDestination?.let {
+            MapPoint(
+                label = getString(R.string.map_marker_destination),
+                latitude = it.latitude,
+                longitude = it.longitude,
+                description = it.name,
+                markerType = MapMarkerType.DESTINATION
+            )
+        } ?: MapPoint(
             label = getString(R.string.map_marker_destination),
             latitude = -6.2386,
             longitude = 106.6284,
@@ -304,7 +506,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun showDestinationMarker(point: MapPoint) {
-        addRouteOverlay(createMarker(point))
+        destinationMarker?.let { binding.mapView.overlays.remove(it) }
+        destinationMarker = createMarker(point).also {
+            binding.mapView.overlays.add(it)
+        }
+        binding.mapView.invalidate()
     }
 
     private fun showTransitMarkers(points: List<MapPoint>) {
@@ -493,6 +699,9 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        destinationSearchJob?.cancel()
+        homeScope.cancel()
+        if (::dbHelper.isInitialized) dbHelper.close()
         _binding = null
     }
 }

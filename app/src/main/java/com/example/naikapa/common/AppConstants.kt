@@ -12,6 +12,12 @@ object AppConstants {
     const val CAR_CONSUMPTION_KM_PER_LITER = 12.0
     const val TOMTOM_SEARCH_LIMIT = 8
     const val TOMTOM_MAX_ALTERNATIVES = 2
+    const val TOMTOM_BASE_URL = "https://api.tomtom.com/"
+    const val TOMTOM_COUNTRY_SET_ID = "ID"
+    const val TOMTOM_TYPEAHEAD = true
+    const val TOMTOM_MIN_QUERY_LENGTH = 3
+    const val TOMTOM_SEARCH_DEBOUNCE_MS = 300L
+    const val TOMTOM_API_KEY_PLACEHOLDER = "isi_api_key_kamu_di_sini"
     const val MAP_USER_AGENT = "NaikApa/1.0"
     const val MAP_DEFAULT_LAT = -6.2088
     const val MAP_DEFAULT_LON = 106.8456
