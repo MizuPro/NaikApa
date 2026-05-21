@@ -89,6 +89,35 @@ object AppConstants {
     const val SCORE_REF_MAX_WALKING_M      = 3000   // 3 km
     const val SCORE_REF_MAX_TRANSIT_COUNT  = 5      // 5 kali transit
 
+    // ── Disruption Report ─────────────────────────────────────────────────────
+    const val DISRUPTION_ACTIVE_DURATION_MILLIS = DISRUPTION_ACTIVE_DURATION_HOURS * 60 * 60 * 1000L
+
+    // Kategori laporan gangguan
+    const val DISRUPTION_CATEGORY_CROWDED       = "Penuh / Antrean Panjang"
+    const val DISRUPTION_CATEGORY_DELAY         = "Keterlambatan"
+    const val DISRUPTION_CATEGORY_BREAKDOWN     = "Kerusakan / Gangguan Teknis"
+    const val DISRUPTION_CATEGORY_ACCIDENT      = "Kecelakaan / Insiden"
+    const val DISRUPTION_CATEGORY_CLOSURE       = "Penutupan Jalur / Halte"
+    const val DISRUPTION_CATEGORY_OTHER         = "Lainnya"
+
+    val DISRUPTION_CATEGORIES = listOf(
+        DISRUPTION_CATEGORY_CROWDED,
+        DISRUPTION_CATEGORY_DELAY,
+        DISRUPTION_CATEGORY_BREAKDOWN,
+        DISRUPTION_CATEGORY_ACCIDENT,
+        DISRUPTION_CATEGORY_CLOSURE,
+        DISRUPTION_CATEGORY_OTHER
+    )
+
+    // Foto laporan
+    const val DISRUPTION_PHOTO_DIR              = "disruption_photos"
+    const val DISRUPTION_PHOTO_PREFIX           = "report_"
+    const val DISRUPTION_PHOTO_EXTENSION        = ".jpg"
+
+    // Validasi deskripsi
+    const val DISRUPTION_DESCRIPTION_MIN_LENGTH = 10
+    const val DISRUPTION_DESCRIPTION_MAX_LENGTH = 500
+
     // Transit fares
     const val FARE_TRANSJAKARTA_FLAT = 3500
     const val FARE_KRL_BASE = 3000

@@ -19,7 +19,11 @@
         android:id="@+id/statusGangguanFragment"
         android:name="com.example.naikapa.presentation.report.StatusGangguanFragment"
         android:label="Status Gangguan"
-        tools:layout="@layout/fragment_status_gangguan" />
+        tools:layout="@layout/fragment_status_gangguan">
+        <action
+            android:id="@+id/action_statusGangguanFragment_to_addEditDisruptionReportFragment"
+            app:destination="@id/addEditDisruptionReportFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/riwayatFragment"
@@ -37,5 +41,31 @@
         android:id="@+id/routeDetailFragment"
         android:name="com.example.naikapa.presentation.route_detail.RouteDetailFragment"
         android:label="Detail Rute"
-        tools:layout="@layout/fragment_route_detail" />
+        tools:layout="@layout/fragment_route_detail">
+        <action
+            android:id="@+id/action_routeDetailFragment_to_addEditDisruptionReportFragment"
+            app:destination="@id/addEditDisruptionReportFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addEditDisruptionReportFragment"
+        android:name="com.example.naikapa.presentation.report.AddEditDisruptionReportFragment"
+        android:label="Laporan Gangguan"
+        tools:layout="@layout/fragment_add_edit_disruption_report">
+        <argument
+            android:name="reportId"
+            android:defaultValue="0"
+            app:argType="long" />
+        <argument
+            android:name="stopId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="routeId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
 </navigation>

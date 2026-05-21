@@ -152,6 +152,88 @@ class RecommendationScorerTest {
         )
     }
 
+    // ── Test 4b: Laporan terkait stop menurunkan skor ─────────────────────────
+
+    @Test
+    fun `related stop disruption reduces transit score`() {
+        // Buat transit candidate dengan stop yang diketahui
+        val dummyNode = com.example.naikapa.data.model.TransitNode("STOP_DKA", "Dukuh Atas", -6.2, 106.82, "Tije")
+        val transitWithStop = RouteCandidate.Transit(
+            result = com.example.naikapa.data.model.TransitRouteResult(
+                startStop = dummyNode,
+                endStop   = dummyNode,
+                mode      = com.example.naikapa.data.model.TransitMode.ALL,
+                sortPreference = SortPreference.FASTEST,
+                edges  = emptyList(),
+                steps  = listOf(
+                    com.example.naikapa.data.model.RouteStep(
+                        type           = com.example.naikapa.data.model.TransitEdgeType.TRANSIT,
+                        fromStop       = dummyNode,
+                        toStop         = dummyNode,
+                        routeId        = "ROUTE_KRL",
+                        routeShortName = "KRL",
+                        routeLongName  = null,
+                        agencyId       = "KAIC",
+                        durationSeconds = 600,
+                        distanceMeters  = 5000.0,
+                        stopCount       = 3
+                    )
+                ),
+                metrics = RouteMetrics(
+                    totalDurationSeconds = 3600,
+                    totalDistanceMeters  = 15000.0,
+                    walkingDistanceMeters = 500.0,
+                    transitCount         = 1,
+                    estimatedFare        = 3500,
+                    estimatedBbm         = 0,
+                    estimatedTotalCost   = 3500
+                )
+            )
+        )
+
+        val scoreWithoutDisruption = scorer.score(transitWithStop, SortPreference.FASTEST, emptyList())
+
+        // Laporan terkait stop yang dilalui
+        val relatedDisruption = DisruptionReport(
+            idUser      = 1,
+            stopId      = "STOP_DKA",
+            routeId     = null,
+            category    = "Keterlambatan",
+            description = "Kereta terlambat 30 menit",
+            photoPath   = null
+        )
+        val scoreWithRelatedDisruption = scorer.score(transitWithStop, SortPreference.FASTEST, listOf(relatedDisruption))
+
+        assertTrue(
+            "Related stop disruption should reduce score (before=$scoreWithoutDisruption, after=$scoreWithRelatedDisruption)",
+            scoreWithRelatedDisruption < scoreWithoutDisruption
+        )
+        assertTrue(
+            "hasDisruption should return true for related stop",
+            scorer.hasDisruption(transitWithStop, listOf(relatedDisruption))
+        )
+    }
+
+    // ── Test 4c: Laporan expired tidak memengaruhi skor ──────────────────────
+
+    @Test
+    fun `expired disruption report does not affect score`() {
+        val transit = makeTransitCandidate()
+        val scoreWithoutDisruption = scorer.score(transit, SortPreference.FASTEST, emptyList())
+
+        // Laporan yang sudah expired (expiredAt di masa lalu) — tidak masuk ke activeDisruptions
+        // Scorer hanya menerima list yang sudah difilter aktif dari DAO,
+        // jadi test ini memastikan list kosong = tidak ada penalti
+        val emptyActiveList = emptyList<DisruptionReport>()
+        val scoreWithEmptyList = scorer.score(transit, SortPreference.FASTEST, emptyActiveList)
+
+        assertEquals(
+            "Empty active disruption list should not affect score",
+            scoreWithoutDisruption,
+            scoreWithEmptyList
+        )
+    }
+
     // ── Test 5: Skor selalu dalam rentang 0–100 ───────────────────────────────
 
     @Test

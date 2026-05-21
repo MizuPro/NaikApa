@@ -164,7 +164,6 @@ class NaikApaDatabaseInstrumentedTest {
         assertEquals(1, reportDao.getActiveReports().size)
         assertEquals(1, reportDao.markResolved(reportId))
         assertEquals(0, reportDao.getActiveReports().size)
-
         val cacheId = cacheDao.insert(
             RouteCache(
                 originLat = -6.2,
@@ -249,5 +248,97 @@ class NaikApaDatabaseInstrumentedTest {
         val metrics = TransitRouteMetricsCalculator().calculate(path.orEmpty(), steps)
         assertTrue(metrics.estimatedFare >= 0)
         assertEquals(metrics.estimatedFare + metrics.estimatedBbm, metrics.estimatedTotalCost)
+    }
+
+    @Test
+    fun disruptionReportCrudWithPhotoPathAndOwnershipWorks() {
+        val userDao   = UserDao(dbHelper)
+        val reportDao = DisruptionReportDao(dbHelper)
+
+        // Buat dua user
+        val userId1 = userDao.insertUser(
+            User(nama = "User Satu", email = "user1@naikapa.local", password = "pass", hasMotor = false, hasCar = false)
+        )
+        val userId2 = userDao.insertUser(
+            User(nama = "User Dua", email = "user2@naikapa.local", password = "pass", hasMotor = false, hasCar = false)
+        )
+        assertTrue(userId1 > 0)
+        assertTrue(userId2 > 0)
+
+        val now = System.currentTimeMillis()
+
+        // Insert laporan aktif dengan photo path
+        val reportId = reportDao.insert(
+            DisruptionReport(
+                idUser      = userId1,
+                stopId      = "STOP_TEST",
+                routeId     = "ROUTE_TEST",
+                category    = "Keterlambatan",
+                description = "Kereta terlambat 20 menit di stasiun ini.",
+                photoPath   = "/data/local/tmp/report_test.jpg",
+                createdAt   = now,
+                expiredAt   = now + DisruptionReport.ONE_HOUR_MILLIS
+            )
+        )
+        assertTrue("Insert laporan harus berhasil", reportId > 0)
+
+        // getById
+        val fetched = reportDao.getById(reportId)
+        assertNotNull("getById harus mengembalikan laporan", fetched)
+        assertEquals("STOP_TEST", fetched?.stopId)
+        assertEquals("/data/local/tmp/report_test.jpg", fetched?.photoPath)
+
+        // Laporan aktif muncul di getActiveReports
+        val activeReports = reportDao.getActiveReports(now)
+        assertTrue("Laporan aktif harus muncul", activeReports.any { it.idReport == reportId })
+
+        // Laporan muncul di getByUser
+        assertEquals(1, reportDao.getByUser(userId1).size)
+        assertEquals(0, reportDao.getByUser(userId2).size)
+
+        // getActiveByUser
+        assertEquals(1, reportDao.getActiveByUser(userId1, now).size)
+
+        // Update oleh user yang benar (ownership check)
+        val updated = fetched!!.copy(description = "Deskripsi diperbarui oleh user yang benar.")
+        assertEquals("updateByUser harus berhasil untuk owner", 1, reportDao.updateByUser(updated))
+
+        // Update oleh user yang salah harus gagal
+        val wrongOwnerUpdate = fetched.copy(idUser = userId2, description = "Coba update oleh user lain")
+        assertEquals("updateByUser harus gagal untuk non-owner", 0, reportDao.updateByUser(wrongOwnerUpdate))
+
+        // Laporan expired tidak muncul di getActiveReports
+        val expiredReportId = reportDao.insert(
+            DisruptionReport(
+                idUser      = userId1,
+                stopId      = "STOP_EXPIRED",
+                routeId     = null,
+                category    = "Lainnya",
+                description = "Laporan yang sudah expired.",
+                photoPath   = null,
+                createdAt   = now - 2 * DisruptionReport.ONE_HOUR_MILLIS,
+                expiredAt   = now - DisruptionReport.ONE_HOUR_MILLIS // sudah expired
+            )
+        )
+        assertTrue(expiredReportId > 0)
+        val activeAfterExpired = reportDao.getActiveReports(now)
+        assertTrue(
+            "Laporan expired tidak boleh muncul di active reports",
+            activeAfterExpired.none { it.idReport == expiredReportId }
+        )
+
+        // markResolvedByUser oleh user yang salah harus gagal
+        assertEquals("markResolvedByUser harus gagal untuk non-owner", 0, reportDao.markResolvedByUser(reportId, userId2))
+
+        // deleteByUser oleh user yang salah harus gagal
+        assertEquals("deleteByUser harus gagal untuk non-owner", 0, reportDao.deleteByUser(reportId, userId2))
+
+        // deleteByUser oleh owner harus berhasil
+        assertEquals("deleteByUser harus berhasil untuk owner", 1, reportDao.deleteByUser(reportId, userId1))
+
+        // Cleanup
+        reportDao.delete(expiredReportId)
+        userDao.deleteUser(userId1)
+        userDao.deleteUser(userId2)
     }
 }

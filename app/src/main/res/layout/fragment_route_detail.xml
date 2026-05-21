@@ -328,7 +328,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp"
                 android:text="Simpan ke Favorit"
                 android:textSize="15sp"
                 android:textStyle="bold"
@@ -338,7 +337,24 @@
                 app:icon="@drawable/ic_heart"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-                app:layout_constraintTop_toBottomOf="@id/cardTimeline"
+                app:layout_constraintTop_toBottomOf="@id/cardTimeline" />
+
+            <!-- Report Disruption Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReportDisruption"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/report_btn_report_from_route"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_warning"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:layout_constraintTop_toBottomOf="@id/btnSaveFavorite"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

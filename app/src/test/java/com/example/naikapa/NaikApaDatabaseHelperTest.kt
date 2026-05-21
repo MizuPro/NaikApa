@@ -4,6 +4,7 @@ import com.example.naikapa.common.AppConstants
 import com.example.naikapa.data.local.NaikApaDbContract
 import com.example.naikapa.data.local.PrebuiltDatabaseCopier
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -91,6 +92,76 @@ class NaikApaDatabaseHelperTest {
         assertEquals("car", AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_CAR)
         assertEquals("tollRoads", AppConstants.TOMTOM_ROUTING_AVOID_TOLL_ROADS)
         assertEquals(2, AppConstants.TOMTOM_MAX_ALTERNATIVES)
+    }
+
+    @Test
+    fun disruptionReportConstantsAndIndexesAreConfigured() {
+        // Kategori laporan tersedia
+        assertTrue(
+            "DISRUPTION_CATEGORIES harus tidak kosong",
+            AppConstants.DISRUPTION_CATEGORIES.isNotEmpty()
+        )
+        assertTrue(
+            "DISRUPTION_CATEGORIES harus mengandung kategori Keterlambatan",
+            AppConstants.DISRUPTION_CATEGORIES.any { it.contains("Keterlambatan") }
+        )
+
+        // Durasi aktif 1 jam dalam millis
+        assertEquals(
+            "DISRUPTION_ACTIVE_DURATION_MILLIS harus 3.600.000",
+            3_600_000L,
+            AppConstants.DISRUPTION_ACTIVE_DURATION_MILLIS
+        )
+
+        // Validasi deskripsi
+        assertTrue(
+            "DISRUPTION_DESCRIPTION_MIN_LENGTH harus > 0",
+            AppConstants.DISRUPTION_DESCRIPTION_MIN_LENGTH > 0
+        )
+        assertTrue(
+            "DISRUPTION_DESCRIPTION_MAX_LENGTH harus > MIN",
+            AppConstants.DISRUPTION_DESCRIPTION_MAX_LENGTH > AppConstants.DISRUPTION_DESCRIPTION_MIN_LENGTH
+        )
+
+        // Foto prefix dan extension
+        assertTrue(AppConstants.DISRUPTION_PHOTO_PREFIX.isNotBlank())
+        assertTrue(AppConstants.DISRUPTION_PHOTO_EXTENSION.startsWith("."))
+
+        // Index disruption_reports tersedia
+        assertTrue(
+            "Missing index idx_disruptions_status_expired",
+            NaikApaDbContract.indexStatements.any { it.contains("idx_disruptions_status_expired") }
+        )
+        assertTrue(
+            "Missing index idx_disruptions_stop_route",
+            NaikApaDbContract.indexStatements.any { it.contains("idx_disruptions_stop_route") }
+        )
+    }
+
+    @Test
+    fun disruptionReportModelHelperFunctionsWork() {
+        val now = System.currentTimeMillis()
+        val activeReport = com.example.naikapa.data.model.DisruptionReport(
+            idUser      = 1,
+            stopId      = "STOP_A",
+            routeId     = null,
+            category    = "Keterlambatan",
+            description = "Test laporan aktif",
+            photoPath   = null,
+            createdAt   = now,
+            expiredAt   = now + 30 * 60 * 1000L // 30 menit lagi
+        )
+        assertTrue("Laporan baru harus aktif", activeReport.isActive(now))
+        assertTrue("Sisa waktu harus > 0", activeReport.remainingMillis(now) > 0)
+        assertTrue("Label sisa waktu tidak boleh kosong", activeReport.remainingTimeLabel(now).isNotBlank())
+        assertTrue("Label sisa waktu tidak boleh 'Expired'", activeReport.remainingTimeLabel(now) != "Expired")
+
+        val expiredReport = activeReport.copy(
+            expiredAt = now - 1000L // sudah expired
+        )
+        assertFalse("Laporan expired tidak boleh aktif", expiredReport.isActive(now))
+        assertTrue("Sisa waktu expired harus <= 0", expiredReport.remainingMillis(now) <= 0)
+        assertEquals("Label expired harus 'Expired'", "Expired", expiredReport.remainingTimeLabel(now))
     }
 
     @Test

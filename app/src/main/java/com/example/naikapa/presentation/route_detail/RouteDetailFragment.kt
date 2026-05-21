@@ -68,6 +68,7 @@ class RouteDetailFragment : Fragment() {
         setupTimeline(selectedRoute.candidate)
         setupMap(selectedRoute.candidate)
         setupFavoriteButton(selectedRoute)
+        setupReportButton(selectedRoute)
     }
 
     private fun setupToolbar() {
@@ -234,6 +235,30 @@ class RouteDetailFragment : Fragment() {
             }
         }
         binding.detailMapView.invalidate()
+    }
+
+    private fun setupReportButton(route: ScoredRoute) {
+        binding.btnReportDisruption.setOnClickListener {
+            // Ambil stopId dan routeId pertama dari rute transit jika tersedia
+            val prefillStop: String? = when (val candidate = route.candidate) {
+                is RouteCandidate.Transit -> candidate.result.steps.firstOrNull()?.fromStop?.stopId
+                is RouteCandidate.Combined -> candidate.result.originStop.stopId
+                else -> null
+            }
+            val prefillRoute: String? = when (val candidate = route.candidate) {
+                is RouteCandidate.Transit -> candidate.result.steps.firstOrNull()?.routeId
+                is RouteCandidate.Combined -> candidate.result.transitResult?.steps?.firstOrNull()?.routeId
+                else -> null
+            }
+            findNavController().navigate(
+                R.id.addEditDisruptionReportFragment,
+                android.os.Bundle().apply {
+                    putLong(com.example.naikapa.presentation.report.AddEditDisruptionReportFragment.ARG_REPORT_ID, 0L)
+                    prefillStop?.let  { putString(com.example.naikapa.presentation.report.AddEditDisruptionReportFragment.ARG_STOP_ID, it) }
+                    prefillRoute?.let { putString(com.example.naikapa.presentation.report.AddEditDisruptionReportFragment.ARG_ROUTE_ID, it) }
+                }
+            )
+        }
     }
 
     private fun setupFavoriteButton(route: ScoredRoute) {

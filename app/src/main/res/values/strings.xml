@@ -173,6 +173,46 @@
     <string name="recommendation_priority_min_walking">MINIM JALAN KAKI</string>
     <string name="recommendation_priority_min_transit">MINIM TRANSIT</string>
 
+    <!-- Disruption Report Feature (Fase 17) -->
+    <string name="report_fab_add">Laporkan Gangguan</string>
+    <string name="report_form_title_add">Tambah Laporan</string>
+    <string name="report_form_title_edit">Edit Laporan</string>
+    <string name="report_label_category">Kategori Gangguan</string>
+    <string name="report_hint_category">Pilih kategori</string>
+    <string name="report_label_stop">Halte / Stasiun Terkait (opsional)</string>
+    <string name="report_hint_stop">Contoh: Dukuh Atas BNI</string>
+    <string name="report_label_route">Rute / Jalur Terkait (opsional)</string>
+    <string name="report_hint_route">Contoh: KRL Commuter Line</string>
+    <string name="report_label_description">Deskripsi Gangguan</string>
+    <string name="report_hint_description">Jelaskan gangguan yang kamu temui…</string>
+    <string name="report_label_photo">Foto (opsional)</string>
+    <string name="report_btn_camera">Kamera</string>
+    <string name="report_btn_gallery">Galeri</string>
+    <string name="report_btn_remove_photo">Hapus foto</string>
+    <string name="report_btn_save">Simpan Laporan</string>
+    <string name="report_btn_report_from_route">Laporkan Gangguan di Rute Ini</string>
+    <string name="report_status_active">AKTIF</string>
+    <string name="report_status_expired">EXPIRED</string>
+    <string name="report_time_remaining_format">Aktif: %1$s lagi</string>
+    <string name="report_expired_label">Sudah tidak aktif</string>
+    <string name="report_location_unknown">Lokasi tidak ditentukan</string>
+    <string name="report_action_edit">Edit laporan</string>
+    <string name="report_action_delete">Hapus laporan</string>
+    <string name="report_delete_title">Hapus laporan?</string>
+    <string name="report_delete_message">Laporan ini akan dihapus secara permanen.</string>
+    <string name="report_deleted_success">Laporan berhasil dihapus.</string>
+    <string name="report_delete_failed">Gagal menghapus laporan.</string>
+    <string name="report_saved_success">Laporan berhasil disimpan. Aktif selama 1 jam.</string>
+    <string name="report_updated_success">Laporan berhasil diperbarui.</string>
+    <string name="report_save_failed">Gagal menyimpan laporan. Coba lagi.</string>
+    <string name="report_login_required">Silakan login terlebih dahulu untuk membuat laporan.</string>
+    <string name="report_error_category_required">Pilih kategori gangguan.</string>
+    <string name="report_error_description_too_short">Deskripsi minimal %1$d karakter.</string>
+    <string name="report_error_description_too_long">Deskripsi terlalu panjang (maks 500 karakter).</string>
+    <string name="report_permission_camera_denied">Izin kamera diperlukan untuk mengambil foto.</string>
+    <string name="report_permission_gallery_denied">Izin galeri diperlukan untuk memilih foto.</string>
+    <string name="report_photo_copy_failed">Gagal menyalin foto dari galeri.</string>
+
     <!-- Polishing UI Fase 15 -->
     <string name="home_empty_state_text">Pilih asal dan tujuan, lalu ketuk Temukan Rute untuk melihat rekomendasi perjalanan terbaikmu.</string>
     <string name="home_validation_select_origin_and_destination">Silakan tentukan titik asal dan lokasi tujuan terlebih dahulu.</string>
