@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.R
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
+import com.example.naikapa.common.applyStatusBarTopPaddingTo
 import com.example.naikapa.data.local.NaikApaDatabaseHelper
 import com.example.naikapa.data.local.SavedTripDao
 import com.example.naikapa.data.model.*
@@ -63,6 +64,7 @@ class RouteDetailFragment : Fragment() {
         }
 
         setupToolbar()
+        binding.root.applyStatusBarTopPaddingTo(binding.cardToolbar)
         bindSummaryCard(selectedRoute)
         bindMetrics(selectedRoute.candidate.metrics)
         setupDisruptionWarning(selectedRoute)

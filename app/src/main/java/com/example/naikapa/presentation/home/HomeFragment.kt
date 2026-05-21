@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import com.example.naikapa.BuildConfig
 import com.example.naikapa.R
 import com.example.naikapa.common.applyStatusBarTopPadding
+import com.example.naikapa.common.applyStatusBarTopMarginTo
 import com.example.naikapa.common.AppConstants
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
@@ -207,7 +208,7 @@ class HomeFragment : Fragment() {
         setupRouteActions()
         setupPanelToggle()
         
-        binding.cardHeader.applyStatusBarTopPadding()
+        binding.root.applyStatusBarTopMarginTo(binding.cardHeader, dpToPx(16f))
     }
 
     private fun initMap() {
@@ -995,12 +996,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun resetRecommendation() {
+        // Jika kontainer rekomendasi sudah tersembunyi (dalam keadaan kosong), sembunyikan cardRecommendation sepenuhnya
+        if (binding.scrollRecommendations.visibility == View.GONE) {
+            binding.cardRecommendation.visibility = View.GONE
+            return
+        }
+
         // Reset state rekomendasi ke empty state
         routeResultAdapter.submitList(emptyList())
         binding.scrollRecommendations.visibility = View.GONE
         binding.tvPriorityLabel.visibility = View.GONE
         binding.cardPriorityBadge.visibility = View.GONE
-        binding.btnCloseRecommendation.visibility = View.GONE
+        binding.btnCloseRecommendation.visibility = View.VISIBLE // Tetap biarkan VISIBLE agar tombol "X" bisa diklik untuk menyembunyikan panel sepenuhnya
         binding.tvEmptyState.text = getString(R.string.home_empty_state_text)
         binding.tvEmptyState.visibility = View.VISIBLE
         // Bersihkan rute di peta

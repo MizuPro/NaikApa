@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.R
 import com.example.naikapa.common.applyStatusBarTopPadding
+import com.example.naikapa.common.applyStatusBarTopPaddingTo
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
 import com.example.naikapa.data.local.HistoryDao
@@ -65,6 +66,8 @@ class RiwayatFragment : Fragment() {
         setupAdapters()
         setupTabs()
         selectTab(ActiveTab.FAVORIT)
+        
+        binding.root.applyStatusBarTopPaddingTo(binding.root)
     }
 
     override fun onResume() {

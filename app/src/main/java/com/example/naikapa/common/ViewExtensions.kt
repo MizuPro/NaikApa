@@ -45,3 +45,31 @@ fun View.applyNavigationBarBottomPadding() {
         windowInsets
     }
 }
+
+fun View.applyStatusBarTopPaddingTo(targetView: View, additionalPadding: Int = 0) {
+    val initialPaddingTop = targetView.paddingTop
+    androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this) { _, windowInsets ->
+        val insets = windowInsets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        targetView.setPadding(
+            targetView.paddingLeft,
+            initialPaddingTop + insets.top + additionalPadding,
+            targetView.paddingRight,
+            targetView.paddingBottom
+        )
+        windowInsets
+    }
+}
+
+fun View.applyStatusBarTopMarginTo(targetView: View, additionalMargin: Int = 0) {
+    val layoutParams = targetView.layoutParams as? android.view.ViewGroup.MarginLayoutParams
+    val initialMarginTop = layoutParams?.topMargin ?: 0
+    androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this) { _, windowInsets ->
+        val insets = windowInsets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        val params = targetView.layoutParams as? android.view.ViewGroup.MarginLayoutParams
+        if (params != null) {
+            params.topMargin = initialMarginTop + insets.top + additionalMargin
+            targetView.layoutParams = params
+        }
+        windowInsets
+    }
+}
