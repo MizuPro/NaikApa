@@ -1,0 +1,40 @@
+# Gradle files
+.gradle/
+/build/
+**/build/
+
+# Local configuration files
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+
+# Built artifacts
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Native build artifacts
+.externalNativeBuild/
+.cxx/
+
+# Log files
+*.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Agent files
+.agent/

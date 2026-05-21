@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary & Secondary (NaikApa Brand) -->
+    <color name="colorPrimary">#1A6FE8</color>
+    <color name="colorPrimaryDark">#1254B5</color>
+    <color name="colorSecondary">#00C2A8</color>
+    <color name="colorBackground">#F4F6FA</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorError">#E53935</color>
+    <color name="colorTextPrimary">#1A1A1A</color>
+    <color name="colorTextSecondary">#757575</color>
+    <color name="colorTextHint">#BDBDBD</color>
+    <color name="colorBorder">#E0E0E0</color>
+
+    <!-- Transit Modes -->
+    <color name="colorTransjakarta">#E31E24</color>
+    <color name="colorKRL">#0066B3</color>
+    <color name="colorMRT">#004EA2</color>
+    <color name="colorLRT">#F7A800</color>
+    <color name="colorMotor">#FF6D00</color>
+    <color name="colorMobil">#546E7A</color>
+    <color name="colorWalking">#8E8E93</color>
+</resources>
