@@ -585,7 +585,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.tvRecommendationTime.text = formatDuration(result.metrics.totalDurationSeconds)
-        binding.tvRecommendationCost.text = getString(R.string.route_cost_phase_11_placeholder)
+        binding.tvRecommendationCost.text = formatRupiah(result.metrics.estimatedTotalCost)
         binding.tvRecommendationWalking.text = formatDistance(result.metrics.walkingDistanceMeters)
         binding.tvRecommendationTransit.text = getString(
             R.string.route_transit_count_format,
@@ -903,10 +903,14 @@ class HomeFragment : Fragment() {
         val hours = minutes / 60
         val remainingMinutes = minutes % 60
         return if (hours > 0) {
-            getString(R.string.route_duration_hour_minute_format, hours, remainingMinutes)
+                    getString(R.string.route_duration_hour_minute_format, hours, remainingMinutes)
         } else {
             getString(R.string.route_duration_minute_format, minutes)
         }
+    }
+
+    private fun formatRupiah(value: Int): String {
+        return getString(R.string.route_cost_rupiah_format, String.format(Locale.US, "%,d", value).replace(",", "."))
     }
 
     private fun formatDistance(distanceMeters: Double): String {

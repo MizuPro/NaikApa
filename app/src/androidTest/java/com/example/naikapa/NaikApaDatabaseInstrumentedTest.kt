@@ -22,6 +22,8 @@ import com.example.naikapa.data.model.User
 import com.example.naikapa.data.model.UserProfile
 import com.example.naikapa.data.repository.TransitGraphRepository
 import com.example.naikapa.domain.routing.DijkstraAlgorithm
+import com.example.naikapa.domain.routing.RouteStepBuilder
+import com.example.naikapa.domain.routing.TransitRouteMetricsCalculator
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -242,5 +244,10 @@ class NaikApaDatabaseInstrumentedTest {
             sortPreference = SortPreference.FASTEST
         )
         assertTrue(path?.isNotEmpty() == true)
+
+        val steps = RouteStepBuilder().build(graph, path.orEmpty())
+        val metrics = TransitRouteMetricsCalculator().calculate(path.orEmpty(), steps)
+        assertTrue(metrics.estimatedFare >= 0)
+        assertEquals(metrics.estimatedFare + metrics.estimatedBbm, metrics.estimatedTotalCost)
     }
 }

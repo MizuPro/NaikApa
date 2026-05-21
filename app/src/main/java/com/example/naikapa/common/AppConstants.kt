@@ -40,4 +40,19 @@ object AppConstants {
     const val ROUTING_TRANSFER_COST = 500
     const val ROUTING_DURATION_TIEBREAKER = 0.00001
     const val ROUTING_WALKING_DISTANCE_WEIGHT = 10.0
+
+    // Transit fares
+    const val FARE_TRANSJAKARTA_FLAT = 3500
+    const val FARE_KRL_BASE = 3000
+    const val FARE_KRL_BASE_DISTANCE_KM = 25.0
+    const val FARE_KRL_INCREMENT_DISTANCE_KM = 10.0
+    const val FARE_KRL_INCREMENT = 1000
+    const val FARE_MRT_BASE = 3000
+    const val FARE_MRT_PER_STOP = 1000
+    const val FARE_MRT_MAX = 14000
+    const val FARE_LRTJ_FLAT = 5000
+    const val FARE_LRTJB_BASE = 5000
+    const val FARE_LRTJB_BASE_DISTANCE_KM = 1.0
+    const val FARE_LRTJB_PER_KM = 700
+    const val FARE_LRTJB_MAX = 20000
 }

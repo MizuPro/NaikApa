@@ -38,12 +38,16 @@ class RouteStepBuilderTest {
             edge("C", "D", "WALKING", "WALKING", 60, TransitEdgeType.WALKING, 250.0)
         )
 
-        val metrics = TransitRouteMetricsCalculator().calculate(edges)
+        val steps = RouteStepBuilder().build(graphOf(edges), edges)
+        val metrics = TransitRouteMetricsCalculator().calculate(edges, steps)
 
         assertEquals(280, metrics.totalDurationSeconds)
         assertEquals(1450.0, metrics.totalDistanceMeters, 0.001)
         assertEquals(250.0, metrics.walkingDistanceMeters, 0.001)
         assertEquals(1, metrics.transitCount)
+        assertEquals(3500, metrics.estimatedFare)
+        assertEquals(0, metrics.estimatedBbm)
+        assertEquals(3500, metrics.estimatedTotalCost)
     }
 
     private fun graphOf(edges: List<TransitEdge>): TransitGraph {

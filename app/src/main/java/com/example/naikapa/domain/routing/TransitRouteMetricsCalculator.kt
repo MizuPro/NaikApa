@@ -1,23 +1,31 @@
 package com.example.naikapa.domain.routing
 
 import com.example.naikapa.data.model.RouteMetrics
+import com.example.naikapa.data.model.RouteStep
 import com.example.naikapa.data.model.TransitEdge
 import com.example.naikapa.data.model.TransitEdgeType
 
-class TransitRouteMetricsCalculator {
-    fun calculate(edges: List<TransitEdge>): RouteMetrics {
+class TransitRouteMetricsCalculator(
+    private val fareCalculator: FareCalculator = FareCalculator()
+) {
+    fun calculate(edges: List<TransitEdge>, steps: List<RouteStep>): RouteMetrics {
         val totalDurationSeconds = edges.sumOf { it.durationSeconds }
         val totalDistanceMeters = edges.sumOf { it.distanceMeters }
         val walkingDistanceMeters = edges
             .filter { it.type == TransitEdgeType.WALKING }
             .sumOf { it.distanceMeters }
         val transitCount = countTransitChanges(edges)
+        val estimatedFare = fareCalculator.calculateTransitFare(steps)
+        val estimatedBbm = 0
 
         return RouteMetrics(
             totalDurationSeconds = totalDurationSeconds,
             totalDistanceMeters = totalDistanceMeters,
             walkingDistanceMeters = walkingDistanceMeters,
-            transitCount = transitCount
+            transitCount = transitCount,
+            estimatedFare = estimatedFare,
+            estimatedBbm = estimatedBbm,
+            estimatedTotalCost = estimatedFare + estimatedBbm
         )
     }
 

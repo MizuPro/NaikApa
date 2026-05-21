@@ -143,5 +143,5 @@
     <string name="route_duration_hour_minute_format">%1$d j %2$d mnt</string>
     <string name="route_duration_minute_format">%1$d mnt</string>
     <string name="route_transit_count_format">%1$dx</string>
-    <string name="route_cost_phase_11_placeholder">Fase 11</string>
+    <string name="route_cost_rupiah_format">Rp %1$s</string>
 </resources>

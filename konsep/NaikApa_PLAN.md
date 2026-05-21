@@ -486,28 +486,34 @@ Status implementasi: selesai. `DijkstraAlgorithm` sudah berjalan di atas `Transi
 
 ## Fase 11: Kalkulasi Tarif dan Estimasi Biaya
 
+### Status Planning
+- [x] Plan eksekusi Fase 11 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 11 selesai dikerjakan.
+
 ### Tujuan
 Menghitung estimasi biaya transportasi umum dan estimasi BBM kendaraan pribadi.
 
 ### Aktivitas
-1. Membuat class `FareCalculator`.
-2. Membuat tarif TransJakarta.
-3. Membuat tarif KRL progresif sederhana.
-4. Membuat tarif MRT.
-5. Membuat tarif LRT.
-6. Menghitung total biaya rute campuran transportasi umum.
-7. Membuat class `FuelCostCalculator`.
-8. Menghitung estimasi BBM motor.
-9. Menghitung estimasi BBM mobil.
-10. Menampilkan biaya pada hasil rekomendasi.
+1. [x] Membuat class `FareCalculator`.
+2. [x] Membuat tarif TransJakarta.
+3. [x] Membuat tarif KRL progresif sederhana.
+4. [x] Membuat tarif MRT.
+5. [x] Membuat tarif LRT.
+6. [x] Menghitung total biaya rute campuran transportasi umum.
+7. [x] Membuat class `FuelCostCalculator`.
+8. [x] Menghitung estimasi BBM motor.
+9. [x] Menghitung estimasi BBM mobil.
+10. [x] Menampilkan biaya pada hasil rekomendasi.
 
 ### Output
-1. Estimasi tarif transportasi umum tersedia.
-2. Estimasi BBM motor dan mobil tersedia.
-3. Total biaya rute dapat dibandingkan.
+1. [x] Estimasi tarif transportasi umum tersedia.
+2. [x] Estimasi BBM motor dan mobil tersedia.
+3. [x] Total biaya rute dapat dibandingkan.
 
 ### Kriteria Selesai
 Fase ini selesai jika setiap hasil rute memiliki estimasi biaya yang masuk akal.
+
+Status implementasi: selesai. `RouteMetrics` sudah membawa `estimatedFare`, `estimatedBbm`, dan `estimatedTotalCost`; `FareCalculator` menghitung tarif TJ, KRL, MRT, LRTJ, dan LRTJB; `FuelCostCalculator` menghitung estimasi BBM motor/mobil; Home menampilkan estimasi biaya transit dalam format Rupiah. Unit test, build debug, dan compile androidTest berhasil dijalankan.
 
 ---
 

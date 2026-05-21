@@ -19,7 +19,10 @@ data class RouteMetrics(
     val totalDurationSeconds: Int,
     val totalDistanceMeters: Double,
     val walkingDistanceMeters: Double,
-    val transitCount: Int
+    val transitCount: Int,
+    val estimatedFare: Int = 0,
+    val estimatedBbm: Int = 0,
+    val estimatedTotalCost: Int = estimatedFare + estimatedBbm
 )
 
 data class RouteStep(

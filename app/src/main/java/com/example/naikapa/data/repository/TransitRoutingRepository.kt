@@ -23,6 +23,7 @@ class TransitRoutingRepository(
         val edges = dijkstraAlgorithm.findPath(graph, startStopId, endStopId, mode, sortPreference) ?: return null
         val startStop = graph.nodes[startStopId] ?: return null
         val endStop = graph.nodes[endStopId] ?: return null
+        val steps = stepBuilder.build(graph, edges)
 
         return TransitRouteResult(
             startStop = startStop,
@@ -30,8 +31,8 @@ class TransitRoutingRepository(
             mode = mode,
             sortPreference = sortPreference,
             edges = edges,
-            steps = stepBuilder.build(graph, edges),
-            metrics = metricsCalculator.calculate(edges)
+            steps = steps,
+            metrics = metricsCalculator.calculate(edges, steps)
         )
     }
 }
