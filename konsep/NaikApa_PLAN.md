@@ -578,6 +578,7 @@ Mengimplementasikan fitur utama yang membuat NaikApa lebih unggul, yaitu gabunga
 5. Cache hasil TomTom sementara jika origin dan destination sama.
 
 ### Output
+1. [x] Sistem dapat membuat rute gabungan kendaraan pribadi ke titik transit, lanjut transportasi umum, lalu jalan kaki ke tujuan.
 2. [x] Sistem dapat membandingkan rute gabungan dengan rute kendaraan pribadi penuh dan transportasi umum penuh.
 3. [x] Sistem dapat menampilkan langkah perjalanan gabungan.
 
