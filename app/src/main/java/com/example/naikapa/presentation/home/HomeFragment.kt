@@ -1,38 +1,79 @@
 package com.example.naikapa.presentation.home
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.naikapa.R
+import com.example.naikapa.common.AppConstants
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
+import com.example.naikapa.data.model.LocationPoint
+import com.example.naikapa.data.model.MapMarkerType
+import com.example.naikapa.data.model.MapPoint
+import com.example.naikapa.data.model.MapStyle
 import com.example.naikapa.databinding.FragmentHomeBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.material.card.MaterialCardView
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Overlay
+import org.osmdroid.views.overlay.Polyline
+import java.util.Locale
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var sessionManager: SessionManager
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var selectedOrigin: LocationPoint? = null
+    private var currentMapStyle = MapStyle.POSITRON
+    private val routeOverlays = mutableListOf<Overlay>()
+    private var originMarker: Marker? = null
 
     // List untuk mengelola visual mode transportasi
     private lateinit var modeCards: List<MaterialCardView>
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (fineGranted || coarseGranted) {
+            fetchCurrentLocation()
+        } else {
+            toast(getString(R.string.location_permission_denied))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Inisialisasi konfigurasi osmdroid User-Agent
         val ctx = requireContext().applicationContext
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
+        Configuration.getInstance().userAgentValue = AppConstants.MAP_USER_AGENT
     }
 
     override fun onCreateView(
@@ -46,6 +87,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         sessionManager = SessionManager(requireContext())
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // Mengubah sapaan di header dengan nama user
         val userName = sessionManager.getUserName() ?: "User NaikApa"
@@ -58,31 +100,55 @@ class HomeFragment : Fragment() {
     }
 
     private fun initMap() {
-        // Setup Tile Source kustom untuk CartoDB Positron (Light Mode)
-        val positronTileSource = XYTileSource(
-            "CartoDB_Positron",
-            1, 19, 256, ".png",
-            arrayOf(
-                "https://a.basemaps.cartocdn.com/light_all/",
-                "https://b.basemaps.cartocdn.com/light_all/",
-                "https://c.basemaps.cartocdn.com/light_all/",
-                "https://d.basemaps.cartocdn.com/light_all/"
-            )
-        )
-
         binding.mapView.apply {
-            setTileSource(positronTileSource)
             setMultiTouchControls(true)
             isHorizontalMapRepetitionEnabled = false
             isVerticalMapRepetitionEnabled = false
 
             // Set default view ke wilayah Jabodetabek (Jakarta Pusat sebagai titik jangkar)
             controller.apply {
-                setZoom(12.5)
-                val jakartaPoint = GeoPoint(-6.2088, 106.8456)
+                setZoom(AppConstants.MAP_DEFAULT_ZOOM)
+                val jakartaPoint = GeoPoint(AppConstants.MAP_DEFAULT_LAT, AppConstants.MAP_DEFAULT_LON)
                 setCenter(jakartaPoint)
             }
         }
+        setMapStyle(MapStyle.POSITRON)
+    }
+
+    private fun setMapStyle(style: MapStyle) {
+        currentMapStyle = style
+        binding.mapView.setTileSource(createTileSource(style))
+        binding.btnMapStyle.text = when (style) {
+            MapStyle.POSITRON -> getString(R.string.map_style_light)
+            MapStyle.DARK_MATTER -> getString(R.string.map_style_dark)
+        }
+        binding.mapView.invalidate()
+    }
+
+    private fun toggleMapStyle() {
+        val nextStyle = when (currentMapStyle) {
+            MapStyle.POSITRON -> MapStyle.DARK_MATTER
+            MapStyle.DARK_MATTER -> MapStyle.POSITRON
+        }
+        setMapStyle(nextStyle)
+    }
+
+    private fun createTileSource(style: MapStyle): XYTileSource {
+        val (name, hosts) = when (style) {
+            MapStyle.POSITRON -> AppConstants.MAP_TILE_POSITRON to arrayOf(
+                "https://a.basemaps.cartocdn.com/light_all/",
+                "https://b.basemaps.cartocdn.com/light_all/",
+                "https://c.basemaps.cartocdn.com/light_all/",
+                "https://d.basemaps.cartocdn.com/light_all/"
+            )
+            MapStyle.DARK_MATTER -> AppConstants.MAP_TILE_DARK_MATTER to arrayOf(
+                "https://a.basemaps.cartocdn.com/dark_all/",
+                "https://b.basemaps.cartocdn.com/dark_all/",
+                "https://c.basemaps.cartocdn.com/dark_all/",
+                "https://d.basemaps.cartocdn.com/dark_all/"
+            )
+        }
+        return XYTileSource(name, 1, 19, 256, ".png", hosts)
     }
 
     private fun setupTransitModes() {
@@ -157,8 +223,11 @@ class HomeFragment : Fragment() {
 
         // Tombol GPS Lokasi
         binding.btnLocation.setOnClickListener {
-            toast("Mendapatkan lokasi GPS...")
-            binding.mapView.controller.animateTo(GeoPoint(-6.2088, 106.8456))
+            startLocationFlow()
+        }
+
+        binding.btnMapStyle.setOnClickListener {
+            toggleMapStyle()
         }
 
         // Tombol Cari Rute
@@ -166,6 +235,7 @@ class HomeFragment : Fragment() {
             val origin = binding.tvOrigin.text.toString()
             val destination = binding.tvDestination.text.toString()
             toast("Mencari rute dari $origin ke $destination...")
+            showDemoRoutePreview()
             
             // Animasikan panel rekomendasi agar terlihat dinamis
             binding.cardRecommendation.visibility = View.VISIBLE
@@ -179,9 +249,236 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun showDemoRoutePreview() {
+        val originPoint = selectedOrigin?.let {
+            MapPoint(
+                label = getString(R.string.map_marker_origin),
+                latitude = it.latitude,
+                longitude = it.longitude,
+                description = it.label,
+                markerType = MapMarkerType.ORIGIN
+            )
+        } ?: MapPoint(
+            label = getString(R.string.map_marker_origin),
+            latitude = AppConstants.MAP_DEFAULT_LAT,
+            longitude = AppConstants.MAP_DEFAULT_LON,
+            description = "Jakarta Pusat",
+            markerType = MapMarkerType.ORIGIN
+        )
+        val transitPoint = MapPoint(
+            label = getString(R.string.map_marker_transit),
+            latitude = -6.1767,
+            longitude = 106.6319,
+            description = "Stasiun Tangerang",
+            markerType = MapMarkerType.TRANSIT
+        )
+        val destinationPoint = MapPoint(
+            label = getString(R.string.map_marker_destination),
+            latitude = -6.2386,
+            longitude = 106.6284,
+            description = binding.tvDestination.text.toString(),
+            markerType = MapMarkerType.DESTINATION
+        )
+
+        clearRouteOverlays()
+        showOriginMarker(originPoint)
+        showDestinationMarker(destinationPoint)
+        showTransitMarkers(listOf(transitPoint))
+        drawRoutePolyline(
+            points = listOf(originPoint, transitPoint, destinationPoint),
+            color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+        )
+        binding.mapView.controller.apply {
+            setZoom(10.8)
+            animateTo(pointToGeoPoint(transitPoint))
+        }
+        toast(getString(R.string.map_route_preview_ready))
+    }
+
+    private fun showOriginMarker(point: MapPoint) {
+        originMarker?.let { binding.mapView.overlays.remove(it) }
+        originMarker = createMarker(point).also {
+            binding.mapView.overlays.add(it)
+        }
+        binding.mapView.invalidate()
+    }
+
+    private fun showDestinationMarker(point: MapPoint) {
+        addRouteOverlay(createMarker(point))
+    }
+
+    private fun showTransitMarkers(points: List<MapPoint>) {
+        points.forEach { point ->
+            addRouteOverlay(createMarker(point))
+        }
+    }
+
+    private fun drawRoutePolyline(points: List<MapPoint>, color: Int) {
+        if (points.size < 2) return
+        val polyline = Polyline(binding.mapView).apply {
+            outlinePaint.color = color
+            outlinePaint.strokeWidth = dpToPx(4f).toFloat()
+            outlinePaint.alpha = 220
+            setPoints(points.map(::pointToGeoPoint))
+        }
+        addRouteOverlay(polyline)
+    }
+
+    private fun clearRouteOverlays() {
+        routeOverlays.forEach { overlay ->
+            binding.mapView.overlays.remove(overlay)
+        }
+        routeOverlays.clear()
+        binding.mapView.invalidate()
+    }
+
+    private fun addRouteOverlay(overlay: Overlay) {
+        routeOverlays.add(overlay)
+        binding.mapView.overlays.add(overlay)
+        binding.mapView.invalidate()
+    }
+
+    private fun createMarker(point: MapPoint): Marker {
+        val iconRes = when (point.markerType) {
+            MapMarkerType.ORIGIN -> R.drawable.ic_my_location
+            MapMarkerType.DESTINATION -> R.drawable.ic_warning
+            MapMarkerType.TRANSIT -> R.drawable.ic_train
+        }
+        val iconColor = when (point.markerType) {
+            MapMarkerType.ORIGIN -> R.color.colorPrimary
+            MapMarkerType.DESTINATION -> R.color.colorAccentOrange
+            MapMarkerType.TRANSIT -> R.color.colorKRL
+        }
+        val icon = ContextCompat.getDrawable(requireContext(), iconRes)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(requireContext(), iconColor))
+        }
+
+        return Marker(binding.mapView).apply {
+            position = pointToGeoPoint(point)
+            title = point.label
+            snippet = point.description
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            this.icon = icon
+        }
+    }
+
+    private fun pointToGeoPoint(point: MapPoint): GeoPoint {
+        return GeoPoint(point.latitude, point.longitude)
+    }
+
     private fun dpToPx(dp: Float): Int {
         val density = resources.displayMetrics.density
         return (dp * density).toInt()
+    }
+
+    private fun startLocationFlow() {
+        if (!hasLocationPermission()) {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+            return
+        }
+
+        fetchCurrentLocation()
+    }
+
+    private fun hasLocationPermission(): Boolean {
+        val context = requireContext()
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        return fineGranted || coarseGranted
+    }
+
+    private fun hasFineLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun isLocationServiceEnabled(): Boolean {
+        val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            locationManager.isLocationEnabled
+        } else {
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun fetchCurrentLocation() {
+        if (!isLocationServiceEnabled()) {
+            toast(getString(R.string.location_service_disabled))
+            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            return
+        }
+
+        toast(getString(R.string.location_fetching))
+        binding.btnLocation.isEnabled = false
+
+        val priority = if (hasFineLocationPermission()) {
+            Priority.PRIORITY_HIGH_ACCURACY
+        } else {
+            Priority.PRIORITY_BALANCED_POWER_ACCURACY
+        }
+        val cancellationTokenSource = CancellationTokenSource()
+
+        fusedLocationClient.getCurrentLocation(priority, cancellationTokenSource.token)
+            .addOnSuccessListener { location ->
+                if (_binding == null) return@addOnSuccessListener
+                binding.btnLocation.isEnabled = true
+                if (location != null) {
+                    handleLocationResult(location)
+                } else {
+                    toast(getString(R.string.location_failed))
+                }
+            }
+            .addOnFailureListener {
+                if (_binding == null) return@addOnFailureListener
+                binding.btnLocation.isEnabled = true
+                toast(getString(R.string.location_error))
+            }
+    }
+
+    private fun handleLocationResult(location: Location) {
+        val origin = LocationPoint(
+            label = getString(R.string.search_dari_val),
+            latitude = location.latitude,
+            longitude = location.longitude,
+            isFromGps = true
+        )
+        selectedOrigin = origin
+
+        binding.tvOrigin.text = origin.label
+        binding.tvOriginSub.text = formatCoordinates(origin.latitude, origin.longitude)
+        showOriginMarker(
+            MapPoint(
+                label = getString(R.string.map_marker_origin),
+                latitude = origin.latitude,
+                longitude = origin.longitude,
+                description = origin.label,
+                markerType = MapMarkerType.ORIGIN
+            )
+        )
+        binding.mapView.controller.apply {
+            setZoom(AppConstants.MAP_LOCATION_ZOOM)
+            animateTo(GeoPoint(origin.latitude, origin.longitude))
+        }
+        toast(getString(R.string.location_success))
+    }
+
+    private fun formatCoordinates(latitude: Double, longitude: Double): String {
+        return String.format(Locale.US, "%.5f, %.5f", latitude, longitude)
     }
 
     override fun onResume() {

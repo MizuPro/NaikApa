@@ -12,4 +12,11 @@ object AppConstants {
     const val CAR_CONSUMPTION_KM_PER_LITER = 12.0
     const val TOMTOM_SEARCH_LIMIT = 8
     const val TOMTOM_MAX_ALTERNATIVES = 2
+    const val MAP_USER_AGENT = "NaikApa/1.0"
+    const val MAP_DEFAULT_LAT = -6.2088
+    const val MAP_DEFAULT_LON = 106.8456
+    const val MAP_DEFAULT_ZOOM = 12.5
+    const val MAP_LOCATION_ZOOM = 15.0
+    const val MAP_TILE_POSITRON = "CartoDB_Positron"
+    const val MAP_TILE_DARK_MATTER = "CartoDB_DarkMatter"
 }

@@ -61,4 +61,15 @@ class NaikApaDatabaseHelperTest {
             NaikApaDbContract.indexStatements.any { it.contains("idx_users_email") }
         )
     }
+
+    @Test
+    fun mapConstantsAreConfiguredForJabodetabekPreview() {
+        assertEquals("NaikApa/1.0", AppConstants.MAP_USER_AGENT)
+        assertEquals(-6.2088, AppConstants.MAP_DEFAULT_LAT, 0.0001)
+        assertEquals(106.8456, AppConstants.MAP_DEFAULT_LON, 0.0001)
+        assertTrue(AppConstants.MAP_DEFAULT_ZOOM > 0.0)
+        assertTrue(AppConstants.MAP_LOCATION_ZOOM > AppConstants.MAP_DEFAULT_ZOOM)
+        assertEquals("CartoDB_Positron", AppConstants.MAP_TILE_POSITRON)
+        assertEquals("CartoDB_DarkMatter", AppConstants.MAP_TILE_DARK_MATTER)
+    }
 }

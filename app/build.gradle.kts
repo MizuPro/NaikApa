@@ -60,6 +60,9 @@ dependencies {
     // osmdroid (OpenStreetMap SDK untuk Visual Peta)
     implementation(libs.osmdroid.android)
 
+    // Lokasi perangkat
+    implementation(libs.play.services.location)
+
     // Navigation Component
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)

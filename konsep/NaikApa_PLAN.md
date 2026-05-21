@@ -278,51 +278,63 @@ Status implementasi: selesai. Login dan register sudah memakai `UserDao`/SQLite,
 
 ## Fase 5: Integrasi GPS dan Permission Dasar
 
+### Status Planning
+- [x] Plan eksekusi Fase 5 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 5 selesai dikerjakan.
+
 ### Tujuan
 Mengambil lokasi awal pengguna dari GPS perangkat.
 
 ### Aktivitas
-1. Menambahkan permission lokasi di Android Manifest.
-2. Membuat runtime permission untuk lokasi.
-3. Mengambil koordinat lokasi user.
-4. Menampilkan nama sementara seperti “Lokasi Saya”.
-5. Menangani kondisi permission ditolak.
-6. Menangani kondisi GPS mati.
-7. Menyimpan koordinat lokasi awal untuk proses routing.
+1. [x] Menambahkan permission lokasi di Android Manifest.
+2. [x] Membuat runtime permission untuk lokasi.
+3. [x] Mengambil koordinat lokasi user.
+4. [x] Menampilkan nama sementara seperti “Lokasi Saya”.
+5. [x] Menangani kondisi permission ditolak.
+6. [x] Menangani kondisi GPS mati.
+7. [x] Menyimpan koordinat lokasi awal untuk proses routing.
 
 ### Output
-1. Aplikasi dapat meminta izin lokasi.
-2. Aplikasi dapat mengambil latitude dan longitude user.
-3. Lokasi user dapat digunakan sebagai titik asal.
+1. [x] Aplikasi dapat meminta izin lokasi.
+2. [x] Aplikasi dapat mengambil latitude dan longitude user.
+3. [x] Lokasi user dapat digunakan sebagai titik asal.
 
 ### Kriteria Selesai
 Fase ini selesai jika tombol “Gunakan Lokasi Saya” berhasil mengisi titik asal dengan koordinat GPS.
+
+Status implementasi: selesai. Tombol lokasi di Home sudah meminta runtime permission, mengecek layanan lokasi aktif, mengambil koordinat via Fused Location Provider, mengisi titik asal dengan label “Lokasi saya” dan koordinat, menyimpan state asal sebagai `LocationPoint`, serta menggeser peta ke posisi user. Unit test dan build debug berhasil dijalankan. Instrumentation test berhasil dikompilasi, tetapi eksekusi penuh belum berjalan karena emulator `emulator-5562` berstatus OFFLINE.
 
 ---
 
 ## Fase 6: Integrasi osmdroid & CartoDB Map Tiles
 
+### Status Planning
+- [x] Plan eksekusi Fase 6 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 6 selesai dikerjakan.
+
 ### Tujuan
 Menampilkan peta interaktif yang elegan berbasis CartoDB sebagai visual utama aplikasi.
 
 ### Aktivitas
-1. Menambahkan osmdroid SDK ke dalam dependencies.
-2. Mengatur konfigurasi user-agent osmdroid.
-3. Menampilkan MapView berbasis osmdroid di layout Fragment.
-4. Mengatur Tile Source kustom ke CartoDB Positron / Dark Matter.
-5. Menampilkan marker lokasi awal.
-6. Menampilkan marker tujuan.
-7. Mengatur camera position/zoom ke area Jabodetabek.
-8. Menyiapkan fungsi menggambar polyline rute di atas MapView.
+1. [x] Menambahkan osmdroid SDK ke dalam dependencies.
+2. [x] Mengatur konfigurasi user-agent osmdroid.
+3. [x] Menampilkan MapView berbasis osmdroid di layout Fragment.
+4. [x] Mengatur Tile Source kustom ke CartoDB Positron / Dark Matter.
+5. [x] Menampilkan marker lokasi awal.
+6. [x] Menampilkan marker tujuan.
+7. [x] Mengatur camera position/zoom ke area Jabodetabek.
+8. [x] Menyiapkan fungsi menggambar polyline rute di atas MapView.
 
 ### Output
-1. Peta CartoDB tampil di aplikasi dengan mulus.
-2. Marker dapat ditampilkan secara interaktif.
-3. Polyline rute dapat digambar secara dinamis.
-4. Peta siap dipakai pada halaman Home dan Detail Rute.
+1. [x] Peta CartoDB tampil di aplikasi dengan mulus.
+2. [x] Marker dapat ditampilkan secara interaktif.
+3. [x] Polyline rute dapat digambar secara dinamis.
+4. [x] Peta siap dipakai pada halaman Home dan Detail Rute.
 
 ### Kriteria Selesai
 Fase ini selesai jika peta dapat menampilkan lokasi awal, tujuan, dan garis rute sederhana.
+
+Status implementasi: selesai. Home sudah memakai user-agent osmdroid eksplisit, mendukung CartoDB Positron dan Dark Matter, memiliki helper marker asal/tujuan/transit, helper polyline rute, clear overlay agar tidak menumpuk, serta preview rute sederhana dari tombol “Temukan Rute”. Unit test dan build debug berhasil dijalankan. Instrumentation test berhasil dikompilasi, tetapi eksekusi penuh belum berjalan karena tidak ada device tersambung.
 
 ---
 
