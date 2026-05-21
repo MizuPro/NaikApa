@@ -27,8 +27,10 @@ import com.example.naikapa.R
 import com.example.naikapa.common.AppConstants
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
+import com.example.naikapa.data.local.GtfsDao
 import com.example.naikapa.data.local.HistoryDao
 import com.example.naikapa.data.local.NaikApaDatabaseHelper
+import com.example.naikapa.data.repository.GtfsStopSearchRepository
 import com.example.naikapa.data.model.LocationPoint
 import com.example.naikapa.data.model.MapMarkerType
 import com.example.naikapa.data.model.MapPoint
@@ -54,7 +56,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,7 +72,9 @@ class HomeFragment : Fragment() {
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var historyDao: HistoryDao
     private val searchRepository = TomTomSearchRepository(RemoteClient.tomTomSearchApi)
+    private lateinit var gtfsSearchRepository: GtfsStopSearchRepository
     private lateinit var homeScope: CoroutineScope
+    private var selectedModeCardId: Int = -1
     private var selectedOrigin: LocationPoint? = null
     private var selectedDestination: SearchLocation? = null
     private var destinationSearchJob: Job? = null
@@ -114,6 +120,7 @@ class HomeFragment : Fragment() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         dbHelper = NaikApaDatabaseHelper(requireContext())
         historyDao = HistoryDao(dbHelper)
+        gtfsSearchRepository = GtfsStopSearchRepository(GtfsDao(dbHelper))
         homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
         // Mengubah sapaan di header dengan nama user
@@ -200,6 +207,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun selectTransitMode(selectedCard: MaterialCardView) {
+        selectedModeCardId = selectedCard.id
         modeCards.forEach { card ->
             val innerLayout = card.getChildAt(0) as ViewGroup
             val iconView = innerLayout.getChildAt(0) as ImageView
@@ -249,12 +257,9 @@ class HomeFragment : Fragment() {
     private fun scheduleDestinationSearch(query: String) {
         destinationSearchJob?.cancel()
         val trimmedQuery = query.trim()
-        if (trimmedQuery.length < AppConstants.TOMTOM_MIN_QUERY_LENGTH) {
+        // Gunakan GTFS_MIN_QUERY_LENGTH (2) agar pencarian lokal bisa berjalan lebih awal
+        if (trimmedQuery.length < AppConstants.GTFS_MIN_QUERY_LENGTH) {
             hideSearchResults()
-            return
-        }
-        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
-            showSearchStatus(getString(R.string.search_destination_api_key_missing), isError = true)
             return
         }
 
@@ -266,28 +271,46 @@ class HomeFragment : Fragment() {
 
     private suspend fun performDestinationSearch(query: String) {
         showSearchStatus(getString(R.string.search_destination_loading), isError = false)
-        val latitudeBias = selectedOrigin?.latitude ?: AppConstants.MAP_DEFAULT_LAT
-        val longitudeBias = selectedOrigin?.longitude ?: AppConstants.MAP_DEFAULT_LON
-        val result = withContext(Dispatchers.IO) {
-            searchRepository.search(
-                query = query,
-                apiKey = BuildConfig.TOMTOM_API_KEY,
-                latitudeBias = latitudeBias,
-                longitudeBias = longitudeBias
-            )
+
+        val userLat = selectedOrigin?.latitude
+        val userLon = selectedOrigin?.longitude
+        val latBias = userLat ?: AppConstants.MAP_DEFAULT_LAT
+        val lonBias = userLon ?: AppConstants.MAP_DEFAULT_LON
+        val agencyFilter = getAgencyFilterForCurrentMode()
+
+        val combined = mutableListOf<SearchLocation>()
+
+        coroutineScope {
+            // GTFS lokal — selalu jalan, offline, tanpa API key
+            val gtfsDeferred = async(Dispatchers.IO) {
+                gtfsSearchRepository.search(query, userLat, userLon, agencyFilter)
+            }
+
+            // TomTom — hanya jika API key valid
+            val tomtomDeferred = if (BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+                async(Dispatchers.IO) {
+                    searchRepository.search(
+                        query = query,
+                        apiKey = BuildConfig.TOMTOM_API_KEY,
+                        latitudeBias = latBias,
+                        longitudeBias = lonBias
+                    )
+                }
+            } else null
+
+            // GTFS selalu tampil (error TomTom tidak memblokir)
+            combined.addAll(gtfsDeferred.await())
+
+            tomtomDeferred?.await()?.onSuccess { locations ->
+                combined.addAll(locations.take(AppConstants.TOMTOM_SEARCH_LIMIT))
+            }
         }
 
-        result
-            .onSuccess { locations ->
-                if (locations.isEmpty()) {
-                    showSearchStatus(getString(R.string.search_destination_empty), isError = false)
-                } else {
-                    renderSearchResults(query, locations)
-                }
-            }
-            .onFailure {
-                showSearchStatus(getString(R.string.search_destination_error), isError = true)
-            }
+        if (combined.isEmpty()) {
+            showSearchStatus(getString(R.string.search_combined_empty), isError = false)
+        } else {
+            renderSearchResults(query, combined)
+        }
     }
 
     private fun renderSearchResults(query: String, locations: List<SearchLocation>) {
@@ -300,15 +323,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun createSearchResultView(query: String, location: SearchLocation): View {
+        val isGtfs = location.source == SearchLocation.SOURCE_GTFS
         val card = MaterialCardView(requireContext()).apply {
             radius = dpToPx(10f).toFloat()
             cardElevation = 0f
             strokeWidth = dpToPx(1f)
-            strokeColor = ContextCompat.getColor(requireContext(), R.color.colorCardOutline)
+            strokeColor = ContextCompat.getColor(
+                requireContext(),
+                if (isGtfs) R.color.colorPrimary else R.color.colorCardOutline
+            )
             setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
-            setOnClickListener {
-                selectDestination(query, location)
-            }
+            setOnClickListener { selectDestination(query, location) }
         }
         val content = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -329,9 +354,32 @@ class HomeFragment : Fragment() {
             maxLines = 1
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
-
         content.addView(title)
         content.addView(subtitle)
+
+        // Badge agency/moda khusus untuk hasil GTFS lokal
+        if (isGtfs) {
+            val badge = TextView(requireContext()).apply {
+                text = GtfsStopSearchRepository.agencyIdToLabel(location.agencyId)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+                textSize = 10f
+                setPadding(dpToPx(6f), dpToPx(2f), dpToPx(6f), dpToPx(2f))
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(requireContext(), R.color.colorPrimaryLight))
+                    cornerRadius = dpToPx(4f).toFloat()
+                    setStroke(
+                        dpToPx(1f),
+                        ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                    )
+                }
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dpToPx(4f) }
+            }
+            content.addView(badge)
+        }
+
         card.addView(content)
         card.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -340,6 +388,15 @@ class HomeFragment : Fragment() {
             bottomMargin = dpToPx(8f)
         }
         return card
+    }
+
+    /** Kembalikan agencyId GTFS sesuai moda transit yang dipilih user, atau null untuk semua moda. */
+    private fun getAgencyFilterForCurrentMode(): String? = when (selectedModeCardId) {
+        R.id.modeTJ  -> "tj"
+        R.id.modeKRL -> "krl"
+        R.id.modeMRT -> "mrt"
+        R.id.modeLRT -> "lrt"
+        else         -> null  // modeCampur, modeMotor, modeMobil → tampilkan semua stop
     }
 
     private fun selectDestination(query: String, location: SearchLocation) {

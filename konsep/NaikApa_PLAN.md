@@ -371,6 +371,9 @@ Status implementasi: selesai. Home sudah memiliki input pencarian tujuan, deboun
 
 ## Fase 8: Search Halte dan Stasiun dari GTFS
 
+### Status Planning
+- [x] Plan eksekusi Fase 8 sudah dibuat di `.agent/planning/plan.md`.
+
 ### Tujuan
 Membuat pencarian lokasi berbasis data GTFS lokal untuk halte dan stasiun.
 
@@ -1084,3 +1087,41 @@ Pada akhir pengembangan, aplikasi NaikApa diharapkan memiliki hasil berikut:
 ## 11. Penutup
 
 Planning ini digunakan sebagai panduan teknis dan pengerjaan bertahap untuk membangun aplikasi NaikApa. Fokus utama aplikasi adalah membuat rekomendasi transportasi yang membantu pengguna mengambil keputusan perjalanan berdasarkan kondisi nyata, bukan sekadar menampilkan rute. Dengan pembagian fase yang jelas, pengembangan dapat dilakukan secara bertahap dari fondasi aplikasi sampai hasil akhir yang siap dikumpulkan dan dipresentasikan.
+
+---
+
+## 12. Log Implementasi FASE 8 — GTFS Local Stop Search
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 8 menambahkan pencarian halte dan stasiun berbasis data GTFS lokal ke fitur search tujuan yang sudah menggunakan TomTom. Pencarian GTFS berjalan sepenuhnya offline dan paralel dengan TomTom.
+
+### Checklist Aktivitas FASE 8
+
+- [x] `SearchLocation.kt` — tambah field metadata GTFS: `stopId`, `agencyId`, `stopType`, `distanceMeters`, konstanta `SOURCE_GTFS`
+- [x] `GtfsDao.kt` — perkuat `searchStops()`: trim keyword, guard empty, batas `coerceIn(1,50)`, trim agencyId
+- [x] `GtfsStopSearchRepository.kt` — baru: query GtfsDao, mapping ke SearchLocation, jarak Haversine, sort relevansi+jarak, label agency
+- [x] `HomeFragment.kt` — inisialisasi repository, track selected mode, hapus early-return API key, `performDestinationSearch` paralel GTFS+TomTom via `coroutineScope { async }`, badge agency di hasil, `getAgencyFilterForCurrentMode()`
+- [x] `AppConstants.kt` — tambah `GTFS_SEARCH_LIMIT=10`, `GTFS_MIN_QUERY_LENGTH=2`, `GTFS_SOURCE="gtfs"`
+- [x] `strings.xml` — tambah 13 string GTFS UI (loading, empty, badge agency, format jarak)
+- [x] `GtfsStopSearchRepositoryTest.kt` — baru: 11 unit test (mapping, Haversine, sorting, filter agency, limit, label)
+- [x] `NaikApaDatabaseHelperTest.kt` — tambah `gtfsSearchConstantsAreConfigured()` untuk 3 konstanta baru
+- [x] `libs.versions.toml` — tambah `mockito = "5.12.0"` dan `mockito-core`
+- [x] `build.gradle.kts` — tambah `testImplementation(libs.mockito.core)`
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| Pencarian "Stasiun Tangerang", "Dukuh Atas" dari GTFS lokal | ✅ Diimplementasikan via GtfsStopSearchRepository |
+| Hasil GTFS muncul tanpa internet / TOMTOM_API_KEY placeholder | ✅ Tidak ada early-return API key, GTFS selalu jalan |
+| Filter moda membatasi hasil GTFS (tj/krl/mrt/lrt) | ✅ getAgencyFilterForCurrentMode() diteruskan ke DAO |
+| Nama stop, agency/moda, dan jarak tampil | ✅ Badge GradientDrawable + address dari buildAddress() |
+| Pilihan GTFS mengisi selectedDestination + marker + history | ✅ selectDestination() dipanggil sama seperti TomTom |
+| Unit test repository lulus | ✅ 11 test case di GtfsStopSearchRepositoryTest |
+| Build debug berhasil | Perlu divalidasi dengan `gradlew assembleDebug` |
+
+

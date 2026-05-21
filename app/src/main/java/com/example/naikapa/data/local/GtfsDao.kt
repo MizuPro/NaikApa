@@ -74,14 +74,18 @@ class GtfsDao(private val dbHelper: NaikApaDatabaseHelper) {
     }
 
     fun searchStops(keyword: String, agencyId: String? = null, limit: Int = 20): List<GtfsStop> {
+        val trimmed = keyword.trim()
+        if (trimmed.isEmpty()) return emptyList()
+        val safeLimit = limit.coerceIn(1, 50)
+
         val selection: String
         val args: Array<String>
         if (agencyId.isNullOrBlank()) {
             selection = "${NaikApaDbContract.GtfsStops.STOP_NAME} LIKE ?"
-            args = arrayOf("%$keyword%")
+            args = arrayOf("%$trimmed%")
         } else {
             selection = "${NaikApaDbContract.GtfsStops.STOP_NAME} LIKE ? AND ${NaikApaDbContract.GtfsStops.AGENCY_ID} = ?"
-            args = arrayOf("%$keyword%", agencyId)
+            args = arrayOf("%$trimmed%", agencyId.trim())
         }
         dbHelper.readableDatabase.query(
             NaikApaDbContract.GtfsStops.TABLE,
@@ -91,7 +95,7 @@ class GtfsDao(private val dbHelper: NaikApaDatabaseHelper) {
             null,
             null,
             "${NaikApaDbContract.GtfsStops.STOP_NAME} ASC",
-            limit.toString()
+            safeLimit.toString()
         ).use { cursor ->
             return cursor.toStopList()
         }

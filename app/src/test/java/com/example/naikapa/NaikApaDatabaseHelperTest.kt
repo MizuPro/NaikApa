@@ -83,4 +83,17 @@ class NaikApaDatabaseHelperTest {
         assertEquals(300L, AppConstants.TOMTOM_SEARCH_DEBOUNCE_MS)
         assertEquals("isi_api_key_kamu_di_sini", AppConstants.TOMTOM_API_KEY_PLACEHOLDER)
     }
+    @Test
+    fun gtfsSearchConstantsAreConfigured() {
+        // Limit hasil lokal cukup besar untuk menampilkan pilihan yang relevan
+        assertTrue("GTFS_SEARCH_LIMIT harus >= 5", AppConstants.GTFS_SEARCH_LIMIT >= 5)
+        // Min query length GTFS harus <= TomTom agar pencarian lokal tetap bisa dimulai lebih awal
+        assertTrue(
+            "GTFS_MIN_QUERY_LENGTH harus <= TOMTOM_MIN_QUERY_LENGTH",
+            AppConstants.GTFS_MIN_QUERY_LENGTH <= AppConstants.TOMTOM_MIN_QUERY_LENGTH
+        )
+        assertEquals("Nilai source GTFS harus 'gtfs'", "gtfs", AppConstants.GTFS_SOURCE)
+        assertEquals(10, AppConstants.GTFS_SEARCH_LIMIT)
+        assertEquals(2, AppConstants.GTFS_MIN_QUERY_LENGTH)
+    }
 }

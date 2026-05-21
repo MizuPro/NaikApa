@@ -25,4 +25,9 @@ object AppConstants {
     const val MAP_LOCATION_ZOOM = 15.0
     const val MAP_TILE_POSITRON = "CartoDB_Positron"
     const val MAP_TILE_DARK_MATTER = "CartoDB_DarkMatter"
+
+    // GTFS Local Stop Search
+    const val GTFS_SEARCH_LIMIT = 10
+    const val GTFS_MIN_QUERY_LENGTH = 2
+    const val GTFS_SOURCE = "gtfs"
 }

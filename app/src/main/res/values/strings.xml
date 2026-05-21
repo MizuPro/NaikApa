@@ -121,4 +121,17 @@
     <string name="profile_delete_message">Akun lokal dan data yang terhubung akan dihapus dari perangkat ini.</string>
     <string name="cancel">Batal</string>
     <string name="delete">Hapus</string>
+    <!-- Home Screen — GTFS Local Stop Search -->
+    <string name="search_gtfs_loading">Mencari halte dan stasiun lokal…</string>
+    <string name="search_gtfs_empty">Tidak ada halte atau stasiun yang cocok.</string>
+    <string name="search_combined_empty">Tidak ada hasil untuk kata kunci ini.</string>
+    <string name="search_tomtom_unavailable">Pencarian alamat tidak tersedia (API key belum diisi). Menampilkan halte lokal saja.</string>
+    <string name="search_gtfs_badge_tj">TransJakarta</string>
+    <string name="search_gtfs_badge_krl">KRL Commuter Line</string>
+    <string name="search_gtfs_badge_mrt">MRT Jakarta</string>
+    <string name="search_gtfs_badge_lrt">LRT Jakarta</string>
+    <string name="search_gtfs_badge_stop">Halte / Stasiun</string>
+    <string name="search_gtfs_distance_m">%d m</string>
+    <string name="search_gtfs_distance_km">%.1f km</string>
+    <string name="search_gtfs_source_label">Lokal</string>
 </resources>
