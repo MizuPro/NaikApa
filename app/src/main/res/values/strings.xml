@@ -218,4 +218,45 @@
     <string name="home_validation_select_origin_and_destination">Silakan tentukan titik asal dan lokasi tujuan terlebih dahulu.</string>
     <string name="home_searching_route">Sedang mencari rute terbaik untukmu...</string>
 
+    <!-- Fase 18: Favorit dan Riwayat -->
+    <string name="history_tab_favorit">Favorit</string>
+    <string name="history_tab_pencarian">Pencarian</string>
+    <string name="history_tab_perjalanan">Perjalanan</string>
+
+    <string name="history_favorit_empty">Belum ada perjalanan favorit. Simpan rute dari halaman detail rute.</string>
+    <string name="history_pencarian_empty">Belum ada riwayat pencarian. Cari tujuan di halaman utama.</string>
+    <string name="history_perjalanan_empty">Belum ada riwayat perjalanan. Cari rute terlebih dahulu.</string>
+    <string name="history_empty_login_required">Silakan login untuk melihat favorit dan riwayat.</string>
+
+    <string name="history_saved_trip_replay">Jalankan Ulang</string>
+    <string name="history_saved_trip_edit">Edit</string>
+    <string name="history_saved_trip_delete">Hapus</string>
+
+    <string name="history_favorit_edit_title">Edit Favorit</string>
+    <string name="history_favorit_name_hint">Nama perjalanan</string>
+    <string name="history_favorit_catatan_hint">Catatan (opsional)</string>
+    <string name="history_favorit_name_required">Nama perjalanan tidak boleh kosong.</string>
+    <string name="history_favorit_updated">Favorit berhasil diperbarui.</string>
+    <string name="history_favorit_deleted">Favorit berhasil dihapus.</string>
+    <string name="history_favorit_delete_message">Hapus favorit \"%1$s\"?</string>
+    <string name="history_favorit_saved">Rute berhasil disimpan ke favorit.</string>
+    <string name="history_favorit_already_saved">Rute ini sudah tersimpan di favorit.</string>
+    <string name="history_favorit_save_failed">Gagal menyimpan ke favorit.</string>
+
+    <string name="history_search_use_as_destination">Gunakan sebagai tujuan</string>
+    <string name="history_search_applied">Tujuan dari riwayat pencarian diterapkan.</string>
+
+    <string name="history_delete">Hapus</string>
+    <string name="history_save">Simpan</string>
+    <string name="history_cancel">Batal</string>
+    <string name="history_delete_confirm_title">Konfirmasi Hapus</string>
+    <string name="history_clear_all">Hapus Semua</string>
+    <string name="history_clear_all_title">Hapus Semua Riwayat</string>
+    <string name="history_clear_pencarian_confirm">Semua riwayat pencarian akan dihapus secara permanen.</string>
+    <string name="history_clear_perjalanan_confirm">Semua riwayat perjalanan akan dihapus secara permanen.</string>
+    <string name="history_cleared">Riwayat berhasil dihapus.</string>
+
+    <string name="history_replay_started">Memuat ulang rute favorit di halaman utama.</string>
+    <string name="route_detail_save_favorite">Simpan ke Favorit</string>
+
 </resources>

@@ -82,6 +82,9 @@ import com.example.naikapa.domain.recommendation.RecommendationScorer
 import com.example.naikapa.data.model.RecommendationResult
 import com.example.naikapa.data.model.ScoredRoute
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.naikapa.data.model.RouteHistory
+import com.example.naikapa.presentation.history.HistoryReplayRequest
+import com.example.naikapa.presentation.route_detail.RouteDetailSharedState
 
 class HomeFragment : Fragment() {
 
@@ -882,6 +885,20 @@ class HomeFragment : Fragment() {
 
         showRecommendationCard()
         toast(getString(R.string.route_recommendation_ready))
+
+        // Simpan riwayat perjalanan untuk rekomendasi utama
+        val priorityLabel = when (recommendation.sortPreference) {
+            SortPreference.FASTEST -> "Tercepat"
+            SortPreference.CHEAPEST -> "Terhemat"
+            SortPreference.MIN_WALKING -> "Minim Jalan Kaki"
+            SortPreference.FEWEST_TRANSFERS -> "Minim Transit"
+        }
+        val modeLabel = getModeLabel()
+        saveRouteHistory(origin, destination, recommendation.main, modeLabel, priorityLabel)
+
+        // Simpan mode/priority ke SharedState untuk dipakai saat simpan favorit
+        RouteDetailSharedState.selectedMode = modeLabel
+        RouteDetailSharedState.selectedPriority = priorityLabel
     }
 
     private fun showTransitRouteResult(result: TransitRouteResult) {
@@ -977,6 +994,17 @@ class HomeFragment : Fragment() {
         routeResultAdapter.submitList(listOf(scoredRoute))
         showRecommendationCard()
         toast(getString(R.string.route_private_ready))
+
+        // Simpan riwayat perjalanan
+        val priorityLabel = when (getSelectedSortPreference()) {
+            SortPreference.FASTEST -> "Tercepat"
+            SortPreference.CHEAPEST -> "Terhemat"
+            SortPreference.MIN_WALKING -> "Minim Jalan Kaki"
+            SortPreference.FEWEST_TRANSFERS -> "Minim Transit"
+        }
+        saveRouteHistory(origin, destination, scoredRoute, getModeLabel(), priorityLabel)
+        RouteDetailSharedState.selectedMode = getModeLabel()
+        RouteDetailSharedState.selectedPriority = priorityLabel
     }
 
     private fun showCombinedRouteResult(
@@ -1129,6 +1157,16 @@ class HomeFragment : Fragment() {
     }
 
     private fun getCombinedPrivateVehicleMode(): PrivateVehicleMode = PrivateVehicleMode.MOTOR
+
+    private fun getModeLabel(): String = when (selectedModeCardId) {
+        R.id.modeTJ -> "TransJakarta"
+        R.id.modeKRL -> "KRL"
+        R.id.modeMRT -> "MRT"
+        R.id.modeLRT -> "LRT"
+        R.id.modeMotor -> "Motor"
+        R.id.modeMobil -> "Mobil"
+        else -> "Campur Semua"
+    }
 
     private fun showDemoRoutePreview() {
         val originPoint = selectedOrigin?.let {
@@ -1401,11 +1439,127 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.mapView.onResume()
+        // Cek apakah ada replay request dari RiwayatFragment
+        if (HistoryReplayRequest.hasPending()) {
+            applyHistoryReplayRequest()
+        }
     }
 
     override fun onPause() {
         super.onPause()
         binding.mapView.onPause()
+    }
+
+    /**
+     * Terapkan replay request dari RiwayatFragment: isi origin/destination/mode/priority
+     * lalu trigger pencarian rute secara otomatis.
+     */
+    private fun applyHistoryReplayRequest() {
+        val req = HistoryReplayRequest
+        val dest = req.pendingDestination ?: return
+
+        // Isi destination
+        selectedDestination = dest
+        binding.tvDestination.text = dest.name
+        binding.tvDestinationSub.text = dest.address ?: formatCoordinates(dest.latitude, dest.longitude)
+        showDestinationMarker(
+            MapPoint(
+                label = getString(R.string.map_marker_destination),
+                latitude = dest.latitude,
+                longitude = dest.longitude,
+                description = dest.name,
+                markerType = MapMarkerType.DESTINATION
+            )
+        )
+
+        // Isi origin jika ada
+        req.pendingOrigin?.let { origin ->
+            selectedOrigin = origin
+            selectedOriginStop = null
+            binding.tvOrigin.text = origin.label
+            binding.tvOriginSub.text = formatCoordinates(origin.latitude, origin.longitude)
+            showOriginMarker(
+                MapPoint(
+                    label = getString(R.string.map_marker_origin),
+                    latitude = origin.latitude,
+                    longitude = origin.longitude,
+                    description = origin.label,
+                    markerType = MapMarkerType.ORIGIN
+                )
+            )
+        }
+
+        // Terapkan mode jika ada (cocokkan ke card)
+        req.pendingMode?.let { mode ->
+            val targetCard = when {
+                mode.contains("Motor", ignoreCase = true) -> binding.modeMotor
+                mode.contains("Mobil", ignoreCase = true) -> binding.modeMobil
+                mode.contains("TransJakarta", ignoreCase = true) || mode.contains("TJ", ignoreCase = true) -> binding.modeTJ
+                mode.contains("KRL", ignoreCase = true) -> binding.modeKRL
+                mode.contains("MRT", ignoreCase = true) -> binding.modeMRT
+                mode.contains("LRT", ignoreCase = true) -> binding.modeLRT
+                else -> binding.modeCampur
+            }
+            selectTransitMode(targetCard)
+        }
+
+        // Terapkan priority jika ada
+        req.pendingPriority?.let { priority ->
+            val chips = listOf(
+                binding.chipTercepat,
+                binding.chipTerhemat,
+                binding.chipMinimJalanKaki,
+                binding.chipMinimTransit
+            )
+            chips.forEach { it.isChecked = false }
+            when {
+                priority.contains("Hemat", ignoreCase = true) -> binding.chipTerhemat.isChecked = true
+                priority.contains("Jalan", ignoreCase = true) -> binding.chipMinimJalanKaki.isChecked = true
+                priority.contains("Transit", ignoreCase = true) -> binding.chipMinimTransit.isChecked = true
+                else -> binding.chipTercepat.isChecked = true
+            }
+            updateChipStyles()
+        }
+
+        req.clear()
+
+        // Trigger pencarian jika origin sudah tersedia
+        if (selectedOrigin != null) {
+            handleFindRouteClick()
+        }
+    }
+
+    /**
+     * Simpan riwayat perjalanan ke tabel route_history di background thread.
+     */
+    private fun saveRouteHistory(
+        origin: LocationPoint,
+        destination: SearchLocation,
+        scoredRoute: ScoredRoute,
+        modeLabel: String,
+        priorityLabel: String
+    ) {
+        val userId = sessionManager.getUserId()
+        if (userId <= 0) return
+        val metrics = scoredRoute.candidate.metrics
+        homeScope.launch(Dispatchers.IO) {
+            historyDao.insertRouteHistory(
+                RouteHistory(
+                    idUser = userId,
+                    originName = origin.label,
+                    destinationName = destination.name,
+                    mode = modeLabel,
+                    priority = priorityLabel,
+                    recommendationSummary = scoredRoute.reason.take(120),
+                    score = scoredRoute.score,
+                    estimatedTime = metrics.totalDurationSeconds,
+                    estimatedCost = metrics.estimatedTotalCost,
+                    estimatedBbm = metrics.estimatedBbm,
+                    walkingDistance = metrics.walkingDistanceMeters,
+                    transitCount = metrics.transitCount
+                )
+            )
+        }
     }
 
     override fun onDestroyView() {

@@ -38,6 +38,7 @@ class RouteDetailFragment : Fragment() {
     private lateinit var sessionManager: SessionManager
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var savedTripDao: SavedTripDao
+    private var isFavoriteSaved = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -262,7 +263,17 @@ class RouteDetailFragment : Fragment() {
     }
 
     private fun setupFavoriteButton(route: ScoredRoute) {
+        // Reset state saat fragment dibuka ulang
+        isFavoriteSaved = false
+        binding.btnSaveFavorite.isEnabled = true
+        binding.btnSaveFavorite.text = getString(R.string.route_detail_save_favorite)
+
         binding.btnSaveFavorite.setOnClickListener {
+            if (isFavoriteSaved) {
+                toast(getString(R.string.history_favorit_already_saved))
+                return@setOnClickListener
+            }
+
             val userId = sessionManager.getUserId()
             if (userId <= 0) {
                 toast("Silakan login terlebih dahulu untuk menyimpan favorit.")
@@ -271,6 +282,10 @@ class RouteDetailFragment : Fragment() {
 
             val origin = RouteDetailSharedState.origin ?: return@setOnClickListener
             val destination = RouteDetailSharedState.destination ?: return@setOnClickListener
+
+            // Gunakan mode/priority dari SharedState jika tersedia, fallback ke candidateLabel
+            val mode = RouteDetailSharedState.selectedMode ?: route.candidate.candidateLabel
+            val priority = RouteDetailSharedState.selectedPriority ?: "Terpilih"
 
             val savedTrip = SavedTrip(
                 idUser = userId,
@@ -281,8 +296,8 @@ class RouteDetailFragment : Fragment() {
                 destinationName = destination.name,
                 destinationLat = destination.latitude,
                 destinationLon = destination.longitude,
-                mode = route.candidate.candidateLabel,
-                priority = "Terpilih"
+                mode = mode,
+                priority = priority
             )
 
             binding.btnSaveFavorite.isEnabled = false
@@ -290,11 +305,12 @@ class RouteDetailFragment : Fragment() {
                 val result = savedTripDao.insert(savedTrip)
                 withContext(Dispatchers.Main) {
                     if (result > 0) {
-                        toast("Rute berhasil disimpan ke favorit!")
-                        binding.btnSaveFavorite.text = "Tersimpan di Favorit"
+                        isFavoriteSaved = true
+                        toast(getString(R.string.history_favorit_saved))
+                        binding.btnSaveFavorite.text = getString(R.string.history_favorit_already_saved)
                         binding.btnSaveFavorite.setIconResource(R.drawable.ic_heart)
                     } else {
-                        toast("Gagal menyimpan rute ke favorit.")
+                        toast(getString(R.string.history_favorit_save_failed))
                         binding.btnSaveFavorite.isEnabled = true
                     }
                 }

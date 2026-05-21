@@ -691,63 +691,75 @@ Catatan: Card rekomendasi (utama + alternatif), skor, alasan, warning gangguan, 
 
 ---
 
-## Fase 17: Fitur Laporan Gangguan dan Multimedia Foto
+## Fase 17: Fitur Laporan Gangguan dan Multimedia Foto ✅ SELESAI
+
+### Status Planning
+- [x] Plan eksekusi Fase 17 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 17 selesai dikerjakan.
 
 ### Tujuan
 Membuat fitur laporan gangguan berbasis kontribusi user dan multimedia.
 
 ### Aktivitas
-1. Membuat halaman Status Gangguan.
-2. Membuat halaman Tambah Laporan Gangguan.
-3. Menampilkan daftar titik transportasi terkait.
-4. Membuat pilihan kategori gangguan.
-5. Membuat input deskripsi.
-6. Menambahkan fitur kamera.
-7. Menambahkan fitur pilih gambar dari galeri.
-8. Menyimpan path foto ke SQLite.
-9. Menyimpan laporan ke SQLite.
-10. Membuat laporan aktif selama 1 jam.
-11. Membuat laporan memengaruhi rekomendasi sebagai penalti ringan.
-12. Membuat fitur edit dan hapus laporan milik user.
+1. [x] Membuat halaman Status Gangguan.
+2. [x] Membuat halaman Tambah Laporan Gangguan.
+3. [x] Menampilkan daftar titik transportasi terkait.
+4. [x] Membuat pilihan kategori gangguan.
+5. [x] Membuat input deskripsi.
+6. [x] Menambahkan fitur kamera.
+7. [x] Menambahkan fitur pilih gambar dari galeri.
+8. [x] Menyimpan path foto ke SQLite.
+9. [x] Menyimpan laporan ke SQLite.
+10. [x] Membuat laporan aktif selama 1 jam.
+11. [x] Membuat laporan memengaruhi rekomendasi sebagai penalti ringan.
+12. [x] Membuat fitur edit dan hapus laporan milik user.
 
 ### Output
-1. User dapat membuat laporan gangguan.
-2. User dapat melampirkan foto.
-3. User dapat melihat gangguan aktif.
-4. Gangguan aktif dapat memengaruhi skor rute.
-5. CRUD laporan berjalan.
+1. [x] User dapat membuat laporan gangguan.
+2. [x] User dapat melampirkan foto.
+3. [x] User dapat melihat gangguan aktif.
+4. [x] Gangguan aktif dapat memengaruhi skor rute.
+5. [x] CRUD laporan berjalan.
 
 ### Kriteria Selesai
 Fase ini selesai jika laporan dengan foto dapat dibuat, ditampilkan, diedit, dihapus, dan memengaruhi rekomendasi.
+
+Status implementasi: selesai. `StatusGangguanFragment` menampilkan laporan aktif dengan RecyclerView, empty/loading state, dan FAB tambah laporan. `AddEditDisruptionReportFragment` menyediakan form lengkap dengan kategori dropdown, input stop/route, deskripsi, kamera, galeri, preview foto, validasi, dan simpan ke SQLite dengan expiry 1 jam. `DisruptionReportAdapter` menampilkan kartu laporan dengan badge status, sisa waktu aktif, foto opsional, dan tombol edit/hapus owner-only. `ReportPhotoHelper` mengelola pembuatan file foto lokal, URI FileProvider, dan normalisasi path. `DisruptionReportDao` dilengkapi `getById`, `getActiveByUser`, `updateByUser`, `markResolvedByUser`, dan `deleteByUser` dengan ownership check. Navigasi dari Status Gangguan dan Detail Rute ke form laporan tersedia dengan prefill stop/route. Unit test dan build debug berhasil dijalankan. Instrumentation test CRUD laporan berhasil dikompilasi, tetapi eksekusi penuh membutuhkan emulator atau perangkat Android aktif.
 
 ---
 
 ## Fase 18: Perjalanan Favorit dan Riwayat
 
+### Status Planning
+- [x] Plan eksekusi Fase 18 sudah dibuat di `.agent/planning/plan.md`.
+- [x] Implementasi Fase 18 selesai dikerjakan.
+
 ### Tujuan
 Menyimpan data perjalanan yang sering digunakan dan hasil pencarian user.
 
 ### Aktivitas
-1. Membuat fitur simpan rute ke favorit.
-2. Membuat halaman Perjalanan Favorit.
-3. Membuat fitur edit nama favorit.
-4. Membuat fitur hapus favorit.
-5. Membuat fitur jalankan ulang pencarian dari favorit.
-6. Membuat penyimpanan riwayat pencarian.
-7. Membuat penyimpanan riwayat perjalanan.
-8. Membuat halaman Riwayat Pencarian.
-9. Membuat halaman Riwayat Perjalanan.
-10. Membuat fitur hapus riwayat.
+1. [x] Membuat fitur simpan rute ke favorit.
+2. [x] Membuat halaman Perjalanan Favorit.
+3. [x] Membuat fitur edit nama favorit.
+4. [x] Membuat fitur hapus favorit.
+5. [x] Membuat fitur jalankan ulang pencarian dari favorit.
+6. [x] Membuat penyimpanan riwayat pencarian.
+7. [x] Membuat penyimpanan riwayat perjalanan.
+8. [x] Membuat halaman Riwayat Pencarian.
+9. [x] Membuat halaman Riwayat Perjalanan.
+10. [x] Membuat fitur hapus riwayat.
 
 ### Output
-1. User dapat menyimpan rute favorit.
-2. User dapat melihat dan mengelola favorit.
-3. User dapat melihat riwayat pencarian.
-4. User dapat melihat riwayat perjalanan.
-5. CRUD favorit dan riwayat berjalan.
+1. [x] User dapat menyimpan rute favorit.
+2. [x] User dapat melihat dan mengelola favorit.
+3. [x] User dapat melihat riwayat pencarian.
+4. [x] User dapat melihat riwayat perjalanan.
+5. [x] CRUD favorit dan riwayat berjalan.
 
 ### Kriteria Selesai
 Fase ini selesai jika favorit dan riwayat tersimpan di SQLite dan dapat dikelola user.
+
+Status implementasi: selesai. `RiwayatFragment` diimplementasikan penuh dengan tiga tab segmented (Favorit, Riwayat Pencarian, Riwayat Perjalanan), `SavedTripAdapter`/`SearchHistoryAdapter`/`RouteHistoryAdapter` dibuat baru, `HistoryReplayRequest` menjadi shared state untuk replay favorit ke HomeFragment, `HomeFragment` menyimpan `route_history` setelah rekomendasi berhasil dan membaca replay request di `onResume`, `RouteDetailFragment` diperbaiki agar mode/priority konsisten dan mencegah double-save, `RouteDetailSharedState` diperluas dengan `selectedMode` dan `selectedPriority`. Unit test, build debug, dan compile androidTest berhasil dijalankan. Instrumented test CRUD favorit dan riwayat berhasil dikompilasi, tetapi eksekusi penuh membutuhkan emulator atau perangkat Android aktif.
 
 ---
 
@@ -1237,3 +1249,95 @@ FASE 16 melengkapi halaman hasil rute dengan menambahkan detail langkah perjalan
 | Navigasi kembali (back) berjalan dengan lancar | ✅ Ditangani oleh setupToolbar() popBackStack() |
 | Proyek berhasil dikompilasi tanpa ada kesalahan build | ✅ Terverifikasi dengan `gradlew assembleDebug` |
 
+
+---
+
+## 15. Log Implementasi FASE 17 — Laporan Gangguan dan Multimedia Foto
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 17 melengkapi fitur laporan gangguan berbasis kontribusi user. Fondasi database (`DisruptionReport`, `DisruptionReportDao`, tabel `disruption_reports`) yang sudah ada diperluas dengan UI penuh: halaman Status Gangguan dengan daftar laporan aktif, form tambah/edit laporan, lampiran foto dari kamera atau galeri, penyimpanan path foto lokal, CRUD laporan dengan ownership check, dan integrasi navigasi dari Detail Rute.
+
+### Checklist Aktivitas FASE 17
+
+- [x] `AndroidManifest.xml` — Tambah permission `CAMERA`, `READ_MEDIA_IMAGES`, `READ_EXTERNAL_STORAGE` (maxSdk 32), dan konfigurasi `FileProvider` untuk URI foto lokal.
+- [x] `res/xml/file_paths.xml` — Dibuat baru: definisi path `cache-path` dan `files-path` untuk folder `disruption_photos/`.
+- [x] `AppConstants.kt` — Tambah konstanta: `DISRUPTION_ACTIVE_DURATION_MILLIS`, `DISRUPTION_CATEGORIES` (6 kategori), `DISRUPTION_PHOTO_DIR`, `DISRUPTION_PHOTO_PREFIX`, `DISRUPTION_PHOTO_EXTENSION`, `DISRUPTION_DESCRIPTION_MIN_LENGTH`, `DISRUPTION_DESCRIPTION_MAX_LENGTH`.
+- [x] `DisruptionReport.kt` — Tambah helper: `isActive()`, `remainingMillis()`, `remainingTimeLabel()`, dan konstanta `ONE_HOUR_MILLIS` dipindah ke companion object.
+- [x] `DisruptionReportDao.kt` — Tambah query: `getById()`, `getActiveByUser()`, `updateByUser()` (ownership check), `markResolvedByUser()` (ownership check), `deleteByUser()` (ownership check).
+- [x] `ReportPhotoHelper.kt` — Dibuat baru: helper `createPhotoFile()`, `getUriForFile()`, `normalizePath()`, `deletePhoto()`.
+- [x] `DisruptionReportAdapter.kt` — Dibuat baru: RecyclerView adapter dengan badge kategori, badge status aktif/expired berwarna, sisa waktu aktif, foto opsional dari path lokal, tombol edit/hapus owner-only.
+- [x] `StatusGangguanFragment.kt` — Diimplementasikan penuh: load laporan aktif via coroutine, RecyclerView dengan adapter, loading/empty state, FAB tambah laporan, aksi edit/hapus dengan dialog konfirmasi, refresh otomatis via `onResume()`.
+- [x] `AddEditDisruptionReportFragment.kt` — Dibuat baru: form tambah/edit dengan kategori dropdown (ArrayAdapter), input stop/route opsional, deskripsi dengan counter, tombol kamera (TakePicture), tombol galeri (GetContent), salin foto galeri ke file lokal, preview foto dengan tombol hapus, validasi input, insert/update SQLite dengan expiry 1 jam, prefill stop/route dari argumen navigasi.
+- [x] `fragment_status_gangguan.xml` — Diperbarui: CoordinatorLayout + NestedScrollView + header card + status summary card + section title + ProgressBar + empty state card + RecyclerView + ExtendedFloatingActionButton.
+- [x] `item_disruption_report.xml` — Dibuat baru: kartu laporan dengan badge kategori, badge status, lokasi/route, deskripsi (max 3 baris), foto opsional (140dp), sisa waktu, tombol edit/hapus.
+- [x] `fragment_add_edit_disruption_report.xml` — Dibuat baru: form scroll dengan toolbar, dropdown kategori, input stop/route, input deskripsi (counter 500), tombol kamera/galeri, preview foto dengan tombol hapus, tombol simpan.
+- [x] `nav_main.xml` — Tambah destination `addEditDisruptionReportFragment` dengan argumen `reportId` (long), `stopId` (string nullable), `routeId` (string nullable); tambah action dari `statusGangguanFragment` dan `routeDetailFragment`.
+- [x] `strings.xml` — Tambah 30+ string UI laporan: kategori, validasi, permission, empty state, aksi edit/hapus, format sisa waktu, label status, pesan sukses/gagal.
+- [x] `fragment_route_detail.xml` — Tambah tombol `btnReportDisruption` "Laporkan Gangguan di Rute Ini" di bawah tombol simpan favorit.
+- [x] `RouteDetailFragment.kt` — Tambah `setupReportButton()`: navigasi ke form laporan dengan prefill `stopId` dan `routeId` dari langkah rute transit/gabungan pertama.
+- [x] `NaikApaDatabaseHelperTest.kt` — Tambah 2 test: `disruptionReportConstantsAndIndexesAreConfigured()` dan `disruptionReportModelHelperFunctionsWork()`.
+- [x] `RecommendationScorerTest.kt` — Tambah 2 test: `related stop disruption reduces transit score` dan `expired disruption report does not affect score`.
+- [x] `NaikApaDatabaseInstrumentedTest.kt` — Tambah test `disruptionReportCrudWithPhotoPathAndOwnershipWorks()`: create+photo path, getById, getActiveReports, getByUser, getActiveByUser, updateByUser ownership check, laporan expired tidak muncul, markResolvedByUser ownership check, deleteByUser ownership check.
+- [x] Drawable baru: `ic_edit.xml`, `ic_delete.xml`, `ic_add.xml`, `ic_camera.xml`, `ic_image.xml`, `ic_close.xml`, `bg_badge_active.xml`, `bg_badge_expired.xml`.
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| User login dapat membuat laporan dengan kategori, deskripsi, titik/route, dan foto | ✅ `AddEditDisruptionReportFragment` dengan validasi lengkap |
+| Path foto tersimpan di SQLite dan foto tampil kembali di daftar laporan | ✅ `ReportPhotoHelper` + `DisruptionReportAdapter` render dari path lokal |
+| Halaman Status Gangguan menampilkan laporan aktif, empty state, sisa waktu, edit/hapus | ✅ `StatusGangguanFragment` + `DisruptionReportAdapter` |
+| Laporan aktif berdurasi 1 jam, laporan expired tidak muncul di daftar aktif | ✅ `getActiveReports()` filter `status=active AND expired_at > now` |
+| Laporan terkait stop/route memberi penalti ringan pada rekomendasi | ✅ `RecommendationScorer.hasDisruption()` sudah ada sejak Fase 14, divalidasi ulang |
+| Navigasi dari Detail Rute ke form laporan dengan prefill stop/route | ✅ `setupReportButton()` di `RouteDetailFragment` |
+| Unit test lulus | ✅ `testDebugUnitTest` PASSED |
+| Build debug berhasil | ✅ `assembleDebug` BUILD SUCCESSFUL |
+| Instrumentation test CRUD laporan berhasil dikompilasi | ✅ Siap dijalankan saat emulator/device tersedia |
+
+---
+
+## 16. Log Implementasi FASE 18 — Perjalanan Favorit dan Riwayat
+
+**Tanggal implementasi:** 2026-05-21
+**Status:** ✅ Selesai diimplementasikan
+
+### Ringkasan Perubahan
+
+FASE 18 melengkapi fitur perjalanan favorit, riwayat pencarian, dan riwayat perjalanan. Halaman `RiwayatFragment` yang sebelumnya statis diganti dengan implementasi penuh berisi tiga tab segmented, RecyclerView dinamis, empty state, dialog edit/hapus, dan flow jalankan ulang dari favorit.
+
+### Checklist Aktivitas FASE 18
+
+- [x] `HistoryReplayRequest.kt` — Dibuat baru: shared object untuk mengirim data favorit/riwayat pencarian dari `RiwayatFragment` ke `HomeFragment` tanpa Safe Args.
+- [x] `SavedTripAdapter.kt` — Dibuat baru: RecyclerView adapter untuk daftar favorit dengan aksi jalankan ulang, edit, dan hapus.
+- [x] `SearchHistoryAdapter.kt` — Dibuat baru: RecyclerView adapter untuk daftar riwayat pencarian dengan aksi gunakan sebagai tujuan dan hapus.
+- [x] `RouteHistoryAdapter.kt` — Dibuat baru: RecyclerView adapter untuk daftar riwayat perjalanan dengan ringkasan metrik dan tombol hapus.
+- [x] `item_saved_trip.xml` — Dibuat baru: layout item favorit dengan nama, mode/priority, asal-tujuan, catatan opsional, dan tombol aksi.
+- [x] `item_search_history.xml` — Dibuat baru: layout item riwayat pencarian dengan nama, alamat, waktu, dan tombol aksi.
+- [x] `item_route_history.xml` — Dibuat baru: layout item riwayat perjalanan dengan origin-destination, skor, metrik, dan tombol hapus.
+- [x] `fragment_riwayat.xml` — Diperbarui: CoordinatorLayout + header card + segmented tab control (3 tab) + LinearProgressIndicator + tombol hapus semua + empty state card + RecyclerView.
+- [x] `RiwayatFragment.kt` — Diimplementasikan penuh: tiga tab (Favorit, Pencarian, Perjalanan), load data dari SQLite via coroutine, empty state dinamis, dialog edit favorit, dialog konfirmasi hapus, hapus semua, replay favorit ke HomeFragment, gunakan riwayat pencarian sebagai tujuan.
+- [x] `RouteDetailSharedState.kt` — Ditambah field `selectedMode` dan `selectedPriority` untuk menyimpan mode/priority saat pencarian rute.
+- [x] `RouteDetailFragment.kt` — Diperbaiki: simpan favorit memakai mode/priority dari SharedState, cegah double-save dengan flag `isFavoriteSaved`, feedback toast konsisten.
+- [x] `HomeFragment.kt` — Ditambah: import `RouteHistory`, `HistoryReplayRequest`, `RouteDetailSharedState`; fungsi `saveRouteHistory()` menyimpan riwayat perjalanan ke background thread; fungsi `applyHistoryReplayRequest()` membaca replay request di `onResume`; fungsi `getModeLabel()` menghasilkan label mode yang konsisten; `showRecommendationResult` dan `showPrivateVehicleRouteResult` menyimpan route_history dan set SharedState mode/priority.
+- [x] `strings.xml` — Ditambah 30+ string untuk tab, empty state, dialog edit/hapus, toast, aksi favorit/riwayat, dan label tombol.
+- [x] `FavoriteHistoryDaoInstrumentedTest.kt` — Dibuat baru: 4 test CRUD untuk `saved_trips`, `search_history`, dan `route_history`.
+
+### Kriteria Selesai — Status
+
+| Kriteria | Status |
+|---|---|
+| User dapat menyimpan rute ke favorit dari detail rute | ✅ `setupFavoriteButton()` dengan mode/priority konsisten dan anti double-save |
+| User dapat melihat, mengedit, menghapus, dan menjalankan ulang favorit | ✅ `RiwayatFragment` tab Favorit + `SavedTripAdapter` |
+| Sistem menyimpan riwayat pencarian saat user memilih hasil | ✅ `saveSearchHistory()` di `HomeFragment` sudah ada sejak Fase 7 |
+| Sistem menyimpan riwayat perjalanan setelah rekomendasi berhasil | ✅ `saveRouteHistory()` dipanggil di `showRecommendationResult` dan `showPrivateVehicleRouteResult` |
+| User dapat melihat dan menghapus riwayat pencarian dan perjalanan | ✅ Tab Pencarian dan Perjalanan di `RiwayatFragment` |
+| Hapus semua per kategori tersedia | ✅ `btnClearAll` dengan dialog konfirmasi |
+| Halaman `RiwayatFragment` tidak lagi statis | ✅ Data nyata dari SQLite, empty state dinamis |
+| Operasi database di background thread | ✅ Semua operasi via `Dispatchers.IO` + coroutine |
+| Test CRUD favorit dan riwayat berhasil dikompilasi | ✅ `FavoriteHistoryDaoInstrumentedTest` — siap dijalankan saat emulator/device tersedia |
+| Build debug berhasil | ✅ `assembleDebug` BUILD SUCCESSFUL |
+| Unit test berhasil | ✅ `testDebugUnitTest` BUILD SUCCESSFUL |
