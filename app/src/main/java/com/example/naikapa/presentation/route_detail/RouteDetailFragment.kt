@@ -342,11 +342,11 @@ class RouteDetailFragment : Fragment() {
                         steps.add(
                             DetailStep(
                                 title = routeLabel,
-                                description = "Dari ${step.fromStop.stopName} ke ${step.toStop.stopName} (${step.stopCount} stop)",
+                                description = "Naik dari ${step.fromStop.stopName}\nTurun di ${step.toStop.stopName} (${step.stopCount} perhentian)",
                                 durationSeconds = step.durationSeconds,
                                 distanceMeters = step.distanceMeters,
                                 iconResId = getIconForAgency(step.agencyId),
-                                colorInt = getColorForAgency(step.agencyId, context)
+                                colorInt = parseRouteColor(step.routeColor, context, step.agencyId)
                             )
                         )
                     } else {
@@ -415,11 +415,11 @@ class RouteDetailFragment : Fragment() {
                                     steps.add(
                                         DetailStep(
                                             title = routeLabel,
-                                            description = "Dari ${step.fromStop.stopName} ke ${step.toStop.stopName} (${step.stopCount} stop)",
+                                            description = "Naik dari ${step.fromStop.stopName}\nTurun di ${step.toStop.stopName} (${step.stopCount} perhentian)",
                                             durationSeconds = step.durationSeconds,
                                             distanceMeters = step.distanceMeters,
                                             iconResId = getIconForAgency(step.agencyId),
-                                            colorInt = getColorForAgency(step.agencyId, context)
+                                            colorInt = parseRouteColor(step.routeColor, context, step.agencyId)
                                         )
                                     )
                                 } else {
@@ -453,6 +453,18 @@ class RouteDetailFragment : Fragment() {
             }
         }
         return steps
+    }
+
+    private fun parseRouteColor(colorStr: String?, context: Context, agencyId: String): Int {
+        if (!colorStr.isNullOrBlank()) {
+            try {
+                val hexColor = if (colorStr.startsWith("#")) colorStr else "#$colorStr"
+                return android.graphics.Color.parseColor(hexColor)
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+        return getColorForAgency(agencyId, context)
     }
 
     private fun getIconForAgency(agencyId: String): Int = when (agencyId) {

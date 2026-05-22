@@ -100,7 +100,7 @@
             android:layout_marginTop="2dp"
             android:textSize="12sp"
             android:textColor="@color/colorTextSecondary"
-            android:maxLines="2"
+            android:maxLines="4"
             android:ellipsize="end"
             tools:text="Jarak 250 m • Durasi 3 mnt" />
 

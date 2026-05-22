@@ -779,6 +779,7 @@ class HomeFragment : Fragment() {
         binding.tvPriorityLabel.visibility = View.GONE
         binding.cardPriorityBadge.visibility = View.GONE
         binding.btnCloseRecommendation.visibility = View.GONE
+        binding.cardRecommendation.visibility = View.VISIBLE
     }
 
     private fun hideLoadingState() {
@@ -794,6 +795,7 @@ class HomeFragment : Fragment() {
         binding.tvPriorityLabel.visibility = View.GONE
         binding.cardPriorityBadge.visibility = View.GONE
         binding.btnCloseRecommendation.visibility = View.GONE
+        binding.cardRecommendation.visibility = View.VISIBLE
     }
 
     private fun setupRouteActions() {

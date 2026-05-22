@@ -29,6 +29,8 @@ data class RouteStep(
     val routeId: String,
     val routeShortName: String,
     val routeLongName: String?,
+    val routeColor: String?,
+    val routeTextColor: String?,
     val agencyId: String,
     val type: TransitEdgeType,
     val fromStop: TransitNode,

@@ -45,6 +45,8 @@ class RouteStepBuilder {
             routeId = first.routeId,
             routeShortName = first.routeShortName,
             routeLongName = first.routeLongName,
+            routeColor = first.routeColor,
+            routeTextColor = first.routeTextColor,
             agencyId = first.agencyId,
             type = first.type,
             fromStop = requireNotNull(graph.nodes[first.fromStopId]) { "Missing node ${first.fromStopId}" },

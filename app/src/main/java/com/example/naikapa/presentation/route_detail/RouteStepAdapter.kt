@@ -62,9 +62,9 @@ class RouteStepAdapter(private val steps: List<DetailStep>) :
         val distanceText = formatDistance(step.distanceMeters)
         val durationText = formatDuration(step.durationSeconds)
         holder.tvStepDescription.text = if (step.distanceMeters > 0) {
-            "$distanceText • $durationText"
+            "${step.description}\n$distanceText • $durationText"
         } else {
-            durationText
+            "${step.description}\n$durationText"
         }
     }
 
