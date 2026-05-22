@@ -194,6 +194,11 @@ class RouteDetailFragment : Fragment() {
                         ContextCompat.getColor(context, R.color.colorMotor)
                     else ContextCompat.getColor(context, R.color.colorMobil)
                     overlays.add(createPolyline(binding.detailMapView, vehicleResult.points, color))
+                } else {
+                    val firstSegment = candidate.result.segments.firstOrNull { it.type == CombinedRouteSegmentType.WALKING }
+                    if (firstSegment != null && firstSegment.points.isNotEmpty()) {
+                        overlays.add(createPolyline(binding.detailMapView, firstSegment.points, ContextCompat.getColor(context, R.color.colorWalking)))
+                    }
                 }
                 if (transitResult != null) {
                     val transitPoints = transitResult.steps.toMapPoints()
@@ -356,7 +361,7 @@ class RouteDetailFragment : Fragment() {
                                 description = "Dari ${step.fromStop.stopName} ke ${step.toStop.stopName}",
                                 durationSeconds = step.durationSeconds,
                                 distanceMeters = step.distanceMeters,
-                                iconResId = R.drawable.ic_person,
+                                iconResId = R.drawable.ic_walk,
                                 colorInt = ContextCompat.getColor(context, R.color.colorWalking)
                             )
                         )
@@ -443,7 +448,7 @@ class RouteDetailFragment : Fragment() {
                                     description = segment.title,
                                     durationSeconds = segment.durationSeconds,
                                     distanceMeters = segment.distanceMeters,
-                                    iconResId = R.drawable.ic_person,
+                                    iconResId = R.drawable.ic_walk,
                                     colorInt = ContextCompat.getColor(context, R.color.colorWalking)
                                 )
                             )

@@ -112,9 +112,21 @@ class HomeFragment : Fragment() {
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
     private var selectedVehicleTypeFilter: VehicleTypeFilter = VehicleTypeFilter.ALL
-    private var selectedOrigin: LocationPoint? = null
-    private var selectedOriginStop: SearchLocation? = null
-    private var selectedDestination: SearchLocation? = null
+    private var selectedOrigin: LocationPoint?
+        get() = savedOrigin
+        set(value) {
+            savedOrigin = value
+        }
+    private var selectedOriginStop: SearchLocation?
+        get() = savedOriginStop
+        set(value) {
+            savedOriginStop = value
+        }
+    private var selectedDestination: SearchLocation?
+        get() = savedDestination
+        set(value) {
+            savedDestination = value
+        }
     private var destinationSearchJob: Job? = null
     private var originSearchJob: Job? = null
     private var currentMapStyle = MapStyle.POSITRON
@@ -217,6 +229,7 @@ class HomeFragment : Fragment() {
         
         binding.root.applyStatusBarTopMarginTo(binding.cardHeader, dpToPx(16f))
         setupBottomSheetScrim()
+        restoreSearchFieldsState()
     }
 
     private fun initMap() {
@@ -1896,5 +1909,53 @@ class HomeFragment : Fragment() {
         homeScope.cancel()
         if (::dbHelper.isInitialized) dbHelper.close()
         _binding = null
+    }
+
+    private fun restoreSearchFieldsState() {
+        val origin = selectedOrigin
+        val destination = selectedDestination
+
+        if (origin != null) {
+            binding.tvOrigin.text = origin.label
+            binding.tvOriginSub.text = formatCoordinates(origin.latitude, origin.longitude)
+            val originPoint = MapPoint(
+                label = getString(R.string.map_marker_origin),
+                latitude = origin.latitude,
+                longitude = origin.longitude,
+                description = origin.label,
+                markerType = MapMarkerType.ORIGIN
+            )
+            showOriginMarker(originPoint)
+        }
+
+        if (destination != null) {
+            binding.tvDestination.text = destination.name
+            binding.tvDestinationSub.text = destination.address ?: formatCoordinates(destination.latitude, destination.longitude)
+            val destinationPoint = MapPoint(
+                label = getString(R.string.map_marker_destination),
+                latitude = destination.latitude,
+                longitude = destination.longitude,
+                description = destination.name,
+                markerType = MapMarkerType.DESTINATION
+            )
+            showDestinationMarker(destinationPoint)
+        }
+
+        if (origin != null || destination != null) {
+            binding.mapView.controller.apply {
+                setZoom(AppConstants.MAP_LOCATION_ZOOM)
+                if (origin != null) {
+                    setCenter(GeoPoint(origin.latitude, origin.longitude))
+                } else if (destination != null) {
+                    setCenter(GeoPoint(destination.latitude, destination.longitude))
+                }
+            }
+        }
+    }
+
+    companion object {
+        private var savedOrigin: LocationPoint? = null
+        private var savedOriginStop: SearchLocation? = null
+        private var savedDestination: SearchLocation? = null
     }
 }

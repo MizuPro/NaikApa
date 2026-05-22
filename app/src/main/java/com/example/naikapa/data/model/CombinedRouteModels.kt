@@ -38,7 +38,7 @@ data class CombinedRouteSegment(
 )
 
 data class CombinedRouteResult(
-    val privateVehicleMode: PrivateVehicleMode,
+    val privateVehicleMode: PrivateVehicleMode?,
     val originStop: CombinedRouteStopCandidate,
     val destinationStop: CombinedRouteStopCandidate,
     val segments: List<CombinedRouteSegment>,

@@ -61,7 +61,7 @@ class CombinedRouteRepository(
         originLon: Double,
         destinationLat: Double,
         destinationLon: Double,
-        privateVehicleMode: PrivateVehicleMode,
+        privateVehicleMode: PrivateVehicleMode?,
         transitMode: TransitMode,
         sortPreference: SortPreference,
         agencyId: String? = null,
@@ -89,13 +89,17 @@ class CombinedRouteRepository(
         val candidates = mutableListOf<CombinedRouteResult>()
         var checkedCombinations = 0
         for (originStop in originStops) {
-            val vehicleRoute = privateVehicleRouteProvider(
-                originLat,
-                originLon,
-                originStop.latitude,
-                originStop.longitude,
-                privateVehicleMode
-            ).getOrNull()?.firstOrNull() ?: continue
+            val vehicleRoute = if (privateVehicleMode != null) {
+                privateVehicleRouteProvider(
+                    originLat,
+                    originLon,
+                    originStop.latitude,
+                    originStop.longitude,
+                    privateVehicleMode
+                ).getOrNull()?.firstOrNull() ?: continue
+            } else {
+                null
+            }
 
             for (destinationStop in destinationStops) {
                 if (checkedCombinations >= AppConstants.COMBINED_ROUTE_MAX_COMBINATIONS) break
@@ -132,14 +136,14 @@ class CombinedRouteRepository(
     }
 
     private fun buildResult(
-        privateVehicleMode: PrivateVehicleMode,
+        privateVehicleMode: PrivateVehicleMode?,
         originLat: Double,
         originLon: Double,
         destinationLat: Double,
         destinationLon: Double,
         originStop: CombinedRouteStopCandidate,
         destinationStop: CombinedRouteStopCandidate,
-        vehicleRoute: PrivateVehicleRouteResult,
+        vehicleRoute: PrivateVehicleRouteResult?,
         transitRoute: TransitRouteResult
     ): CombinedRouteResult {
         val walkingDistanceMeters = GeoDistanceCalculator.haversineMeters(
@@ -166,15 +170,49 @@ class CombinedRouteRepository(
             )
         )
 
-        val vehicleSegment = CombinedRouteSegment(
-            type = CombinedRouteSegmentType.PRIVATE_VEHICLE,
-            title = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor ke transit" else "Mobil ke transit",
-            durationSeconds = vehicleRoute.travelTimeSeconds,
-            distanceMeters = vehicleRoute.distanceMeters.toDouble(),
-            estimatedBbm = vehicleRoute.estimatedBbm,
-            points = vehicleRoute.points,
-            privateVehicleResult = vehicleRoute
-        )
+        val originSegment = if (privateVehicleMode != null && vehicleRoute != null) {
+            CombinedRouteSegment(
+                type = CombinedRouteSegmentType.PRIVATE_VEHICLE,
+                title = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor ke transit" else "Mobil ke transit",
+                durationSeconds = vehicleRoute.travelTimeSeconds,
+                distanceMeters = vehicleRoute.distanceMeters.toDouble(),
+                estimatedBbm = vehicleRoute.estimatedBbm,
+                points = vehicleRoute.points,
+                privateVehicleResult = vehicleRoute
+            )
+        } else {
+            val firstDistanceMeters = GeoDistanceCalculator.haversineMeters(
+                originLat,
+                originLon,
+                originStop.latitude,
+                originStop.longitude
+            )
+            val firstDurationSeconds = (firstDistanceMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
+            val firstPoints = listOf(
+                MapPoint(
+                    label = "Asal",
+                    latitude = originLat,
+                    longitude = originLon,
+                    description = "Jalan kaki",
+                    markerType = MapMarkerType.ORIGIN
+                ),
+                MapPoint(
+                    label = originStop.stopName,
+                    latitude = originStop.latitude,
+                    longitude = originStop.longitude,
+                    description = originStop.agencyId,
+                    markerType = MapMarkerType.TRANSIT
+                )
+            )
+            CombinedRouteSegment(
+                type = CombinedRouteSegmentType.WALKING,
+                title = "Jalan kaki ke transit",
+                durationSeconds = firstDurationSeconds,
+                distanceMeters = firstDistanceMeters,
+                points = firstPoints
+            )
+        }
+
         val transitSegment = CombinedRouteSegment(
             type = CombinedRouteSegmentType.TRANSIT,
             title = "Transportasi umum",
@@ -191,11 +229,12 @@ class CombinedRouteRepository(
             distanceMeters = walkingDistanceMeters,
             points = walkingPoints
         )
-        val segments = listOf(vehicleSegment, transitSegment, walkingSegment)
+        val segments = listOf(originSegment, transitSegment, walkingSegment)
         val transitWalkingMeters = transitRoute.metrics.walkingDistanceMeters
-        val totalWalkingMeters = transitWalkingMeters + walkingDistanceMeters
+        val originWalkingMeters = if (privateVehicleMode == null) originSegment.distanceMeters else 0.0
+        val totalWalkingMeters = transitWalkingMeters + walkingDistanceMeters + originWalkingMeters
         val estimatedFare = transitRoute.metrics.estimatedFare
-        val estimatedBbm = vehicleRoute.estimatedBbm
+        val estimatedBbm = vehicleRoute?.estimatedBbm ?: 0
 
         return CombinedRouteResult(
             privateVehicleMode = privateVehicleMode,

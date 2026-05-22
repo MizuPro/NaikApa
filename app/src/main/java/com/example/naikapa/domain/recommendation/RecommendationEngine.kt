@@ -145,12 +145,27 @@ class RecommendationEngine(
                 } else null
             }
 
+            val combinedTransitOnlyDeferred = async(Dispatchers.IO) {
+                if (includeTransit && (originStopId.isNullOrBlank() || destinationStopId.isNullOrBlank())) {
+                    combinedRouteRepository.findCombinedRoutes(
+                        originLat = origin.latitude,
+                        originLon = origin.longitude,
+                        destinationLat = destination.latitude,
+                        destinationLon = destination.longitude,
+                        privateVehicleMode = null,
+                        transitMode = transitMode,
+                        sortPreference = sortPreference
+                    ).getOrNull()?.firstOrNull()
+                } else null
+            }
+
             // ── Kumpulkan hasil ──────────────────────────────────────────────
             transitDeferred.await()?.let { candidates.add(RouteCandidate.Transit(it)) }
             motorDeferred.await()?.let { candidates.add(RouteCandidate.PrivateVehicle(it)) }
             carDeferred.await()?.let { candidates.add(RouteCandidate.PrivateVehicle(it)) }
             combinedMotorDeferred.await()?.let { candidates.add(RouteCandidate.Combined(it)) }
             combinedCarDeferred.await()?.let { candidates.add(RouteCandidate.Combined(it)) }
+            combinedTransitOnlyDeferred.await()?.let { candidates.add(RouteCandidate.Combined(it)) }
         }
 
         if (candidates.isEmpty()) error("Tidak ada rute yang ditemukan untuk kombinasi input ini.")
