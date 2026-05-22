@@ -48,7 +48,7 @@
     <!-- ===== TEXT STYLES ===== -->
     <style name="NaikApaTextEyebrow" parent="android:Widget.TextView">
         <item name="android:textSize">@dimen/text_body_sm</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.08</item>
     </style>
@@ -132,8 +132,8 @@
     </style>
 
     <style name="NaikApaTextInputOrange" parent="NaikApaTextInput">
-        <item name="boxStrokeColor">@color/colorAccentOrange</item>
-        <item name="startIconTint">@color/colorAccentOrange</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="startIconTint">@color/colorPrimary</item>
     </style>
 
     <!-- ===== MODE CARD ===== -->
