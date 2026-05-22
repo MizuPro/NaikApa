@@ -46,5 +46,11 @@
         <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
     </style>
 
+    <!-- Theme overlay untuk Card agar tidak terkena efek tint elevation Material 3 -->
+    <style name="ThemeOverlay.NaikApa.WhiteCard" parent="">
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="colorPrimary">@color/white</item>
+    </style>
+
     <style name="Theme.NaikApa" parent="Base.Theme.NaikApa" />
 </resources>

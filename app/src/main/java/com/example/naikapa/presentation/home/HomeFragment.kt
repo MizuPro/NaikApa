@@ -19,6 +19,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -209,6 +213,7 @@ class HomeFragment : Fragment() {
         setupPanelToggle()
         
         binding.root.applyStatusBarTopMarginTo(binding.cardHeader, dpToPx(16f))
+        setupBottomSheetScrim()
     }
 
     private fun initMap() {
@@ -1513,6 +1518,53 @@ class HomeFragment : Fragment() {
     private fun dpToPx(dp: Float): Int {
         val density = resources.displayMetrics.density
         return (dp * density).toInt()
+    }
+
+    private fun setupBottomSheetScrim() {
+        val behavior = BottomSheetBehavior.from(binding.cardRecommendation)
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED || newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    binding.viewScrim.visibility = View.INVISIBLE
+                    binding.viewScrim.alpha = 0f
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        binding.contentContainer.setRenderEffect(null)
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                val coercedOffset = slideOffset.coerceIn(0f, 1f)
+                
+                // 1. Atur alpha scrim dimming
+                binding.viewScrim.apply {
+                    if (coercedOffset > 0f) {
+                        visibility = View.VISIBLE
+                        alpha = coercedOffset * 0.45f
+                    } else {
+                        visibility = View.INVISIBLE
+                        alpha = 0f
+                    }
+                }
+                
+                // 2. Efek blur untuk API 31+ (Android 12+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val maxBlurRadius = 16f
+                    val currentBlurRadius = coercedOffset * maxBlurRadius
+                    
+                    if (currentBlurRadius > 0.1f) {
+                        val blurEffect = RenderEffect.createBlurEffect(
+                            currentBlurRadius,
+                            currentBlurRadius,
+                            Shader.TileMode.CLAMP
+                        )
+                        binding.contentContainer.setRenderEffect(blurEffect)
+                    } else {
+                        binding.contentContainer.setRenderEffect(null)
+                    }
+                }
+            }
+        })
     }
 
     private fun startLocationFlow() {
