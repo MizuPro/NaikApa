@@ -1,6 +1,18 @@
 package com.example.naikapa.data.model
 
 /**
+ * Filter tipe kendaraan yang dipilih user sebelum mencari rute.
+ * - ALL: tampilkan semua kandidat (transit + kendaraan pribadi + gabungan)
+ * - TRANSIT_ONLY: hanya kandidat transit (TransJakarta, KRL, MRT, LRT)
+ * - PRIVATE_ONLY: hanya kandidat kendaraan pribadi (motor/mobil)
+ */
+enum class VehicleTypeFilter {
+    ALL,
+    TRANSIT_ONLY,
+    PRIVATE_ONLY
+}
+
+/**
  * Membungkus satu kandidat rute dari berbagai sumber (transit, kendaraan pribadi, gabungan).
  * Digunakan sebagai input RecommendationEngine sebelum diberi skor.
  */

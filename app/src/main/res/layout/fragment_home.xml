@@ -453,6 +453,58 @@
                 android:layout_marginBottom="12dp"
                 android:background="@color/colorBorder" />
 
+            <!-- Filter Tipe Kendaraan -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Tampilkan Rute"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:id="@+id/scrollVehicleFilter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupVehicleFilter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="4dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:singleLine="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/filterSemua"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Semua" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/filterTransumSaja"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Transum Saja" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/filterKendaraanPribadiSaja"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kendaraan Pribadi" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+            </HorizontalScrollView>
+
             <!-- Horizontal Transit Modes Scroll -->
             <TextView
                 android:layout_width="wrap_content"
@@ -809,9 +861,9 @@
         android:orientation="vertical"
         android:gravity="end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_anchor="@id/cardRecommendation"
-        app:layout_anchorGravity="top|end">
+        android:layout_marginBottom="148dp"
+        app:layout_anchor="@id/contentContainer"
+        app:layout_anchorGravity="bottom|end">
 
         <!-- Tombol Style Peta -->
         <com.google.android.material.button.MaterialButton

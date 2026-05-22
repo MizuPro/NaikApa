@@ -87,6 +87,7 @@ import com.example.naikapa.domain.recommendation.RecommendationReasonBuilder
 import com.example.naikapa.domain.recommendation.RecommendationScorer
 import com.example.naikapa.data.model.RecommendationResult
 import com.example.naikapa.data.model.ScoredRoute
+import com.example.naikapa.data.model.VehicleTypeFilter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.data.model.RouteHistory
 import com.example.naikapa.presentation.history.HistoryReplayRequest
@@ -110,6 +111,7 @@ class HomeFragment : Fragment() {
     private lateinit var routeResultAdapter: RouteResultAdapter
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
+    private var selectedVehicleTypeFilter: VehicleTypeFilter = VehicleTypeFilter.ALL
     private var selectedOrigin: LocationPoint? = null
     private var selectedOriginStop: SearchLocation? = null
     private var selectedDestination: SearchLocation? = null
@@ -206,6 +208,7 @@ class HomeFragment : Fragment() {
 
         initMap()
         setupTransitModes()
+        setupVehicleTypeFilter()
         setupSortChips()
         setupOriginSearch()
         setupDestinationSearch()
@@ -275,6 +278,65 @@ class HomeFragment : Fragment() {
             }
         }
         selectedModeCardId = R.id.modeCampur
+    }
+
+    private fun setupVehicleTypeFilter() {
+        binding.chipGroupVehicleFilter.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
+                selectedVehicleTypeFilter = when (checkedIds.first()) {
+                    R.id.filterTransumSaja -> VehicleTypeFilter.TRANSIT_ONLY
+                    R.id.filterKendaraanPribadiSaja -> VehicleTypeFilter.PRIVATE_ONLY
+                    else -> VehicleTypeFilter.ALL
+                }
+                applyVehicleFilterToModeChips()
+            }
+        }
+        selectedVehicleTypeFilter = VehicleTypeFilter.ALL
+    }
+
+    /**
+     * Sembunyikan/tampilkan chip moda yang tidak relevan berdasarkan filter tipe kendaraan.
+     * - TRANSIT_ONLY: sembunyikan chip Motor dan Mobil
+     * - PRIVATE_ONLY: sembunyikan chip TJ, KRL, MRT, LRT
+     * - ALL: tampilkan semua chip
+     */
+    private fun applyVehicleFilterToModeChips() {
+        val transitChipIds = listOf(R.id.modeTJ, R.id.modeKRL, R.id.modeMRT, R.id.modeLRT)
+        val privateChipIds = listOf(R.id.modeMotor, R.id.modeMobil)
+
+        when (selectedVehicleTypeFilter) {
+            VehicleTypeFilter.TRANSIT_ONLY -> {
+                transitChipIds.forEach { id ->
+                    binding.chipGroupModes.findViewById<com.google.android.material.chip.Chip>(id)?.visibility = View.VISIBLE
+                }
+                privateChipIds.forEach { id ->
+                    binding.chipGroupModes.findViewById<com.google.android.material.chip.Chip>(id)?.visibility = View.GONE
+                }
+                // Jika chip yang sedang dipilih adalah motor/mobil, reset ke Campur
+                if (selectedModeCardId == R.id.modeMotor || selectedModeCardId == R.id.modeMobil) {
+                    binding.modeCampur.isChecked = true
+                    selectedModeCardId = R.id.modeCampur
+                }
+            }
+            VehicleTypeFilter.PRIVATE_ONLY -> {
+                transitChipIds.forEach { id ->
+                    binding.chipGroupModes.findViewById<com.google.android.material.chip.Chip>(id)?.visibility = View.GONE
+                }
+                privateChipIds.forEach { id ->
+                    binding.chipGroupModes.findViewById<com.google.android.material.chip.Chip>(id)?.visibility = View.VISIBLE
+                }
+                // Jika chip yang sedang dipilih adalah transit, reset ke Campur
+                if (transitChipIds.contains(selectedModeCardId)) {
+                    binding.modeCampur.isChecked = true
+                    selectedModeCardId = R.id.modeCampur
+                }
+            }
+            VehicleTypeFilter.ALL -> {
+                (transitChipIds + privateChipIds).forEach { id ->
+                    binding.chipGroupModes.findViewById<com.google.android.material.chip.Chip>(id)?.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 
     private fun setupDestinationSearch() {
@@ -836,33 +898,39 @@ class HomeFragment : Fragment() {
 
         val sortPreference = getSelectedSortPreference()
         val transitMode = getTransitModeForCurrentMode()
-        val hasMotor = sessionManager.getUserId().let { uid ->
-            if (uid > 0) {
-                try {
-                    val userDao = com.example.naikapa.data.local.UserDao(dbHelper)
-                    userDao.getUserById(uid)?.hasMotor ?: false
-                } catch (e: Exception) { false }
-            } else false
-        }
-        val hasCar = sessionManager.getUserId().let { uid ->
-            if (uid > 0) {
-                try {
-                    val userDao = com.example.naikapa.data.local.UserDao(dbHelper)
-                    userDao.getUserById(uid)?.hasCar ?: false
-                } catch (e: Exception) { false }
-            } else false
+        val uid = sessionManager.getUserId()
+        val hasMotor = if (uid > 0) {
+            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasMotor ?: false }
+            catch (e: Exception) { false }
+        } else false
+        val hasCar = if (uid > 0) {
+            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasCar ?: false }
+            catch (e: Exception) { false }
+        } else false
+
+        // Validasi khusus filter Kendaraan Pribadi Saja
+        if (selectedVehicleTypeFilter == VehicleTypeFilter.PRIVATE_ONLY) {
+            val apiKeyValid = BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER
+            if (!apiKeyValid) {
+                toast(getString(R.string.route_private_api_key_missing))
+                return
+            }
+            if (!hasMotor && !hasCar) {
+                toast("Kamu belum mendaftarkan kendaraan pribadi. Perbarui profil untuk menambahkan motor atau mobil.")
+                return
+            }
+            // Peringatan jika hanya punya salah satu kendaraan
+            if (!hasMotor && hasCar) {
+                toast("Kamu tidak memiliki motor. Hanya rute mobil yang akan ditampilkan.")
+            } else if (hasMotor && !hasCar) {
+                toast("Kamu tidak memiliki mobil. Hanya rute motor yang akan ditampilkan.")
+            }
         }
 
-        // Jika mode kendaraan pribadi saja, gunakan flow lama
+        // Jika mode chip moda adalah kendaraan pribadi spesifik (Motor/Mobil), gunakan flow lama
         getSelectedPrivateVehicleMode()?.let { mode ->
             handlePrivateVehicleRouteClick(mode)
             return
-        }
-
-        // Mode transit atau campur → gunakan RecommendationEngine
-        if (BuildConfig.TOMTOM_API_KEY == AppConstants.TOMTOM_API_KEY_PLACEHOLDER &&
-            (hasMotor || hasCar)) {
-            // API key belum diisi, tetap coba transit saja
         }
 
         showLoadingState(getString(R.string.route_recommendation_loading))
@@ -877,6 +945,7 @@ class HomeFragment : Fragment() {
                     hasMotor = hasMotor && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
                     hasCar = hasCar && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
                     tomTomApiKey = BuildConfig.TOMTOM_API_KEY,
+                    vehicleTypeFilter = selectedVehicleTypeFilter,
                     originStopId = selectedOriginStop?.stopId,
                     destinationStopId = selectedDestination?.stopId
                 )

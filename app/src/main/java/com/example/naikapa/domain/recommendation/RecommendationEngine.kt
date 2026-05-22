@@ -13,6 +13,7 @@ import com.example.naikapa.data.model.SearchLocation
 import com.example.naikapa.data.model.SortPreference
 import com.example.naikapa.data.model.TransitMode
 import com.example.naikapa.data.model.TransitRouteResult
+import com.example.naikapa.data.model.VehicleTypeFilter
 import com.example.naikapa.data.repository.CombinedRouteRepository
 import com.example.naikapa.data.repository.TomTomRoutingRepository
 import com.example.naikapa.data.repository.TransitRoutingRepository
@@ -51,6 +52,7 @@ class RecommendationEngine(
      * @param hasMotor  Apakah user memiliki motor.
      * @param hasCar  Apakah user memiliki mobil.
      * @param tomTomApiKey  API key TomTom untuk routing kendaraan pribadi.
+     * @param vehicleTypeFilter  Filter tipe kendaraan: ALL, TRANSIT_ONLY, atau PRIVATE_ONLY.
      * @param originStopId  Stop ID GTFS asal jika user memilih dari GTFS (opsional).
      * @param destinationStopId  Stop ID GTFS tujuan jika user memilih dari GTFS (opsional).
      */
@@ -62,16 +64,22 @@ class RecommendationEngine(
         hasMotor: Boolean,
         hasCar: Boolean,
         tomTomApiKey: String,
+        vehicleTypeFilter: VehicleTypeFilter = VehicleTypeFilter.ALL,
         originStopId: String? = null,
         destinationStopId: String? = null
     ): Result<RecommendationResult> = runCatching {
 
         val candidates = mutableListOf<RouteCandidate>()
 
+        // Tentukan apakah masing-masing tipe kandidat perlu dijalankan berdasarkan filter
+        val includeTransit = vehicleTypeFilter != VehicleTypeFilter.PRIVATE_ONLY
+        val includePrivate = vehicleTypeFilter != VehicleTypeFilter.TRANSIT_ONLY
+        val includeCombined = vehicleTypeFilter == VehicleTypeFilter.ALL
+
         coroutineScope {
             // ── 1. Rute transit (jika ada stop GTFS asal & tujuan) ──────────
             val transitDeferred = async(Dispatchers.IO) {
-                if (!originStopId.isNullOrBlank() && !destinationStopId.isNullOrBlank()) {
+                if (includeTransit && !originStopId.isNullOrBlank() && !destinationStopId.isNullOrBlank()) {
                     transitRoutingRepository.findRoute(
                         startStopId = originStopId,
                         endStopId = destinationStopId,
@@ -83,7 +91,7 @@ class RecommendationEngine(
 
             // ── 2. Rute kendaraan pribadi ────────────────────────────────────
             val motorDeferred = async(Dispatchers.IO) {
-                if (hasMotor && tomTomApiKey.isNotBlank()) {
+                if (includePrivate && hasMotor && tomTomApiKey.isNotBlank()) {
                     tomTomRoutingRepository.calculateRoute(
                         originLat = origin.latitude,
                         originLon = origin.longitude,
@@ -96,7 +104,7 @@ class RecommendationEngine(
             }
 
             val carDeferred = async(Dispatchers.IO) {
-                if (hasCar && tomTomApiKey.isNotBlank()) {
+                if (includePrivate && hasCar && tomTomApiKey.isNotBlank()) {
                     tomTomRoutingRepository.calculateRoute(
                         originLat = origin.latitude,
                         originLon = origin.longitude,
@@ -110,7 +118,7 @@ class RecommendationEngine(
 
             // ── 3. Rute gabungan (motor/mobil ke transit) ────────────────────
             val combinedMotorDeferred = async(Dispatchers.IO) {
-                if (hasMotor && tomTomApiKey.isNotBlank()) {
+                if (includeCombined && hasMotor && tomTomApiKey.isNotBlank()) {
                     combinedRouteRepository.findCombinedRoutes(
                         originLat = origin.latitude,
                         originLon = origin.longitude,
@@ -124,7 +132,7 @@ class RecommendationEngine(
             }
 
             val combinedCarDeferred = async(Dispatchers.IO) {
-                if (hasCar && tomTomApiKey.isNotBlank()) {
+                if (includeCombined && hasCar && tomTomApiKey.isNotBlank()) {
                     combinedRouteRepository.findCombinedRoutes(
                         originLat = origin.latitude,
                         originLon = origin.longitude,
