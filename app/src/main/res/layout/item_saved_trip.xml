@@ -29,14 +29,14 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="@drawable/ic_launcher_background"
-                android:backgroundTint="@color/colorPrimaryLight">
+                android:backgroundTint="@color/colorAccentOrangeLight">
 
                 <ImageView
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_heart"
-                    app:tint="@color/colorPrimary"
+                    app:tint="@color/colorAccentOrange"
                     android:contentDescription="@null" />
             </FrameLayout>
 
@@ -62,7 +62,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="@color/colorPrimary"
+                    android:textColor="@color/colorAccentOrange"
                     android:textSize="11sp" />
             </LinearLayout>
 

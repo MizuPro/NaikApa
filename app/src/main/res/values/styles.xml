@@ -48,7 +48,7 @@
     <!-- ===== TEXT STYLES ===== -->
     <style name="NaikApaTextEyebrow" parent="android:Widget.TextView">
         <item name="android:textSize">@dimen/text_body_sm</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.08</item>
     </style>
@@ -132,8 +132,8 @@
     </style>
 
     <style name="NaikApaTextInputOrange" parent="NaikApaTextInput">
-        <item name="boxStrokeColor">@color/colorAccentOrange</item>
-        <item name="startIconTint">@color/colorAccentOrange</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="startIconTint">@color/colorPrimary</item>
     </style>
 
     <!-- ===== MODE CARD ===== -->
@@ -182,6 +182,71 @@
 
     <style name="BottomNavIndicatorShape" parent="ShapeAppearance.Material3.Corner.Full">
         <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ===== NEW STYLES FROM PLAN ===== -->
+    <style name="NaikApaSegmentedTab" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorGravity">stretch</item>
+        <item name="tabIndicatorColor">@color/colorPrimaryLight</item>
+        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabTextColor">@color/colorTextSecondary</item>
+        <item name="tabIndicatorAnimationMode">linear</item>
+        <item name="tabTextAppearance">@style/TextAppearance.Material3.TitleSmall</item>
+    </style>
+
+    <style name="NaikApaChipFilter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/colorSurface</item>
+        <item name="chipStrokeColor">@color/colorBorder</item>
+        <item name="chipStrokeWidth">@dimen/stroke_thin</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+        <item name="checkedIconVisible">false</item>
+    </style>
+
+    <style name="NaikApaChipModeSelected" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/colorPrimaryLight</item>
+        <item name="chipStrokeColor">@color/colorPrimary</item>
+        <item name="chipStrokeWidth">@dimen/stroke_medium</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="checkedIconVisible">true</item>
+        <item name="checkedIconTint">@color/colorPrimary</item>
+    </style>
+
+    <style name="NaikApaButtonNeutral" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:textSize">@dimen/text_body_lg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="strokeWidth">@dimen/stroke_thin</item>
+        <item name="android:textColor">@color/colorNeutralButton</item>
+        <item name="strokeColor">@color/colorNeutralButton</item>
+    </style>
+
+    <style name="NaikApaButtonDestructive" parent="Widget.Material3.Button">
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:textSize">@dimen/text_body_lg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="backgroundTint">@color/colorDestructive</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="NaikApaToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+
+    <style name="NaikApaSectionHeader" parent="android:Widget.TextView">
+        <item name="android:textSize">@dimen/text_title_sm</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="NaikApaSnackbar" parent="Widget.Material3.Snackbar">
+        <item name="android:backgroundTint">@color/colorTextPrimary</item>
+    </style>
+
+    <style name="NaikApaBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/colorSurface</item>
     </style>
 
 </resources>

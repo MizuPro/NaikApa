@@ -69,12 +69,12 @@
                 android:layout_marginTop="24dp"
                 android:hint="@string/full_name"
                 app:startIconDrawable="@drawable/ic_person"
-                app:startIconTint="@color/colorAccentOrange"
+                app:startIconTint="@color/colorPrimary"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/colorAccentOrange"
+                app:boxStrokeColor="@color/colorPrimary"
                 app:hintTextColor="@color/colorTextSecondary"
                 app:layout_constraintTop_toBottomOf="@id/tvSubtitleHeader">
 
@@ -97,12 +97,12 @@
                 android:layout_marginTop="16dp"
                 android:hint="@string/email"
                 app:startIconDrawable="@drawable/ic_mail"
-                app:startIconTint="@color/colorAccentOrange"
+                app:startIconTint="@color/colorPrimary"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/colorAccentOrange"
+                app:boxStrokeColor="@color/colorPrimary"
                 app:hintTextColor="@color/colorTextSecondary"
                 app:layout_constraintTop_toBottomOf="@id/inputLayoutName">
 
@@ -125,14 +125,14 @@
                 android:layout_marginTop="16dp"
                 android:hint="@string/password"
                 app:startIconDrawable="@drawable/ic_lock"
-                app:startIconTint="@color/colorAccentOrange"
+                app:startIconTint="@color/colorPrimary"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/colorTextSecondary"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/colorAccentOrange"
+                app:boxStrokeColor="@color/colorPrimary"
                 app:hintTextColor="@color/colorTextSecondary"
                 app:layout_constraintTop_toBottomOf="@id/inputLayoutEmail">
 
@@ -155,14 +155,14 @@
                 android:layout_marginTop="16dp"
                 android:hint="@string/confirm_password"
                 app:startIconDrawable="@drawable/ic_lock"
-                app:startIconTint="@color/colorAccentOrange"
+                app:startIconTint="@color/colorPrimary"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/colorTextSecondary"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:boxStrokeColor="@color/colorAccentOrange"
+                app:boxStrokeColor="@color/colorPrimary"
                 app:hintTextColor="@color/colorTextSecondary"
                 app:layout_constraintTop_toBottomOf="@id/inputLayoutPassword">
 
@@ -222,15 +222,15 @@
                         <FrameLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
-                            android:backgroundTint="@color/colorAccentOrangeLight">
+                            android:background="@drawable/bg_circle_icon"
+                            android:backgroundTint="@color/colorPrimaryLight">
 
                             <ImageView
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_motorcycle"
-                                app:tint="@color/colorAccentOrange"
+                                app:tint="@color/colorPrimary"
                                 tools:ignore="ContentDescription" />
 
                         </FrameLayout>
@@ -300,15 +300,15 @@
                         <FrameLayout
                             android:layout_width="36dp"
                             android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
-                            android:backgroundTint="@color/colorAccentOrangeLight">
+                            android:background="@drawable/bg_circle_icon"
+                            android:backgroundTint="@color/colorPrimaryLight">
 
                             <ImageView
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_car"
-                                app:tint="@color/colorAccentOrange"
+                                app:tint="@color/colorPrimary"
                                 tools:ignore="ContentDescription" />
 
                         </FrameLayout>
@@ -366,7 +366,7 @@
                 android:text="@string/register"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/colorAccentOrange"
+                app:backgroundTint="@color/colorPrimary"
                 app:icon="@drawable/ic_register"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
@@ -398,7 +398,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/login_link"
-                    android:textColor="@color/colorAccentOrange"
+                    android:textColor="@color/colorPrimary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 

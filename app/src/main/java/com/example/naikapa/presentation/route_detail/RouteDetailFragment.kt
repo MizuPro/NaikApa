@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.R
 import com.example.naikapa.common.SessionManager
 import com.example.naikapa.common.toast
+import com.example.naikapa.common.applyStatusBarTopMarginTo
 import com.example.naikapa.data.local.NaikApaDatabaseHelper
 import com.example.naikapa.data.local.SavedTripDao
 import com.example.naikapa.data.model.*
@@ -63,6 +64,7 @@ class RouteDetailFragment : Fragment() {
         }
 
         setupToolbar()
+        binding.root.applyStatusBarTopMarginTo(binding.cardToolbar, dpToPx(8f))
         bindSummaryCard(selectedRoute)
         bindMetrics(selectedRoute.candidate.metrics)
         setupDisruptionWarning(selectedRoute)
@@ -555,6 +557,11 @@ class RouteDetailFragment : Fragment() {
         } else {
             "${distanceMeters.toInt()} m"
         }
+    }
+
+    private fun dpToPx(dp: Float): Int {
+        val density = resources.displayMetrics.density
+        return (dp * density).toInt()
     }
 
     override fun onResume() {

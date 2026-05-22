@@ -48,8 +48,8 @@ class RouteResultAdapter(
 
         // Rank badge
         holder.tvRankLabel.text = item.rankLabel.uppercase(Locale.getDefault())
-        val rankBgColor = if (isMain) R.color.colorPrimaryLight else R.color.colorBackground
-        val rankTextColor = if (isMain) R.color.colorPrimary else R.color.colorTextSecondary
+        val rankBgColor = if (isMain) R.color.colorAccentOrangeLight else R.color.colorBackground
+        val rankTextColor = if (isMain) R.color.colorAccentOrange else R.color.colorTextSecondary
         holder.cardRankBadge.setCardBackgroundColor(ContextCompat.getColor(context, rankBgColor))
         holder.tvRankLabel.setTextColor(ContextCompat.getColor(context, rankTextColor))
 

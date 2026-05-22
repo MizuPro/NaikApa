@@ -26,6 +26,35 @@
         <item name="android:textColorPrimary">@color/colorTextPrimary</item>
         <item name="android:textColorSecondary">@color/colorTextSecondary</item>
         <item name="android:textColorHint">@color/colorTextHint</item>
+
+        <!-- Surface Colors -->
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorTextPrimary</item>
+        <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/colorTextSecondary</item>
+
+        <!-- Material Components default styles -->
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.NaikApa.BottomSheetDialog</item>
+        <item name="chipStyle">@style/Widget.Material3.Chip.Filter</item>
+        <item name="snackbarStyle">@style/Widget.Material3.Snackbar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
+        <item name="floatingActionButtonStyle">@style/Widget.Material3.FloatingActionButton.Primary</item>
+        <item name="tabStyle">@style/Widget.Material3.TabLayout</item>
+    </style>
+
+    <style name="ThemeOverlay.NaikApa.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
+    </style>
+
+    <!-- Theme overlay untuk Card agar tidak terkena efek tint elevation Material 3 -->
+    <style name="ThemeOverlay.NaikApa.WhiteCard" parent="">
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="colorPrimary">@color/white</item>
+    </style>
+
+    <!-- Theme overlay untuk input field agar tetap menggunakan warna primary asli meskipun berada di dalam WhiteCard -->
+    <style name="ThemeOverlay.NaikApa.SearchInput" parent="">
+        <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
     <style name="Theme.NaikApa" parent="Base.Theme.NaikApa" />
