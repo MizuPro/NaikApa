@@ -52,5 +52,10 @@
         <item name="colorPrimary">@color/white</item>
     </style>
 
+    <!-- Theme overlay untuk input field agar tetap menggunakan warna primary asli meskipun berada di dalam WhiteCard -->
+    <style name="ThemeOverlay.NaikApa.SearchInput" parent="">
+        <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
+
     <style name="Theme.NaikApa" parent="Base.Theme.NaikApa" />
 </resources>
