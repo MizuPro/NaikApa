@@ -21,6 +21,7 @@ object AppConstants {
     const val TOMTOM_ROUTING_ROUTE_TYPE_FASTEST = "fastest"
     const val TOMTOM_ROUTING_TRAVEL_MODE_MOTORCYCLE = "motorcycle"
     const val TOMTOM_ROUTING_TRAVEL_MODE_CAR = "car"
+    const val TOMTOM_ROUTING_TRAVEL_MODE_PEDESTRIAN = "pedestrian"
     const val TOMTOM_ROUTING_AVOID_TOLL_ROADS = "tollRoads"
     const val MAP_USER_AGENT = "NaikApa/1.0"
     const val MAP_DEFAULT_LAT = -6.2088

@@ -31,7 +31,15 @@ class CombinedRouteRepository(
         endStopId: String,
         mode: TransitMode,
         sortPreference: SortPreference
-    ) -> TransitRouteResult?
+    ) -> TransitRouteResult?,
+    private val walkingRouteProvider: suspend (
+        originLat: Double,
+        originLon: Double,
+        destinationLat: Double,
+        destinationLon: Double,
+        originLabel: String,
+        destinationLabel: String
+    ) -> Result<WalkingRouteResult>
 ) {
     constructor(
         nearbyTransitStopRepository: NearbyTransitStopRepository,
@@ -54,6 +62,17 @@ class CombinedRouteRepository(
         },
         transitRouteProvider = { startStopId, endStopId, mode, sortPreference ->
             transitRoutingRepository.findRoute(startStopId, endStopId, mode, sortPreference)
+        },
+        walkingRouteProvider = { originLat, originLon, destinationLat, destinationLon, originLabel, destinationLabel ->
+            tomTomRoutingRepository.calculateWalkingRoute(
+                originLat = originLat,
+                originLon = originLon,
+                destinationLat = destinationLat,
+                destinationLon = destinationLon,
+                originLabel = originLabel,
+                destinationLabel = destinationLabel,
+                apiKey = apiKey
+            )
         }
     )
 
@@ -138,7 +157,7 @@ class CombinedRouteRepository(
         )
     }
 
-    private fun buildResult(
+    private suspend fun buildResult(
         privateVehicleMode: PrivateVehicleMode?,
         originLat: Double,
         originLon: Double,
@@ -149,30 +168,53 @@ class CombinedRouteRepository(
         vehicleRoute: PrivateVehicleRouteResult?,
         transitRoute: TransitRouteResult
     ): CombinedRouteResult {
-        val walkingDistanceMeters = GeoDistanceCalculator.haversineMeters(
+        // ── Last-mile: halte tujuan → destinasi ──────────────────────────────
+        val lastMileWalking = walkingRouteProvider(
             destinationStop.latitude,
             destinationStop.longitude,
             destinationLat,
-            destinationLon
-        )
-        val walkingDurationSeconds = (walkingDistanceMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
-        val walkingPoints = listOf(
-            MapPoint(
-                label = destinationStop.stopName,
-                latitude = destinationStop.latitude,
-                longitude = destinationStop.longitude,
-                description = destinationStop.agencyId,
-                markerType = MapMarkerType.TRANSIT
-            ),
-            MapPoint(
-                label = "Tujuan",
-                latitude = destinationLat,
-                longitude = destinationLon,
-                description = "Jalan kaki",
-                markerType = MapMarkerType.DESTINATION
-            )
-        )
+            destinationLon,
+            destinationStop.stopName,
+            "Tujuan"
+        ).getOrNull()
 
+        val walkingDistanceMeters: Double
+        val walkingDurationSeconds: Int
+        val walkingPoints: List<MapPoint>
+
+        if (lastMileWalking != null) {
+            walkingDistanceMeters = lastMileWalking.distanceMeters
+            walkingDurationSeconds = lastMileWalking.durationSeconds
+            walkingPoints = lastMileWalking.points
+        } else {
+            // Fallback ke Haversine jika TomTom gagal
+            val haversineMeters = GeoDistanceCalculator.haversineMeters(
+                destinationStop.latitude,
+                destinationStop.longitude,
+                destinationLat,
+                destinationLon
+            )
+            walkingDistanceMeters = haversineMeters
+            walkingDurationSeconds = (haversineMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
+            walkingPoints = listOf(
+                MapPoint(
+                    label = destinationStop.stopName,
+                    latitude = destinationStop.latitude,
+                    longitude = destinationStop.longitude,
+                    description = destinationStop.agencyId,
+                    markerType = MapMarkerType.TRANSIT
+                ),
+                MapPoint(
+                    label = "Tujuan",
+                    latitude = destinationLat,
+                    longitude = destinationLon,
+                    description = "Jalan kaki",
+                    markerType = MapMarkerType.DESTINATION
+                )
+            )
+        }
+
+        // ── First-mile: origin → halte terdekat (hanya jika tidak ada kendaraan) ──
         val originSegment = if (privateVehicleMode != null && vehicleRoute != null) {
             val vehicleName = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor" else "Mobil"
             val stopLabel = stopTypeLabel(
@@ -189,36 +231,56 @@ class CombinedRouteRepository(
                 privateVehicleResult = vehicleRoute
             )
         } else {
-            val firstDistanceMeters = GeoDistanceCalculator.haversineMeters(
+            // Tidak ada kendaraan → jalan kaki ke halte, gunakan TomTom pedestrian
+            val firstMileWalking = walkingRouteProvider(
                 originLat,
                 originLon,
                 originStop.latitude,
-                originStop.longitude
-            )
-            val firstDurationSeconds = (firstDistanceMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
-            val firstPoints = listOf(
-                MapPoint(
-                    label = "Asal",
-                    latitude = originLat,
-                    longitude = originLon,
-                    description = "Jalan kaki",
-                    markerType = MapMarkerType.ORIGIN
-                ),
-                MapPoint(
-                    label = originStop.stopName,
-                    latitude = originStop.latitude,
-                    longitude = originStop.longitude,
-                    description = originStop.agencyId,
-                    markerType = MapMarkerType.TRANSIT
+                originStop.longitude,
+                "Asal",
+                originStop.stopName
+            ).getOrNull()
+
+            if (firstMileWalking != null) {
+                CombinedRouteSegment(
+                    type = CombinedRouteSegmentType.WALKING,
+                    title = "Jalan kaki ke transit",
+                    durationSeconds = firstMileWalking.durationSeconds,
+                    distanceMeters = firstMileWalking.distanceMeters,
+                    points = firstMileWalking.points
                 )
-            )
-            CombinedRouteSegment(
-                type = CombinedRouteSegmentType.WALKING,
-                title = "Jalan kaki ke transit",
-                durationSeconds = firstDurationSeconds,
-                distanceMeters = firstDistanceMeters,
-                points = firstPoints
-            )
+            } else {
+                // Fallback ke Haversine jika TomTom gagal
+                val firstDistanceMeters = GeoDistanceCalculator.haversineMeters(
+                    originLat,
+                    originLon,
+                    originStop.latitude,
+                    originStop.longitude
+                )
+                val firstDurationSeconds = (firstDistanceMeters * AppConstants.WALKING_SECONDS_PER_METER).roundToInt()
+                CombinedRouteSegment(
+                    type = CombinedRouteSegmentType.WALKING,
+                    title = "Jalan kaki ke transit",
+                    durationSeconds = firstDurationSeconds,
+                    distanceMeters = firstDistanceMeters,
+                    points = listOf(
+                        MapPoint(
+                            label = "Asal",
+                            latitude = originLat,
+                            longitude = originLon,
+                            description = "Jalan kaki",
+                            markerType = MapMarkerType.ORIGIN
+                        ),
+                        MapPoint(
+                            label = originStop.stopName,
+                            latitude = originStop.latitude,
+                            longitude = originStop.longitude,
+                            description = originStop.agencyId,
+                            markerType = MapMarkerType.TRANSIT
+                        )
+                    )
+                )
+            }
         }
 
         val transitSegment = CombinedRouteSegment(

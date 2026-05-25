@@ -10,6 +10,12 @@ import com.example.naikapa.data.remote.TomTomRoutingApi
 import com.example.naikapa.domain.routing.FuelCostCalculator
 import java.util.Locale
 
+data class WalkingRouteResult(
+    val distanceMeters: Double,
+    val durationSeconds: Int,
+    val points: List<MapPoint>
+)
+
 class TomTomRoutingRepository(
     private val api: TomTomRoutingApi,
     private val fuelCostCalculator: FuelCostCalculator = FuelCostCalculator()
@@ -94,5 +100,82 @@ class TomTomRoutingRepository(
     private fun PrivateVehicleMode.toTravelMode(): String = when (this) {
         PrivateVehicleMode.MOTOR -> AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_MOTORCYCLE
         PrivateVehicleMode.CAR -> AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_CAR
+    }
+
+    /**
+     * Menghitung rute jalan kaki menggunakan TomTom Routing API (travelMode=pedestrian).
+     * Mengembalikan [WalkingRouteResult] berisi jarak nyata, durasi, dan polyline.
+     * Jika API gagal, kembalikan [Result.failure] agar caller bisa fallback ke Haversine.
+     */
+    suspend fun calculateWalkingRoute(
+        originLat: Double,
+        originLon: Double,
+        destinationLat: Double,
+        destinationLon: Double,
+        originLabel: String = "Asal",
+        destinationLabel: String = "Tujuan",
+        apiKey: String
+    ): Result<WalkingRouteResult> {
+        if (apiKey.isBlank() || apiKey == AppConstants.TOMTOM_API_KEY_PLACEHOLDER) {
+            return Result.failure(IllegalStateException("TomTom API key belum diisi"))
+        }
+        return runCatching {
+            val response = api.calculateRoute(
+                from = formatCoordinatePair(originLat, originLon),
+                to = formatCoordinatePair(destinationLat, destinationLon),
+                apiKey = apiKey,
+                travelMode = AppConstants.TOMTOM_ROUTING_TRAVEL_MODE_PEDESTRIAN,
+                routeType = AppConstants.TOMTOM_ROUTING_ROUTE_TYPE_FASTEST,
+                maxAlternatives = 0
+            )
+            if (!response.isSuccessful) {
+                error("TomTom Walking Route gagal: HTTP ${response.code()}")
+            }
+            val route = response.body()?.routes?.firstOrNull()
+                ?: error("TomTom Walking Route tidak mengembalikan rute")
+            val summary = route.summary
+                ?: error("TomTom Walking Route tidak memiliki summary")
+            val distanceMeters = summary.lengthInMeters?.toDouble()
+                ?: error("TomTom Walking Route tidak memiliki jarak")
+            val durationSeconds = summary.travelTimeInSeconds
+                ?: error("TomTom Walking Route tidak memiliki durasi")
+
+            val polylinePoints = route.legs.flatMap { it.points }.mapNotNull { point ->
+                val lat = point.latitude ?: return@mapNotNull null
+                val lon = point.longitude ?: return@mapNotNull null
+                MapPoint(
+                    label = "",
+                    latitude = lat,
+                    longitude = lon,
+                    description = "Jalan kaki",
+                    markerType = MapMarkerType.TRANSIT
+                )
+            }
+
+            // Pastikan titik awal dan akhir selalu ada dengan label yang benar
+            val points = buildList {
+                add(MapPoint(
+                    label = originLabel,
+                    latitude = originLat,
+                    longitude = originLon,
+                    description = "Jalan kaki",
+                    markerType = MapMarkerType.ORIGIN
+                ))
+                addAll(polylinePoints)
+                add(MapPoint(
+                    label = destinationLabel,
+                    latitude = destinationLat,
+                    longitude = destinationLon,
+                    description = "Jalan kaki",
+                    markerType = MapMarkerType.DESTINATION
+                ))
+            }
+
+            WalkingRouteResult(
+                distanceMeters = distanceMeters,
+                durationSeconds = durationSeconds,
+                points = points
+            )
+        }
     }
 }

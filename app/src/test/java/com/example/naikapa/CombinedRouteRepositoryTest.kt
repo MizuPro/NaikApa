@@ -77,7 +77,8 @@ class CombinedRouteRepositoryTest {
         val repository = CombinedRouteRepository(
             nearbyTransitStopRepository = nearbyRepository,
             privateVehicleRouteProvider = { _, _, _, _, _, _ -> Result.success(listOf(vehicleRoute())) },
-            transitRouteProvider = { _, _, _, _ -> null }
+            transitRouteProvider = { _, _, _, _ -> null },
+            walkingRouteProvider = { _, _, _, _, _, _ -> Result.failure(Exception("stub")) }
         )
 
         val result = repository.findCombinedRoutes(
@@ -116,7 +117,8 @@ class CombinedRouteRepositoryTest {
                         estimatedTotalCost = 3_000
                     )
                 )
-            }
+            },
+            walkingRouteProvider = { _, _, _, _, _, _ -> Result.failure(Exception("stub – fallback ke Haversine")) }
         )
     }
 

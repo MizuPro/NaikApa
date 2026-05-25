@@ -68,6 +68,32 @@ Bagian penting di `app/build.gradle.kts`:
 - Dependency Material, Navigation, Retrofit, osmdroid, Glide, Coroutines, dan testing.
 - `BuildConfig.TOMTOM_API_KEY` yang diambil dari `local.properties`.
 
+Alur `BuildConfig.TOMTOM_API_KEY`:
+
+```text
+local.properties
+        |
+        v
+app/build.gradle.kts membaca TOMTOM_API_KEY
+        |
+        v
+buildConfigField("String", "TOMTOM_API_KEY", ...)
+        |
+        v
+BuildConfig.TOMTOM_API_KEY tersedia di Kotlin
+        |
+        v
+HomeFragment / Repository memakai key untuk TomTom API
+```
+
+Detail penting:
+
+- `app/build.gradle.kts` membaca file `local.properties` dengan `Properties`.
+- Jika `TOMTOM_API_KEY` tidak ada, project memakai placeholder `isi_api_key_kamu_di_sini`.
+- `buildFeatures.buildConfig = true` wajib aktif supaya class `BuildConfig` dibuat.
+- Kode Kotlin mengecek placeholder sebelum memanggil TomTom agar aplikasi bisa memberi pesan error yang jelas.
+- API key tidak ditulis langsung di source code karena source code bisa masuk Git, sedangkan `local.properties` biasanya bersifat lokal.
+
 Yang harus bisa kamu jawab:
 
 - Apa fungsi `settings.gradle.kts`?
@@ -151,6 +177,37 @@ SplashActivity
         |-- sudah login --> MainActivity
         |
         |-- belum login --> AuthActivity
+```
+
+Detail permission modern yang dipakai:
+
+- `INTERNET`: wajib untuk TomTom API dan tile peta online.
+- `ACCESS_FINE_LOCATION`: dipakai saat user ingin memakai GPS sebagai titik asal.
+- `ACCESS_COARSE_LOCATION`: deklarasi lokasi kasar sebagai fallback permission lokasi.
+- `CAMERA`: dipakai saat user mengambil foto laporan gangguan dari kamera.
+- `READ_MEDIA_IMAGES`: dipakai untuk memilih gambar dari galeri pada Android 13/API 33 ke atas.
+- `READ_EXTERNAL_STORAGE`: fallback untuk Android 12/API 32 ke bawah, dengan `maxSdkVersion="32"`.
+
+Kenapa permission tetap harus dicek runtime:
+
+- Permission yang ditulis di `AndroidManifest.xml` hanya mendeklarasikan kebutuhan aplikasi.
+- Permission berisiko seperti lokasi, kamera, dan media tetap perlu diminta saat runtime.
+- Di project ini, lokasi diminta ketika user menekan tombol GPS di Home.
+- Kamera dan galeri diminta saat user menekan tombol ambil/pilih foto di form laporan gangguan.
+
+Alur FileProvider untuk foto:
+
+```text
+ReportPhotoHelper membuat file di cache/disruption_photos
+        |
+        v
+FileProvider membuat content Uri
+        |
+        v
+Intent kamera menerima Uri tersebut
+        |
+        v
+Path file disimpan ke SQLite sebagai photo_path
 ```
 
 Yang harus dipahami:
@@ -434,6 +491,33 @@ Yang perlu dipahami dari DAO:
 - `delete`.
 - Mapping dari `Cursor` ke data class.
 
+Relasi tabel penting:
+
+- `user_profiles.id_user` mengarah ke `users.id_user` dan bersifat unik, sehingga satu user punya satu profil.
+- `saved_trips.id_user`, `search_history.id_user`, `route_history.id_user`, dan `disruption_reports.id_user` mengarah ke user yang membuat data tersebut.
+- Tabel GTFS saling terhubung lewat `gtfs_routes`, `gtfs_trips`, dan `gtfs_stop_times`.
+- `gtfs_stop_times.trip_id` mengarah ke trip, sedangkan `gtfs_stop_times.stop_id` mengarah ke stop.
+- Foreign key diaktifkan di database helper agar data turunan ikut konsisten saat data induk dihapus.
+
+Alasan index dibuat:
+
+- `idx_users_email`: mempercepat pencarian user saat login.
+- `idx_saved_trips_user`: mempercepat daftar favorit per user.
+- `idx_search_history_user_time`: mempercepat riwayat pencarian terbaru per user.
+- `idx_route_history_user_time`: mempercepat riwayat rute terbaru per user.
+- `idx_disruptions_status_expired`: mempercepat pencarian laporan gangguan yang masih aktif.
+- `idx_disruptions_stop_route`: mempercepat pengecekan gangguan berdasarkan stop/route yang dilewati rute.
+- Index GTFS mempercepat pencarian stop, route, trip, dan koneksi stop berurutan untuk graph.
+- `idx_route_cache_lookup`: disiapkan untuk mencari cache rute berdasarkan origin, destination, mode, dan priority.
+
+Status `route_cache` saat ini:
+
+- Tabel `route_cache`, model `RouteCache`, dan `RouteCacheDao` sudah ada.
+- `RouteCacheDao` punya operasi insert, find, hapus cache lama, dan hapus semua cache.
+- Namun pada kode saat ini, `RouteCacheDao` belum terlihat dipakai oleh `HomeFragment`, `RecommendationEngine`, atau repository routing.
+- Artinya route cache masih berupa infrastruktur yang disiapkan, belum terintegrasi ke flow pencarian rekomendasi.
+- Jika diimplementasikan, alurnya idealnya: cek cache sebelum hitung rute, tampilkan cache jika valid, hitung ulang jika miss/expired, lalu simpan hasil sukses.
+
 Yang harus bisa kamu jawab:
 
 - Apa fungsi DAO?
@@ -621,6 +705,43 @@ Konsep yang perlu dipahami:
 - OkHttp logging.
 - `Result<T>` untuk menangani sukses/gagal.
 
+Pembagian file remote:
+
+- `RemoteClient.kt` membuat satu konfigurasi Retrofit untuk base URL TomTom.
+- `RemoteClient.kt` juga memasang `OkHttpClient` dan `HttpLoggingInterceptor` level `BASIC`.
+- `TomTomSearchApi.kt` hanya mendefinisikan endpoint search lokasi.
+- `TomTomRoutingApi.kt` hanya mendefinisikan endpoint routing asal-tujuan.
+- Interface API tidak mengubah data ke model internal aplikasi; mapping dilakukan di repository.
+
+Endpoint TomTom Search:
+
+```text
+GET search/2/search/{query}.json
+```
+
+Parameter penting:
+
+- `query`: teks pencarian user.
+- `key`: API key TomTom.
+- `countrySet = ID`: membatasi hasil ke Indonesia.
+- `typeahead = true`: mendukung pencarian saat user mengetik.
+- `limit`: jumlah hasil maksimum.
+- `lat` dan `lon`: bias lokasi agar hasil dekat Jabodetabek/user lebih relevan.
+
+Endpoint TomTom Routing:
+
+```text
+GET routing/1/calculateRoute/{from}:{to}/json
+```
+
+Parameter penting:
+
+- `from` dan `to`: koordinat asal/tujuan dalam format `lat,lon`.
+- `travelMode`: `motorcycle`, `car`, atau `pedestrian`.
+- `routeType = fastest`: meminta rute tercepat dari TomTom.
+- `maxAlternatives`: jumlah alternatif rute.
+- `avoid = tollRoads`: hanya dikirim untuk mobil saat user memilih hindari tol.
+
 Alur search:
 
 ```text
@@ -656,6 +777,23 @@ TomTomRoutingApi
         v
 PrivateVehicleRouteResult
 ```
+
+Alur routing jalan kaki TomTom:
+
+```text
+Origin/destination walking segment
+        |
+        v
+TomTomRoutingRepository.calculateWalkingRoute()
+        |
+        v
+TomTomRoutingApi travelMode=pedestrian
+        |
+        v
+WalkingRouteResult
+```
+
+Rute jalan kaki ini dipakai oleh `CombinedRouteRepository` untuk first-mile/last-mile jika API tersedia. Jika gagal, repository fallback ke jarak Haversine.
 
 Estimasi biaya kendaraan pribadi:
 
@@ -786,6 +924,54 @@ Cek permission
 Tampilkan marker asal di peta
 ```
 
+Alur lengkap `HomeFragment`:
+
+```text
+User memilih asal/tujuan
+        |
+        v
+HomeFragment menyimpan selectedOrigin dan selectedDestination
+        |
+        v
+User memilih filter kendaraan, moda, prioritas, dan opsi hindari tol
+        |
+        v
+User menekan tombol Temukan Rute
+        |
+        v
+HomeFragment validasi input, API key, dan kepemilikan kendaraan
+        |
+        v
+RecommendationEngine / repository routing dipanggil di Dispatchers.IO
+        |
+        v
+RouteResultAdapter menampilkan rekomendasi utama dan alternatif
+        |
+        v
+MapView menggambar marker dan polyline
+        |
+        v
+Klik rekomendasi menyimpan data ke RouteDetailSharedState
+        |
+        v
+RouteDetailFragment menampilkan detail rute
+```
+
+Detail rendering peta:
+
+- `HomeFragment` menginisialisasi `MapView` dengan osmdroid dan tile CartoDB.
+- Tersedia style peta `POSITRON` dan `DARK_MATTER`.
+- Marker asal memakai `MapMarkerType.ORIGIN` dan icon lokasi.
+- Marker tujuan memakai `MapMarkerType.DESTINATION` dan icon tujuan.
+- Marker transit memakai `MapMarkerType.TRANSIT` dan icon kereta.
+- Polyline motor memakai `colorMotor`.
+- Polyline mobil memakai `colorMobil`.
+- Polyline jalan kaki memakai `colorWalking`.
+- Polyline transit memakai warna rute dari GTFS jika tersedia, lalu fallback ke warna agency seperti TransJakarta/KRL/MRT/LRT.
+- `RouteDetailFragment` menggambar ulang marker dan polyline di peta detail.
+- Mode fullscreen menyalin overlay dari peta detail ke `fullscreenMapView`.
+- `TransitMarkerRole.BOARD` dipakai untuk titik naik, sedangkan `TransitMarkerRole.ALIGHT` untuk titik turun.
+
 Yang harus bisa kamu jawab:
 
 - Kenapa permission lokasi harus diminta saat runtime?
@@ -900,6 +1086,38 @@ Konstanta penting:
 - `ROUTING_WALKING_DISTANCE_WEIGHT = 10.0`
 - `ROUTING_DURATION_TIEBREAKER = 0.00001`
 
+Rumus tarif transportasi umum:
+
+```text
+totalFare = jumlah tarif per agency yang dipakai dalam route step
+```
+
+Detail per operator:
+
+- TransJakarta (`Tije`): tarif flat `FARE_TRANSJAKARTA_FLAT = 3500`.
+- KRL (`KAIC`): `FARE_KRL_BASE = 3000` untuk jarak sampai `25 km`, lalu tambah `1000` setiap blok `10 km` berikutnya.
+- MRT (`MRTJ`): `FARE_MRT_BASE = 3000 + jumlah_stop_dilewati * 1000`, dibatasi maksimum `FARE_MRT_MAX = 14000`.
+- LRT Jakarta (`LRTJ`): tarif flat `FARE_LRTJ_FLAT = 5000`.
+- LRT Jabodebek (`LRTJB`): `FARE_LRTJB_BASE = 5000` untuk `1 km` pertama, lalu tambah sekitar `700/km`, dibatasi maksimum `FARE_LRTJB_MAX = 20000`.
+- Walking step selalu bernilai `0`.
+
+Contoh KRL:
+
+```text
+Jarak 30 km
+base 25 km = Rp3.000
+extra 5 km masuk 1 blok 10 km = Rp1.000
+total = Rp4.000
+```
+
+Keterbatasan algoritma transit saat ini:
+
+- Belum time-dependent routing penuh; Dijkstra tidak memilih rute berdasarkan jam keberangkatan aktual user.
+- Edge transit memakai rata-rata durasi dari koneksi GTFS yang sama, bukan jadwal real-time.
+- Headway/frekuensi kedatangan kendaraan belum dihitung detail sebagai waktu tunggu.
+- Walking transfer hanya dibuat berdasarkan radius antar stop dan beda agency.
+- Gangguan aktif memengaruhi scoring rekomendasi, tetapi belum menghapus edge dari graph secara langsung.
+
 Kenapa memilih Dijkstra:
 
 - Cocok untuk graph berbobot non-negatif, dan semua cost routing di project ini bernilai nol atau positif.
@@ -950,6 +1168,39 @@ Konsep yang perlu dipahami:
 - Menghitung rute transit antar stop.
 - Menggabungkan beberapa segmen.
 - Menghitung total metrik.
+
+Alur internal `CombinedRouteRepository`:
+
+```text
+origin/destination koordinat
+        |
+        v
+NearbyTransitStopRepository mencari kandidat stop asal dan tujuan
+        |
+        v
+Kombinasi stop dibatasi oleh COMBINED_ROUTE_MAX_COMBINATIONS
+        |
+        v
+Jika pakai motor/mobil, TomTom menghitung rute kendaraan ke stop asal
+        |
+        v
+TransitRoutingRepository menghitung rute transit antar stop
+        |
+        v
+TomTom pedestrian menghitung first-mile/last-mile jalan kaki jika diperlukan
+        |
+        v
+Jika TomTom pedestrian gagal, fallback ke Haversine
+        |
+        v
+Segmen digabung menjadi CombinedRouteResult
+```
+
+Kenapa kombinasi stop dibatasi:
+
+- Stop terdekat dari asal dan tujuan bisa banyak.
+- Mencoba semua kombinasi akan membuat API call dan Dijkstra terlalu banyak.
+- Project memakai limit kandidat dan `COMBINED_ROUTE_MAX_COMBINATIONS` agar pencarian tetap responsif.
 
 Biaya total rute gabungan:
 
@@ -1028,6 +1279,50 @@ Dimensi scoring:
 - Jumlah transit.
 - Gangguan aktif.
 
+Rumus scoring rekomendasi:
+
+```text
+nilai_dimensi = 1 - (nilai_aktual / nilai_referensi_maksimum)
+nilai_dimensi dibatasi 0.0 sampai 1.0
+
+rawScore =
+    timeWeight    * timeScore +
+    costWeight    * costScore +
+    walkingWeight * walkingScore +
+    transitWeight * transitScore
+
+finalScore = clamp(round(rawScore) - disruptionPenalty, 0, 100)
+```
+
+Referensi normalisasi:
+
+- Durasi maksimum referensi: `7200 detik` atau `2 jam`.
+- Biaya maksimum referensi: `Rp50.000`.
+- Jalan kaki maksimum referensi: `3000 meter`.
+- Jumlah transit maksimum referensi: `5 kali`.
+
+Bobot per prioritas:
+
+| Prioritas | Waktu | Biaya | Jalan Kaki | Transit |
+|----------|------:|------:|-----------:|--------:|
+| Tercepat | 45 | 15 | 15 | 15 |
+| Terhemat | 20 | 45 | 15 | 10 |
+| Minim Jalan Kaki | 20 | 15 | 45 | 10 |
+| Minim Transit | 20 | 15 | 10 | 45 |
+
+Penalti gangguan:
+
+- Jika kandidat transit/gabungan melewati stop atau route yang punya laporan gangguan aktif, skor dikurangi `SCORE_DISRUPTION_PENALTY = 15`.
+- Kandidat kendaraan pribadi tidak dianggap terdampak gangguan transit.
+- Catatan implementasi saat ini: konstanta `SCORE_W_*_DISRUPTION` tersedia di `AppConstants`, tetapi `RecommendationScorer` memakai penalti tetap `15`, bukan bobot disruption sebagai dimensi terpisah.
+
+Kenapa rute lambat bisa menang:
+
+- Scoring memakai banyak dimensi, bukan hanya durasi.
+- Jika user memilih `Terhemat`, bobot biaya lebih besar daripada waktu.
+- Jika user memilih `Minim Jalan Kaki`, rute yang lebih lama bisa menang jika jarak jalan kakinya jauh lebih kecil.
+- Jika ada gangguan aktif, rute yang sebenarnya bagus bisa turun peringkat karena penalti gangguan.
+
 Yang harus bisa kamu jawab:
 
 - Kenapa hasil rekomendasi tidak selalu rute tercepat?
@@ -1101,6 +1396,55 @@ Konsep yang perlu dipahami:
 - FileProvider.
 - Status laporan aktif/expired.
 - Laporan gangguan memengaruhi scoring rekomendasi.
+
+Alur foto laporan dari kamera:
+
+```text
+User tekan tombol kamera
+        |
+        v
+Cek permission CAMERA
+        |
+        v
+ReportPhotoHelper.createPhotoFile()
+        |
+        v
+File dibuat di cache/disruption_photos
+        |
+        v
+ReportPhotoHelper.getUriForFile()
+        |
+        v
+ActivityResultContracts.TakePicture menyimpan foto ke Uri
+        |
+        v
+Path file dinormalisasi dan disimpan sebagai photo_path
+```
+
+Alur foto laporan dari galeri:
+
+```text
+User tekan tombol galeri
+        |
+        v
+Cek READ_MEDIA_IMAGES untuk Android 13+ atau READ_EXTERNAL_STORAGE untuk Android 12 ke bawah
+        |
+        v
+ActivityResultContracts.GetContent memilih image/*
+        |
+        v
+File dari content resolver disalin ke cache/disruption_photos
+        |
+        v
+Path file lokal disimpan sebagai photo_path
+```
+
+Alur tampil dan hapus foto:
+
+- Saat edit laporan, `photo_path` dibaca dari SQLite.
+- Jika file masih ada, preview ditampilkan dengan `Uri.fromFile(file)`.
+- Saat laporan dihapus, file foto ikut dihapus melalui `ReportPhotoHelper.deletePhoto`.
+- Tombol hapus foto di form menghapus pilihan foto dari form, tetapi penghapusan file permanen dilakukan saat data laporan dihapus.
 
 Yang harus bisa kamu jawab:
 
@@ -2419,11 +2763,16 @@ Cara kerjanya:
 
 - Menyimpan hasil rute dalam bentuk JSON.
 - Mengambil cache berdasarkan asal, tujuan, mode, dan prioritas.
+- Menghapus cache lama dengan `clearOlderThan`.
+- Menghapus semua cache dengan `clearAll`.
 - Membantu menghindari hitung/API ulang jika data masih relevan.
 
 Catatan:
 
-- Pemakaiannya tergantung implementasi repository saat ini.
+- Infrastruktur cache sudah ada di DAO/model/schema.
+- Pada kondisi kode saat ini, DAO ini belum terhubung ke `HomeFragment`, `RecommendationEngine`, atau repository routing.
+- Jadi statusnya masih disiapkan untuk fitur route cache, belum menjadi bagian aktif dari flow pencarian rute.
+- Karena lookup memakai koordinat `Double` langsung, implementasi lanjutan sebaiknya mempertimbangkan cache key yang dibulatkan agar pencarian ulang tidak mudah miss karena selisih desimal kecil.
 
 ---
 
@@ -2615,6 +2964,10 @@ Cara kerjanya:
 
 - Mewakili hasil rute yang disimpan sementara dalam database.
 - Umumnya berisi input pencarian dan JSON hasil rute.
+- Field input cache saat ini: origin latitude/longitude, destination latitude/longitude, mode, dan priority.
+- Field output cache: `resultJson`.
+- Field waktu: `createdAt`, dipakai untuk menentukan umur cache.
+- Model ini belum aktif dipakai di flow rekomendasi selama `RouteCacheDao` belum diintegrasikan.
 
 ---
 
@@ -2626,12 +2979,19 @@ File ini membuat client Retrofit.
 
 Cara kerjanya:
 
-1. Membuat OkHttp client.
-2. Menambahkan logging interceptor jika dikonfigurasi.
-3. Membuat Retrofit dengan base URL TomTom.
-4. Membuat instance `TomTomSearchApi` dan `TomTomRoutingApi`.
+1. Membuat `HttpLoggingInterceptor` dengan level `BASIC`.
+2. Membuat `OkHttpClient` dan memasang interceptor tersebut.
+3. Membuat `Retrofit` dengan `AppConstants.TOMTOM_BASE_URL`.
+4. Menambahkan `GsonConverterFactory` supaya JSON TomTom bisa dipetakan ke data class.
+5. Membuat instance `TomTomSearchApi` dan `TomTomRoutingApi`.
 
 File ini adalah titik pusat konfigurasi HTTP client.
+
+Catatan:
+
+- File ini tidak menyimpan API key.
+- API key dikirim dari repository saat request dipanggil.
+- Jika nanti ada timeout, header global, atau interceptor tambahan, tempat utamanya ada di file ini.
 
 #### `app/src/main/java/com/example/naikapa/data/remote/TomTomSearchApi.kt`
 
@@ -2639,9 +2999,13 @@ Interface Retrofit untuk TomTom Search API.
 
 Cara kerjanya:
 
-- Mendefinisikan endpoint search.
-- Parameter seperti query, limit, country set, lat/lon bias, dan API key dikirim sebagai query parameter.
+- Mendefinisikan endpoint `GET search/2/search/{query}.json`.
+- `query` dikirim sebagai path.
+- `key`, `countrySet`, `typeahead`, `limit`, `lat`, dan `lon` dikirim sebagai query parameter.
+- Return type memakai `Response<TomTomSearchResponse>` agar repository bisa mengecek HTTP status.
 - Retrofit membuat implementasinya otomatis saat runtime.
+
+Fungsi file ini hanya kontrak API. Validasi query, validasi API key, dan mapping ke `SearchLocation` dilakukan di `TomTomSearchRepository`.
 
 #### `app/src/main/java/com/example/naikapa/data/remote/TomTomRoutingApi.kt`
 
@@ -2649,9 +3013,15 @@ Interface Retrofit untuk TomTom Routing API.
 
 Cara kerjanya:
 
-- Mendefinisikan endpoint perhitungan rute.
-- Mengirim koordinat asal/tujuan, mode perjalanan, opsi avoid toll, dan API key.
-- Mengembalikan response JSON yang dipetakan ke model TomTom routing.
+- Mendefinisikan endpoint `GET routing/1/calculateRoute/{from}:{to}/json`.
+- `from` dan `to` berisi koordinat `lat,lon`.
+- `travelMode` menentukan jenis rute: motor, mobil, atau pedestrian.
+- `routeType` memakai `fastest`.
+- `maxAlternatives` menentukan jumlah alternatif rute.
+- `avoid` bersifat opsional, misalnya `tollRoads`.
+- Return type memakai `Response<TomTomRoutingResponse>`.
+
+File ini dipakai oleh `TomTomRoutingRepository` untuk rute kendaraan pribadi dan rute jalan kaki TomTom.
 
 ---
 
@@ -2664,9 +3034,19 @@ Repository pencarian lokasi online.
 Cara kerjanya:
 
 1. Menerima query dari `HomeFragment`.
-2. Memanggil `TomTomSearchApi`.
-3. Mengubah response API menjadi `SearchLocation`.
-4. Mengembalikan hasil dalam bentuk `Result`.
+2. Trim query dan menolak query yang lebih pendek dari `TOMTOM_MIN_QUERY_LENGTH`.
+3. Mengecek API key agar placeholder tidak dikirim ke TomTom.
+4. Memanggil `TomTomSearchApi.search`.
+5. Mengirim bias koordinat default Jabodetabek atau lokasi user.
+6. Mengecek `response.isSuccessful`.
+7. Mengubah setiap `TomTomSearchResult` menjadi `SearchLocation`.
+8. Mengembalikan hasil dalam bentuk `Result<List<SearchLocation>>`.
+
+Alasan mapping dilakukan di repository:
+
+- Model response TomTom tidak langsung dipakai UI.
+- UI hanya butuh `SearchLocation` yang lebih sederhana.
+- Repository bisa membuang hasil yang tidak punya posisi/nama valid.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/TomTomRoutingRepository.kt`
 
@@ -2676,9 +3056,20 @@ Cara kerjanya:
 
 1. Menerima koordinat asal dan tujuan.
 2. Menerima mode kendaraan, misalnya motor atau mobil.
-3. Memanggil `TomTomRoutingApi`.
-4. Mengubah response menjadi `PrivateVehicleRouteResult`.
-5. Menghitung estimasi BBM dengan bantuan domain calculator jika tersedia.
+3. Mengecek API key agar request tidak dijalankan dengan placeholder.
+4. Mengubah mode internal menjadi travel mode TomTom: `motorcycle` atau `car`.
+5. Mengirim `avoid=tollRoads` hanya untuk mobil saat user memilih hindari tol.
+6. Memanggil `TomTomRoutingApi.calculateRoute`.
+7. Mengambil `lengthInMeters`, `travelTimeInSeconds`, dan polyline point dari response.
+8. Mengubah response menjadi `PrivateVehicleRouteResult`.
+9. Menghitung estimasi BBM lewat `FuelCostCalculator`.
+
+File ini juga punya `calculateWalkingRoute`:
+
+- Memakai `travelMode=pedestrian`.
+- Menghasilkan `WalkingRouteResult`.
+- Dipakai oleh rute gabungan untuk first-mile/last-mile jalan kaki.
+- Jika gagal, caller bisa fallback ke Haversine.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/GtfsStopSearchRepository.kt`
 
@@ -2686,9 +3077,16 @@ Repository pencarian stop/stasiun lokal.
 
 Cara kerjanya:
 
-- Memanggil `GtfsDao.searchStops`.
-- Mengubah hasil stop GTFS menjadi `SearchLocation`.
-- Dipakai saat user mengetik asal/tujuan agar hasil lokal ikut muncul.
+1. Menerima keyword, lokasi user opsional, dan filter agency opsional.
+2. Menolak keyword yang lebih pendek dari `GTFS_MIN_QUERY_LENGTH`.
+3. Memanggil `GtfsDao.searchStops`.
+4. Mengambil hasil lebih banyak dari limit akhir, lalu sorting di Kotlin.
+5. Mengubah `GtfsStop` menjadi `SearchLocation`.
+6. Menghitung jarak dari user jika koordinat user tersedia.
+7. Mengurutkan hasil berdasarkan relevansi keyword, jarak, lalu nama.
+8. Menambahkan landmark statis seperti UBM Tower dan Alfa Tower.
+
+Repository ini bekerja offline karena semua datanya berasal dari SQLite GTFS lokal.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/NearbyTransitStopRepository.kt`
 
@@ -2696,14 +3094,23 @@ Repository pencarian stop terdekat.
 
 Cara kerjanya:
 
-1. Mengambil daftar stop dari `GtfsDao`.
-2. Menghitung jarak stop ke koordinat tertentu.
-3. Mengurutkan stop berdasarkan jarak.
-4. Mengembalikan kandidat stop terdekat dalam radius tertentu.
+1. Mengambil daftar stop dari `GtfsDao.getStopsForNearestSearch`.
+2. Menerima koordinat titik acuan, radius maksimum, limit, dan filter agency opsional.
+3. Menghitung jarak tiap stop dengan `GeoDistanceCalculator.haversineMeters`.
+4. Membuang stop di luar radius.
+5. Mengurutkan berdasarkan jarak, lalu nama stop.
+6. Mengubah hasil menjadi `CombinedRouteStopCandidate`.
+7. Mengembalikan kandidat stop terdekat dalam radius tertentu.
 
 Dipakai oleh:
 
 - `CombinedRouteRepository`.
+
+Alasan repository ini dipisah:
+
+- Pencarian stop terdekat dipakai untuk rute gabungan.
+- Logika ranking stop tidak perlu berada di `CombinedRouteRepository`.
+- Mudah dites dengan menyuntikkan list stop palsu.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/TransitGraphRepository.kt`
 
@@ -2711,10 +3118,18 @@ Repository graph transit.
 
 Cara kerjanya:
 
-1. Mengambil koneksi GTFS dari `GtfsDao`.
-2. Membuat graph dengan `TransitGraphBuilder`.
-3. Menambahkan walking transfer jika diperlukan.
-4. Menyimpan graph di memory/cache agar tidak dibangun ulang terus.
+1. Mengambil koneksi stop berurutan dari `GtfsDao.getAdjacentStopConnections`.
+2. Mengambil semua stop dari `GtfsDao.getAllStopsForGraph`.
+3. Mengirim data ke `TransitGraphBuilder`.
+4. `TransitGraphBuilder` membuat node, edge transit, dan edge walking transfer.
+5. Menyimpan graph di memory lewat `cachedGraph`.
+6. Menggunakan `synchronized` agar graph tidak dibangun ganda saat dipanggil bersamaan.
+7. Menyediakan `clearCache()` jika graph perlu dibangun ulang.
+
+Catatan:
+
+- Cache di sini adalah cache graph di memory, bukan tabel `route_cache`.
+- Graph cache mempercepat Dijkstra karena graph GTFS tidak perlu dibuat ulang setiap pencarian.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/TransitRoutingRepository.kt`
 
@@ -2722,11 +3137,16 @@ Repository pencarian rute transit.
 
 Cara kerjanya:
 
-1. Mengambil graph dari `TransitGraphRepository`.
-2. Menjalankan `DijkstraAlgorithm.findPath`.
-3. Mengubah edge hasil path menjadi langkah perjalanan lewat `RouteStepBuilder`.
-4. Menghitung metrik lewat `TransitRouteMetricsCalculator`.
-5. Menghasilkan `TransitRouteResult`.
+1. Menerima `startStopId`, `endStopId`, `TransitMode`, dan `SortPreference`.
+2. Mengambil graph dari `TransitGraphRepository`.
+3. Menjalankan `DijkstraAlgorithm.findPath`.
+4. Jika path tidak ditemukan, mengembalikan `null`.
+5. Mengambil node awal dan akhir dari graph.
+6. Mengubah edge hasil path menjadi langkah perjalanan lewat `RouteStepBuilder`.
+7. Menghitung metrik lewat `TransitRouteMetricsCalculator`.
+8. Menghasilkan `TransitRouteResult`.
+
+Repository ini menjadi batas antara algoritma routing murni dan kebutuhan aplikasi/UI.
 
 #### `app/src/main/java/com/example/naikapa/data/repository/CombinedRouteRepository.kt`
 
@@ -2736,11 +3156,23 @@ Cara kerjanya:
 
 1. Mencari stop terdekat dari origin.
 2. Mencari stop terdekat dari destination.
-3. Jika pakai kendaraan pribadi, hitung rute kendaraan ke stop awal.
-4. Hitung rute transit dari stop awal ke stop akhir.
-5. Tambahkan segmen jalan kaki atau kendaraan sesuai kebutuhan.
-6. Gabungkan metrik durasi, biaya, BBM, jalan kaki, dan transit.
-7. Mengembalikan kandidat `CombinedRouteResult`.
+3. Membatasi kombinasi stop dengan `COMBINED_ROUTE_MAX_COMBINATIONS`.
+4. Jika pakai kendaraan pribadi, hitung rute kendaraan ke stop awal.
+5. Jika tidak pakai kendaraan pribadi, hitung first-mile jalan kaki ke stop awal.
+6. Hitung rute transit dari stop awal ke stop akhir.
+7. Hitung last-mile jalan kaki dari stop akhir ke tujuan.
+8. Untuk jalan kaki, coba TomTom pedestrian terlebih dahulu.
+9. Jika TomTom pedestrian gagal, fallback ke Haversine dan `WALKING_SECONDS_PER_METER`.
+10. Gabungkan segmen private vehicle/walking, transit, dan walking.
+11. Gabungkan metrik durasi, biaya, BBM, jalan kaki, dan transit.
+12. Urutkan kandidat sesuai `SortPreference`.
+13. Mengembalikan kandidat `CombinedRouteResult`.
+
+Hal yang perlu diperhatikan:
+
+- Rute gabungan bisa berarti `Motor + Transit`, `Mobil + Transit`, atau `Jalan Kaki + Transit`.
+- `estimatedTotalCost = estimatedFare + estimatedBbm`.
+- Segmen jalan kaki punya biaya `0`, tetapi tetap memengaruhi durasi dan skor walking.
 
 ---
 
