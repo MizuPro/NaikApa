@@ -48,6 +48,7 @@ import com.example.naikapa.data.model.RouteStep
 import com.example.naikapa.data.model.SearchHistory
 import com.example.naikapa.data.model.SearchLocation
 import com.example.naikapa.data.model.SortPreference
+import com.example.naikapa.data.model.TransitEdgeType
 import com.example.naikapa.data.model.TransitMode
 import com.example.naikapa.data.model.TransitRouteResult
 import com.example.naikapa.data.remote.RemoteClient
@@ -510,7 +511,7 @@ class HomeFragment : Fragment() {
         }
         content.addView(title)
         content.addView(subtitle)
-        if (isGtfs) {
+        if (isGtfs && !location.agencyId.isNullOrBlank()) {
             val badge = TextView(requireContext()).apply {
                 text = GtfsStopSearchRepository.agencyIdToLabel(location.agencyId)
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
@@ -679,8 +680,8 @@ class HomeFragment : Fragment() {
         content.addView(title)
         content.addView(subtitle)
 
-        // Badge agency/moda khusus untuk hasil GTFS lokal
-        if (isGtfs) {
+        // Badge agency/moda khusus untuk hasil GTFS lokal (tidak ditampilkan untuk landmark tanpa agency)
+        if (isGtfs && !location.agencyId.isNullOrBlank()) {
             val badge = TextView(requireContext()).apply {
                 text = GtfsStopSearchRepository.agencyIdToLabel(location.agencyId)
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
@@ -851,9 +852,11 @@ class HomeFragment : Fragment() {
             handleFindRouteClick()
         }
 
-        // Notifikasi click
-        binding.btnNotification.setOnClickListener {
-            toast("Tidak ada notifikasi baru")
+        // Avatar profil → pindah ke tab Akun via bottom nav (tidak menambah back stack)
+        binding.cardAvatar.setOnClickListener {
+            requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            )?.selectedItemId = R.id.profilFragment
         }
 
         // Tombol tutup rekomendasi
@@ -1152,8 +1155,8 @@ class HomeFragment : Fragment() {
                 val routePoints = mainCandidate.result.steps.toMapPoints()
                 if (routePoints.size > 1) {
                     showTransitMarkers(routePoints.drop(1).dropLast(1))
-                    drawRoutePolyline(routePoints, ContextCompat.getColor(requireContext(), R.color.colorPrimary))
                 }
+                drawTransitStepPolylines(mainCandidate.result.steps)
             }
             is com.example.naikapa.data.model.RouteCandidate.PrivateVehicle -> {
                 val color = if (mainCandidate.result.mode == PrivateVehicleMode.MOTOR)
@@ -1169,13 +1172,21 @@ class HomeFragment : Fragment() {
                         ContextCompat.getColor(requireContext(), R.color.colorMotor)
                     else ContextCompat.getColor(requireContext(), R.color.colorMobil)
                     drawRoutePolyline(vehicleResult.points, color)
+                } else {
+                    // Jalan kaki menuju transit
+                    val walkingSegment = mainCandidate.result.segments.firstOrNull {
+                        it.type == com.example.naikapa.data.model.CombinedRouteSegmentType.WALKING
+                    }
+                    if (walkingSegment != null && walkingSegment.points.isNotEmpty()) {
+                        drawRoutePolyline(walkingSegment.points, ContextCompat.getColor(requireContext(), R.color.colorWalking))
+                    }
                 }
                 if (transitResult != null) {
                     val transitPoints = transitResult.steps.toMapPoints()
                     if (transitPoints.size > 1) {
                         showTransitMarkers(transitPoints.drop(1).dropLast(1))
-                        drawRoutePolyline(transitPoints, ContextCompat.getColor(requireContext(), R.color.colorPrimary))
                     }
+                    drawTransitStepPolylines(transitResult.steps)
                 }
             }
         }
@@ -1210,10 +1221,7 @@ class HomeFragment : Fragment() {
             showOriginMarker(routePoints.first().copy(label = getString(R.string.map_marker_origin)))
             showDestinationMarker(routePoints.last().copy(label = getString(R.string.map_marker_destination)))
             showTransitMarkers(routePoints.drop(1).dropLast(1))
-            drawRoutePolyline(
-                points = routePoints,
-                color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
-            )
+            drawTransitStepPolylines(result.steps)
             binding.mapView.controller.apply {
                 setZoom(11.0)
                 animateTo(pointToGeoPoint(routePoints.first()))
@@ -1356,15 +1364,12 @@ class HomeFragment : Fragment() {
                 )
             )
         }
-        result.transitResult?.steps?.toMapPoints()?.let { transitPoints ->
-            drawRoutePolyline(
-                points = transitPoints,
-                color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
-            )
+        result.transitResult?.let { transitResult ->
+            drawTransitStepPolylines(transitResult.steps)
         }
         drawRoutePolyline(
             points = listOf(destinationStopPoint, destinationPoint),
-            color = ContextCompat.getColor(requireContext(), R.color.colorAccentOrange)
+            color = ContextCompat.getColor(requireContext(), R.color.colorWalking)
         )
         binding.mapView.controller.apply {
             setZoom(11.0)
@@ -1555,6 +1560,57 @@ class HomeFragment : Fragment() {
             setPoints(points.map(::pointToGeoPoint))
         }
         addRouteOverlay(polyline)
+    }
+
+    /**
+     * Menggambar polyline transit per-step dengan warna dari data GTFS (routeColor).
+     * Setiap step transit mendapat warna rute-nya sendiri; step jalan kaki pakai colorWalking.
+     */
+    private fun drawTransitStepPolylines(steps: List<RouteStep>) {
+        steps.forEach { step ->
+            val fromPoint = MapPoint(
+                label = step.fromStop.stopName,
+                latitude = step.fromStop.lat,
+                longitude = step.fromStop.lon,
+                description = step.fromStop.agencyId,
+                markerType = MapMarkerType.TRANSIT
+            )
+            val toPoint = MapPoint(
+                label = step.toStop.stopName,
+                latitude = step.toStop.lat,
+                longitude = step.toStop.lon,
+                description = step.toStop.agencyId,
+                markerType = MapMarkerType.TRANSIT
+            )
+            val color = if (step.type == TransitEdgeType.WALKING) {
+                ContextCompat.getColor(requireContext(), R.color.colorWalking)
+            } else {
+                parseTransitRouteColor(step.routeColor, step.agencyId)
+            }
+            drawRoutePolyline(listOf(fromPoint, toPoint), color)
+        }
+    }
+
+    /**
+     * Parse warna hex dari GTFS routeColor; fallback ke warna per-agency jika tidak tersedia.
+     */
+    private fun parseTransitRouteColor(colorStr: String?, agencyId: String): Int {
+        if (!colorStr.isNullOrBlank()) {
+            try {
+                val hexColor = if (colorStr.startsWith("#")) colorStr else "#$colorStr"
+                return android.graphics.Color.parseColor(hexColor)
+            } catch (e: Exception) {
+                // ignore, fallback ke agency color
+            }
+        }
+        return when (agencyId) {
+            "Tije"  -> ContextCompat.getColor(requireContext(), R.color.colorTransjakarta)
+            "KAIC"  -> ContextCompat.getColor(requireContext(), R.color.colorKRL)
+            "MRTJ"  -> ContextCompat.getColor(requireContext(), R.color.colorMRT)
+            "LRTJ"  -> ContextCompat.getColor(requireContext(), R.color.colorLRT)
+            "LRTJB" -> ContextCompat.getColor(requireContext(), R.color.colorLRT)
+            else    -> ContextCompat.getColor(requireContext(), R.color.colorPolylineTransit)
+        }
     }
 
     private fun clearRouteOverlays() {

@@ -171,9 +171,14 @@ class CombinedRouteRepository(
         )
 
         val originSegment = if (privateVehicleMode != null && vehicleRoute != null) {
+            val vehicleName = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor" else "Mobil"
+            val stopLabel = stopTypeLabel(
+                stopType = originStop.stopType,
+                agencyId = originStop.agencyId
+            )
             CombinedRouteSegment(
                 type = CombinedRouteSegmentType.PRIVATE_VEHICLE,
-                title = if (privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor ke transit" else "Mobil ke transit",
+                title = "$vehicleName menuju $stopLabel",
                 durationSeconds = vehicleRoute.travelTimeSeconds,
                 distanceMeters = vehicleRoute.distanceMeters.toDouble(),
                 estimatedBbm = vehicleRoute.estimatedBbm,
@@ -286,4 +291,14 @@ class CombinedRouteRepository(
             SortPreference.FEWEST_TRANSFERS -> result.metrics.transitCount.toDouble()
             SortPreference.FASTEST -> result.metrics.totalDurationSeconds.toDouble()
         }
+
+    private fun stopTypeLabel(stopType: String?, agencyId: String): String {
+        return when {
+            stopType?.lowercase() == "station" -> "Stasiun"
+            stopType?.lowercase() == "halte"   -> "Halte"
+            agencyId == "Tije"                 -> "Halte"
+            agencyId in listOf("KAIC", "MRTJ", "LRTJ", "LRTJB") -> "Stasiun"
+            else                               -> "Titik Transit"
+        }
+    }
 }

@@ -37,9 +37,9 @@
     <color name="colorKRL">#0066B3</color>
     <color name="colorMRT">#004EA2</color>
     <color name="colorLRT">#F7A800</color>
-    <color name="colorMotor">#FF6D00</color>
-    <color name="colorMobil">#546E7A</color>
-    <color name="colorWalking">#8E8E93</color>
+    <color name="colorMotor">#F97316</color>
+    <color name="colorMobil">#2563EB</color>
+    <color name="colorWalking">#22C55E</color>
 
     <!-- State Colors -->
     <color name="colorSuccess">#16A34A</color>

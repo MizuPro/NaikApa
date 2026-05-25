@@ -70,9 +70,24 @@ sealed class RouteCandidate {
         override val metrics: RouteMetrics get() = result.metrics
         override val candidateLabel: String
             get() {
-                val vehicle = if (result.privateVehicleMode == PrivateVehicleMode.MOTOR) "Motor" else "Mobil"
-                return "$vehicle + Transit"
+                val mode = result.privateVehicleMode ?: return "Jalan Kaki + Transit"
+                val vehicle = if (mode == PrivateVehicleMode.MOTOR) "Motor" else "Mobil"
+                val stopLabel = stopTypeLabel(
+                    stopType = result.originStop.stopType,
+                    agencyId = result.originStop.agencyId
+                )
+                return "$vehicle menuju $stopLabel + Transit"
             }
+
+        private fun stopTypeLabel(stopType: String?, agencyId: String): String {
+            return when {
+                stopType?.lowercase() == "station" -> "Stasiun"
+                stopType?.lowercase() == "halte"   -> "Halte"
+                agencyId == "Tije"                 -> "Halte"
+                agencyId in listOf("KAIC", "MRTJ", "LRTJ", "LRTJB") -> "Stasiun"
+                else                               -> "Titik Transit"
+            }
+        }
     }
 }
 

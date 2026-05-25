@@ -72,9 +72,12 @@ class RecommendationEngine(
         val candidates = mutableListOf<RouteCandidate>()
 
         // Tentukan apakah masing-masing tipe kandidat perlu dijalankan berdasarkan filter
-        val includeTransit = vehicleTypeFilter != VehicleTypeFilter.PRIVATE_ONLY
-        val includePrivate = vehicleTypeFilter != VehicleTypeFilter.TRANSIT_ONLY
-        val includeCombined = vehicleTypeFilter == VehicleTypeFilter.ALL
+        val includeTransit  = vehicleTypeFilter != VehicleTypeFilter.PRIVATE_ONLY
+        val includePrivate  = vehicleTypeFilter != VehicleTypeFilter.TRANSIT_ONLY
+        // Kandidat gabungan (kendaraan + transit) juga dijalankan saat TRANSIT_ONLY agar user
+        // yang punya kendaraan tetap mendapat opsi "Motor/Mobil menuju Stasiun/Halte + Transit".
+        // Hanya PRIVATE_ONLY yang benar-benar tidak butuh kandidat gabungan.
+        val includeCombined = vehicleTypeFilter != VehicleTypeFilter.PRIVATE_ONLY
 
         coroutineScope {
             // ── 1. Rute transit (jika ada stop GTFS asal & tujuan) ──────────
@@ -146,7 +149,11 @@ class RecommendationEngine(
             }
 
             val combinedTransitOnlyDeferred = async(Dispatchers.IO) {
-                if (includeTransit && (originStopId.isNullOrBlank() || destinationStopId.isNullOrBlank())) {
+                // Jalankan kandidat "Jalan Kaki + Transit" selama filter bukan PRIVATE_ONLY.
+                // Ini memastikan user yang punya kendaraan pribadi tapi memilih filter
+                // "Transum Saja" tetap mendapat opsi jalan kaki ke halte/stasiun terdekat,
+                // karena bisa jadi user sedang tidak membawa kendaraannya.
+                if (includeTransit) {
                     combinedRouteRepository.findCombinedRoutes(
                         originLat = origin.latitude,
                         originLon = origin.longitude,

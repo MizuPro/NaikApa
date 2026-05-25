@@ -106,47 +106,17 @@
                 app:strokeColor="@color/colorCardOutline"
                 app:strokeWidth="1dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/btnNotification"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- Notification Icon with Badge -->
-            <FrameLayout
-                android:id="@+id/btnNotification"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/ic_launcher_background"
-                android:backgroundTint="#F1F5F9"
-                android:clickable="true"
-                android:focusable="true"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/cardAvatar"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_bell"
-                    app:tint="@color/colorTextPrimary"
-                    tools:ignore="ContentDescription" />
-
-                <!-- Badge Notifikasi Merah -->
-                <View
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_gravity="top|end"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/bg_notification_dot" />
-
-            </FrameLayout>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <!-- User Avatar Circle -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAvatar"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1.5dp"

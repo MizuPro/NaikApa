@@ -177,8 +177,34 @@ class RouteDetailFragment : Fragment() {
                     transitPoints.forEach { pt ->
                         overlays.add(createMarker(binding.detailMapView, pt, context))
                     }
-                    overlays.add(createPolyline(binding.detailMapView, routePoints, ContextCompat.getColor(context, R.color.colorPrimary)))
-                    centerGeoPoint = GeoPoint(routePoints.first().latitude, routePoints.first().longitude)
+                }
+                candidate.result.steps.forEach { step ->
+                    val fromPt = MapPoint(
+                        label = step.fromStop.stopName,
+                        latitude = step.fromStop.lat,
+                        longitude = step.fromStop.lon,
+                        description = step.fromStop.agencyId,
+                        markerType = MapMarkerType.TRANSIT
+                    )
+                    val toPt = MapPoint(
+                        label = step.toStop.stopName,
+                        latitude = step.toStop.lat,
+                        longitude = step.toStop.lon,
+                        description = step.toStop.agencyId,
+                        markerType = MapMarkerType.TRANSIT
+                    )
+                    val stepColor = if (step.type == TransitEdgeType.WALKING) {
+                        ContextCompat.getColor(context, R.color.colorWalking)
+                    } else {
+                        parseRouteColor(step.routeColor, context, step.agencyId)
+                    }
+                    overlays.add(createPolyline(binding.detailMapView, listOf(fromPt, toPt), stepColor))
+                }
+                if (candidate.result.steps.isNotEmpty()) {
+                    centerGeoPoint = GeoPoint(
+                        candidate.result.steps.first().fromStop.lat,
+                        candidate.result.steps.first().fromStop.lon
+                    )
                 }
             }
             is RouteCandidate.PrivateVehicle -> {
@@ -212,7 +238,28 @@ class RouteDetailFragment : Fragment() {
                         transitMarkerPoints.forEach { pt ->
                             overlays.add(createMarker(binding.detailMapView, pt, context))
                         }
-                        overlays.add(createPolyline(binding.detailMapView, transitPoints, ContextCompat.getColor(context, R.color.colorPrimary)))
+                    }
+                    transitResult.steps.forEach { step ->
+                        val fromPt = MapPoint(
+                            label = step.fromStop.stopName,
+                            latitude = step.fromStop.lat,
+                            longitude = step.fromStop.lon,
+                            description = step.fromStop.agencyId,
+                            markerType = MapMarkerType.TRANSIT
+                        )
+                        val toPt = MapPoint(
+                            label = step.toStop.stopName,
+                            latitude = step.toStop.lat,
+                            longitude = step.toStop.lon,
+                            description = step.toStop.agencyId,
+                            markerType = MapMarkerType.TRANSIT
+                        )
+                        val stepColor = if (step.type == TransitEdgeType.WALKING) {
+                            ContextCompat.getColor(context, R.color.colorWalking)
+                        } else {
+                            parseRouteColor(step.routeColor, context, step.agencyId)
+                        }
+                        overlays.add(createPolyline(binding.detailMapView, listOf(fromPt, toPt), stepColor))
                     }
                 }
 
@@ -234,7 +281,7 @@ class RouteDetailFragment : Fragment() {
                 overlays.add(createMarker(binding.detailMapView, destinationStopPoint, context))
 
                 if (destinationPoint != null) {
-                    overlays.add(createPolyline(binding.detailMapView, listOf(destinationStopPoint, destinationPoint), ContextCompat.getColor(context, R.color.colorAccentOrange)))
+                    overlays.add(createPolyline(binding.detailMapView, listOf(destinationStopPoint, destinationPoint), ContextCompat.getColor(context, R.color.colorWalking)))
                 }
             }
         }

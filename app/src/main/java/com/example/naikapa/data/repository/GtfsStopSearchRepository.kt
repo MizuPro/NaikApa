@@ -160,8 +160,8 @@ class GtfsStopSearchRepository(private val gtfsDao: GtfsDao) {
             SearchLocation(
                 name = "UBM Tower",
                 address = "Jl. Jalur Sutera Barat Kav. 7-9, Alam Sutera, Tangerang Selatan",
-                latitude = -6.2247,
-                longitude = 106.6527,
+                latitude = -6.2259,
+                longitude = 106.6571,
                 source = SearchLocation.SOURCE_GTFS,
                 stopId = null,
                 agencyId = null,
@@ -171,8 +171,8 @@ class GtfsStopSearchRepository(private val gtfsDao: GtfsDao) {
             SearchLocation(
                 name = "Alfa Tower",
                 address = "Jl. Jalur Sutera Barat Kav. 7-9, Alam Sutera, Tangerang Selatan",
-                latitude = -6.2247,
-                longitude = 106.6527,
+                latitude = -6.2259,
+                longitude = 106.6571,
                 source = SearchLocation.SOURCE_GTFS,
                 stopId = null,
                 agencyId = null,
