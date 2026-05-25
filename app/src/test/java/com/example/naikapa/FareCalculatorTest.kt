@@ -68,6 +68,8 @@ class FareCalculatorTest {
         routeId = agencyId,
         routeShortName = agencyId,
         routeLongName = agencyId,
+        routeColor = null,
+        routeTextColor = null,
         agencyId = agencyId,
         type = type,
         fromStop = TransitNode("A", "A", -6.0, 106.0, agencyId),

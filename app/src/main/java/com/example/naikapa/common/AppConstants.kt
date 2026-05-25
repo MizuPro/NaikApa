@@ -2,7 +2,7 @@ package com.example.naikapa.common
 
 object AppConstants {
     const val DATABASE_NAME = "naikapa.db"
-    const val DATABASE_VERSION = 1
+    const val DATABASE_VERSION = 2
     const val WALKING_SPEED_KMH = 4.0
     const val WALKING_TRANSFER_RADIUS_M = 350
     const val DISRUPTION_ACTIVE_DURATION_HOURS = 1
@@ -53,6 +53,11 @@ object AppConstants {
     const val COMBINED_ROUTE_ORIGIN_RADIUS_M = 8000.0
     const val COMBINED_ROUTE_DESTINATION_RADIUS_M = 2500.0
     const val WALKING_SECONDS_PER_METER = 0.9
+
+    // Route cache
+    const val ROUTE_CACHE_TTL_MILLIS = 10 * 60 * 1000L
+    const val ROUTE_CACHE_CLEANUP_AGE_MILLIS = 24 * 60 * 60 * 1000L
+    const val ROUTE_CACHE_COORDINATE_PRECISION = 5
 
     // ── Recommendation scoring ────────────────────────────────────────────────
     // Bobot per dimensi untuk setiap prioritas (total = 100)

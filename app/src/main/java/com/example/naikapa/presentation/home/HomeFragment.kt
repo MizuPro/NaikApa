@@ -83,12 +83,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import com.example.naikapa.data.local.DisruptionReportDao
+import com.example.naikapa.data.local.RouteCacheDao
 import com.example.naikapa.domain.recommendation.RecommendationEngine
 import com.example.naikapa.domain.recommendation.RecommendationReasonBuilder
 import com.example.naikapa.domain.recommendation.RecommendationScorer
 import com.example.naikapa.data.model.RecommendationResult
 import com.example.naikapa.data.model.ScoredRoute
 import com.example.naikapa.data.model.VehicleTypeFilter
+import com.example.naikapa.data.repository.RouteCacheRepository
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.naikapa.data.model.RouteHistory
 import com.example.naikapa.presentation.history.HistoryReplayRequest
@@ -109,6 +111,7 @@ class HomeFragment : Fragment() {
     private lateinit var transitRoutingRepository: TransitRoutingRepository
     private lateinit var combinedRouteRepository: CombinedRouteRepository
     private lateinit var recommendationEngine: RecommendationEngine
+    private lateinit var routeCacheRepository: RouteCacheRepository
     private lateinit var routeResultAdapter: RouteResultAdapter
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
@@ -190,6 +193,7 @@ class HomeFragment : Fragment() {
 
         // Inisialisasi DisruptionReportDao dan RecommendationEngine
         disruptionReportDao = DisruptionReportDao(dbHelper)
+        routeCacheRepository = RouteCacheRepository(RouteCacheDao(dbHelper))
         recommendationEngine = RecommendationEngine(
             transitRoutingRepository = transitRoutingRepository,
             tomTomRoutingRepository = tomTomRoutingRepository,
@@ -972,11 +976,19 @@ class HomeFragment : Fragment() {
             try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasCar ?: false }
             catch (e: Exception) { false }
         } else false
+        val tomTomApiKey = BuildConfig.TOMTOM_API_KEY
+        val hasValidTomTomApiKey = tomTomApiKey.isNotBlank() &&
+            tomTomApiKey != AppConstants.TOMTOM_API_KEY_PLACEHOLDER
+        val effectiveHasMotor = hasMotor && hasValidTomTomApiKey
+        val effectiveHasCar = hasCar && hasValidTomTomApiKey
+        val vehicleTypeFilter = selectedVehicleTypeFilter
+        val originStopId = selectedOriginStop?.stopId
+        val destinationStopId = selectedDestination?.stopId
+        val shouldAvoidTollRoads = avoidTollRoads
 
         // Validasi khusus filter Kendaraan Pribadi Saja
-        if (selectedVehicleTypeFilter == VehicleTypeFilter.PRIVATE_ONLY) {
-            val apiKeyValid = BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER
-            if (!apiKeyValid) {
+        if (vehicleTypeFilter == VehicleTypeFilter.PRIVATE_ONLY) {
+            if (!hasValidTomTomApiKey) {
                 toast(getString(R.string.route_private_api_key_missing))
                 return
             }
@@ -1002,19 +1014,50 @@ class HomeFragment : Fragment() {
 
         homeScope.launch {
             val result = withContext(Dispatchers.IO) {
-                recommendationEngine.recommend(
+                routeCacheRepository.clearExpired()
+                val cachedRecommendation = routeCacheRepository.getRecommendation(
                     origin = origin,
                     destination = destination,
                     transitMode = transitMode,
                     sortPreference = sortPreference,
-                    hasMotor = hasMotor && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
-                    hasCar = hasCar && BuildConfig.TOMTOM_API_KEY != AppConstants.TOMTOM_API_KEY_PLACEHOLDER,
-                    tomTomApiKey = BuildConfig.TOMTOM_API_KEY,
-                    vehicleTypeFilter = selectedVehicleTypeFilter,
-                    originStopId = selectedOriginStop?.stopId,
-                    destinationStopId = selectedDestination?.stopId,
-                    avoidTollRoads = avoidTollRoads
+                    hasMotor = effectiveHasMotor,
+                    hasCar = effectiveHasCar,
+                    vehicleTypeFilter = vehicleTypeFilter,
+                    originStopId = originStopId,
+                    destinationStopId = destinationStopId,
+                    avoidTollRoads = shouldAvoidTollRoads
                 )
+                if (cachedRecommendation != null) {
+                    Result.success(cachedRecommendation)
+                } else {
+                    recommendationEngine.recommend(
+                        origin = origin,
+                        destination = destination,
+                        transitMode = transitMode,
+                        sortPreference = sortPreference,
+                        hasMotor = effectiveHasMotor,
+                        hasCar = effectiveHasCar,
+                        tomTomApiKey = tomTomApiKey,
+                        vehicleTypeFilter = vehicleTypeFilter,
+                        originStopId = originStopId,
+                        destinationStopId = destinationStopId,
+                        avoidTollRoads = shouldAvoidTollRoads
+                    ).onSuccess { recommendation ->
+                        routeCacheRepository.saveRecommendation(
+                            origin = origin,
+                            destination = destination,
+                            transitMode = transitMode,
+                            sortPreference = sortPreference,
+                            hasMotor = effectiveHasMotor,
+                            hasCar = effectiveHasCar,
+                            vehicleTypeFilter = vehicleTypeFilter,
+                            originStopId = originStopId,
+                            destinationStopId = destinationStopId,
+                            avoidTollRoads = shouldAvoidTollRoads,
+                            recommendation = recommendation
+                        )
+                    }
+                }
             }
             result
                 .onSuccess { recommendation ->
@@ -1023,8 +1066,6 @@ class HomeFragment : Fragment() {
                 }
                 .onFailure {
                     // Fallback ke flow lama jika engine gagal
-                    val originStopId = selectedOriginStop?.stopId
-                    val destinationStopId = selectedDestination?.stopId
                     if (!originStopId.isNullOrBlank() && !destinationStopId.isNullOrBlank()) {
                         val transitResult = withContext(Dispatchers.IO) {
                             transitRoutingRepository.findRoute(originStopId, destinationStopId, transitMode, sortPreference)

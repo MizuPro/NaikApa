@@ -22,6 +22,17 @@ class NaikApaDatabaseHelper(context: Context) : SQLiteOpenHelper(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) {
+            db.execSQL("DROP TABLE IF EXISTS ${NaikApaDbContract.RouteCache.TABLE}")
+            val createRouteCache = NaikApaDbContract.createTableStatements.first {
+                it.contains("CREATE TABLE ${NaikApaDbContract.RouteCache.TABLE}")
+            }
+            db.execSQL(createRouteCache)
+            NaikApaDbContract.indexStatements
+                .filter { it.contains(NaikApaDbContract.RouteCache.TABLE) }
+                .forEach(db::execSQL)
+            return
+        }
         NaikApaDbContract.dropTableStatements.forEach(db::execSQL)
         onCreate(db)
     }

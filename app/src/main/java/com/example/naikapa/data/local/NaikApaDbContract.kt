@@ -128,6 +128,7 @@ object NaikApaDbContract {
     object RouteCache : BaseColumns {
         const val TABLE = "route_cache"
         const val ID = "id_cache"
+        const val CACHE_KEY = "cache_key"
         const val ORIGIN_LAT = "origin_lat"
         const val ORIGIN_LON = "origin_lon"
         const val DESTINATION_LAT = "destination_lat"
@@ -272,6 +273,7 @@ object NaikApaDbContract {
         """
         CREATE TABLE ${RouteCache.TABLE} (
             ${RouteCache.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${RouteCache.CACHE_KEY} TEXT NOT NULL UNIQUE,
             ${RouteCache.ORIGIN_LAT} REAL NOT NULL,
             ${RouteCache.ORIGIN_LON} REAL NOT NULL,
             ${RouteCache.DESTINATION_LAT} REAL NOT NULL,
@@ -297,6 +299,8 @@ object NaikApaDbContract {
         "CREATE INDEX IF NOT EXISTS idx_gtfs_trips_route ON ${GtfsTrips.TABLE}(${GtfsTrips.ROUTE_ID})",
         "CREATE INDEX IF NOT EXISTS idx_gtfs_stop_times_trip_sequence ON ${GtfsStopTimes.TABLE}(${GtfsStopTimes.TRIP_ID}, ${GtfsStopTimes.STOP_SEQUENCE})",
         "CREATE INDEX IF NOT EXISTS idx_gtfs_stop_times_stop ON ${GtfsStopTimes.TABLE}(${GtfsStopTimes.STOP_ID})",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_route_cache_key ON ${RouteCache.TABLE}(${RouteCache.CACHE_KEY})",
+        "CREATE INDEX IF NOT EXISTS idx_route_cache_created_at ON ${RouteCache.TABLE}(${RouteCache.CREATED_AT})",
         "CREATE INDEX IF NOT EXISTS idx_route_cache_lookup ON ${RouteCache.TABLE}(${RouteCache.ORIGIN_LAT}, ${RouteCache.ORIGIN_LON}, ${RouteCache.DESTINATION_LAT}, ${RouteCache.DESTINATION_LON}, ${RouteCache.MODE}, ${RouteCache.PRIORITY})"
     )
 

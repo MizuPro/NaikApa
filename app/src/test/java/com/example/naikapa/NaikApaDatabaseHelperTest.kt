@@ -26,7 +26,7 @@ class NaikApaDatabaseHelperTest {
         )
 
         assertEquals("naikapa.db", AppConstants.DATABASE_NAME)
-        assertTrue(AppConstants.DATABASE_VERSION >= 1)
+        assertTrue(AppConstants.DATABASE_VERSION >= 2)
         expectedTables.forEach { table ->
             assertTrue(
                 "Missing CREATE TABLE for $table",
@@ -37,6 +37,21 @@ class NaikApaDatabaseHelperTest {
                 NaikApaDbContract.dropTableStatements.any { it.contains("DROP TABLE IF EXISTS $table") }
             )
         }
+        val routeCacheCreateSql = NaikApaDbContract.createTableStatements.first {
+            it.contains("CREATE TABLE ${NaikApaDbContract.RouteCache.TABLE}")
+        }
+        assertTrue(
+            "route_cache harus punya cache_key",
+            routeCacheCreateSql.contains(NaikApaDbContract.RouteCache.CACHE_KEY)
+        )
+        assertTrue(
+            "Missing route cache key index",
+            NaikApaDbContract.indexStatements.any { it.contains("idx_route_cache_key") }
+        )
+        assertTrue(
+            "Missing route cache created_at index",
+            NaikApaDbContract.indexStatements.any { it.contains("idx_route_cache_created_at") }
+        )
     }
 
     @Test

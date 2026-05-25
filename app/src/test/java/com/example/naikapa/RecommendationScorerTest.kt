@@ -173,6 +173,8 @@ class RecommendationScorerTest {
                         routeId        = "ROUTE_KRL",
                         routeShortName = "KRL",
                         routeLongName  = null,
+                        routeColor     = null,
+                        routeTextColor = null,
                         agencyId       = "KAIC",
                         durationSeconds = 600,
                         distanceMeters  = 5000.0,

@@ -2,6 +2,7 @@ package com.example.naikapa.data.model
 
 data class RouteCache(
     val idCache: Long = 0,
+    val cacheKey: String,
     val originLat: Double,
     val originLon: Double,
     val destinationLat: Double,
