@@ -259,7 +259,7 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="24dp"
-                app:cardBackgroundColor="#F8FAFC"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"

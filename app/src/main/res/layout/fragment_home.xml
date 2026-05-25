@@ -30,8 +30,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
-        android:theme="@style/ThemeOverlay.NaikApa.WhiteCard"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="16dp"
         app:cardElevation="6dp"
         app:strokeWidth="0dp"
@@ -77,13 +76,13 @@
                 android:translationY="-2dp"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="@id/imgLogoHeader"
-                app:layout_constraintEnd_toStartOf="@id/btnMapStyle"
+                app:layout_constraintEnd_toStartOf="@id/btnThemeToggle"
                 app:layout_constraintStart_toEndOf="@id/imgLogoHeader"
                 app:layout_constraintTop_toTopOf="@id/imgLogoHeader" />
 
             <!-- Toggle peta dipindahkan ke header supaya tidak mengambang di area peta -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMapStyle"
+                android:id="@+id/btnThemeToggle"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="44dp"
                 android:layout_height="42dp"
@@ -96,12 +95,12 @@
                 android:minHeight="0dp"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"
-                android:text="Peta&#10;Terang"
+                android:text="@string/theme_dark"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimary"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                app:backgroundTint="#F8FAFC"
+                app:backgroundTint="?attr/colorSurfaceVariant"
                 app:cornerRadius="18dp"
                 app:strokeColor="@color/colorCardOutline"
                 app:strokeWidth="1dp"
@@ -154,9 +153,8 @@
         android:textSize="12sp"
         android:textStyle="bold"
         android:visibility="gone"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="?attr/colorSurface"
         app:cornerRadius="18dp"
-        app:icon="@drawable/ic_directions"
         app:iconSize="14dp"
         app:iconTint="@color/colorPrimary"
         app:iconPadding="4dp"
@@ -173,8 +171,7 @@
         android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="92dp"
-        android:theme="@style/ThemeOverlay.NaikApa.WhiteCard"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="18dp"
         app:cardElevation="6dp"
         app:strokeWidth="1dp"
@@ -351,7 +348,7 @@
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
                     android:contentDescription="@string/location_button_description"
-                    app:cardBackgroundColor="#F8FAFC"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
                     app:cardCornerRadius="19dp"
                     app:cardElevation="1dp"
                     app:strokeColor="@color/colorCardOutline"
@@ -458,7 +455,7 @@
                     android:id="@+id/btnSwap"
                     android:layout_width="38dp"
                     android:layout_height="38dp"
-                    app:cardBackgroundColor="#F1F5F9"
+                    app:cardBackgroundColor="?attr/colorSurfaceVariant"
                     app:cardCornerRadius="19dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="0dp"
@@ -767,6 +764,26 @@
                     app:trackThickness="3dp" />
             </FrameLayout>
 
+            <!-- Toggle Peta Gelap/Terang (dipindah dari header ke panel) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMapStyle"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="8dp"
+                android:minHeight="0dp"
+                android:text="@string/map_style_light"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorTextSecondary"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/colorCardOutline"
+                app:strokeWidth="1dp"
+                app:icon="@drawable/ic_map_layer"
+                app:iconSize="14dp"
+                app:iconTint="@color/colorTextSecondary"
+                app:iconPadding="6dp" />
+
             </LinearLayout><!-- end layoutPanelContent -->
 
             </LinearLayout>
@@ -802,7 +819,7 @@
         app:behavior_hideable="false"
         
         android:theme="@style/ThemeOverlay.NaikApa.WhiteCard"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp"
         app:strokeWidth="1dp"

@@ -1,19 +1,28 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Force light theme on dark mode devices for visual consistency -->
-    <!-- Force light theme on dark mode devices for visual consistency -->
-    <style name="Base.Theme.NaikApa" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Dark Mode Theme -->
+    <style name="Base.Theme.NaikApa" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Brand Colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorError">@color/colorError</item>
+
+        <!-- Window & Background -->
         <item name="android:windowBackground">@color/colorBackground</item>
         <item name="android:colorBackground">@color/colorBackground</item>
+
+        <!-- Status bar & Navigation bar — dark icons off for dark mode -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <!-- Ripple -->
         <item name="colorControlHighlight">@color/colorPrimaryLight</item>
         <item name="rippleColor">@color/colorPrimaryLight</item>
+
+        <!-- Typography -->
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColorPrimary">@color/colorTextPrimary</item>
         <item name="android:textColorSecondary">@color/colorTextSecondary</item>
         <item name="android:textColorHint">@color/colorTextHint</item>

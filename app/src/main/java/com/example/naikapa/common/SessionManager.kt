@@ -12,6 +12,10 @@ class SessionManager(context: Context) {
         private const val KEY_USER_ID = "userId"
         private const val KEY_USER_EMAIL = "userEmail"
         private const val KEY_USER_NAME = "userName"
+        private const val KEY_THEME_MODE = "themeMode"
+
+        const val THEME_LIGHT = "light"
+        const val THEME_DARK = "dark"
     }
 
     fun saveSession(userId: Int, name: String, email: String) {
@@ -63,4 +67,14 @@ class SessionManager(context: Context) {
     fun logout() {
         prefs.edit().clear().apply()
     }
+
+    fun saveThemeMode(mode: String) {
+        prefs.edit().putString(KEY_THEME_MODE, mode).apply()
+    }
+
+    fun getThemeMode(): String {
+        return prefs.getString(KEY_THEME_MODE, THEME_LIGHT) ?: THEME_LIGHT
+    }
+
+    fun isDarkMode(): Boolean = getThemeMode() == THEME_DARK
 }

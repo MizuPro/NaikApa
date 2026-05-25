@@ -28,7 +28,7 @@
                 android:id="@+id/cardStatusHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:strokeColor="@color/colorCardOutline"
@@ -54,7 +54,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/ic_launcher_background"
-                        android:backgroundTint="#E8FFF9"
+                        android:backgroundTint="@color/colorSuccessBackground"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
 
@@ -111,7 +111,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/colorCardOutline"
@@ -133,7 +133,7 @@
                             android:layout_width="46dp"
                             android:layout_height="46dp"
                             android:background="@drawable/ic_launcher_background"
-                            android:backgroundTint="#E8FFF9">
+                            android:backgroundTint="@color/colorSuccessBackground">
 
                             <ImageView
                                 android:layout_width="24dp"
@@ -171,7 +171,7 @@
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:cardBackgroundColor="#E8FFF9"
+                            app:cardBackgroundColor="@color/colorSuccessBackground"
                             app:cardCornerRadius="8dp"
                             app:cardElevation="0dp"
                             app:strokeWidth="0dp">
@@ -274,7 +274,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/colorCardOutline"

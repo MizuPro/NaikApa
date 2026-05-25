@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.NaikApa" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Base.Theme.NaikApa" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Brand Colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
@@ -49,7 +49,6 @@
     <!-- Theme overlay untuk Card agar tidak terkena efek tint elevation Material 3 -->
     <style name="ThemeOverlay.NaikApa.WhiteCard" parent="">
         <item name="elevationOverlayEnabled">false</item>
-        <item name="colorPrimary">@color/white</item>
     </style>
 
     <!-- Theme overlay untuk input field agar tetap menggunakan warna primary asli meskipun berada di dalam WhiteCard -->

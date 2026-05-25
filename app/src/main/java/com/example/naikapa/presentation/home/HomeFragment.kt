@@ -232,6 +232,7 @@ class HomeFragment : Fragment() {
         binding.root.applyStatusBarTopMarginTo(binding.cardHeader, dpToPx(16f))
         setupBottomSheetScrim()
         restoreSearchFieldsState()
+        updateThemeButtonLabel()
     }
 
     private fun initMap() {
@@ -266,6 +267,25 @@ class HomeFragment : Fragment() {
             MapStyle.DARK_MATTER -> MapStyle.POSITRON
         }
         setMapStyle(nextStyle)
+    }
+
+    private fun toggleAppTheme() {
+        val sessionManager = SessionManager(requireContext())
+        val isDark = sessionManager.isDarkMode()
+        sessionManager.saveThemeMode(
+            if (isDark) SessionManager.THEME_LIGHT else SessionManager.THEME_DARK
+        )
+        // Restart activity agar tema diterapkan
+        requireActivity().recreate()
+    }
+
+    private fun updateThemeButtonLabel() {
+        val sessionManager = SessionManager(requireContext())
+        binding.btnThemeToggle.text = if (sessionManager.isDarkMode()) {
+            getString(R.string.theme_light)
+        } else {
+            getString(R.string.theme_dark)
+        }
     }
 
     private fun createTileSource(style: MapStyle): XYTileSource {
@@ -501,6 +521,9 @@ class HomeFragment : Fragment() {
 
     private fun createOriginResultView(query: String, location: SearchLocation): View {
         val isGtfs = location.source == SearchLocation.SOURCE_GTFS
+        val surfaceColor = com.google.android.material.color.MaterialColors.getColor(
+            requireContext(), com.google.android.material.R.attr.colorSurface, 0xFFFFFFFF.toInt()
+        )
         val card = MaterialCardView(requireContext()).apply {
             radius = dpToPx(10f).toFloat()
             cardElevation = 0f
@@ -509,7 +532,7 @@ class HomeFragment : Fragment() {
                 requireContext(),
                 if (isGtfs) R.color.colorPrimary else R.color.colorCardOutline
             )
-            setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+            setCardBackgroundColor(surfaceColor)
             setOnClickListener { selectOriginFromSearch(query, location) }
         }
         val content = LinearLayout(requireContext()).apply {
@@ -669,6 +692,9 @@ class HomeFragment : Fragment() {
 
     private fun createSearchResultView(query: String, location: SearchLocation): View {
         val isGtfs = location.source == SearchLocation.SOURCE_GTFS
+        val surfaceColor = com.google.android.material.color.MaterialColors.getColor(
+            requireContext(), com.google.android.material.R.attr.colorSurface, 0xFFFFFFFF.toInt()
+        )
         val card = MaterialCardView(requireContext()).apply {
             radius = dpToPx(10f).toFloat()
             cardElevation = 0f
@@ -677,7 +703,7 @@ class HomeFragment : Fragment() {
                 requireContext(),
                 if (isGtfs) R.color.colorPrimary else R.color.colorCardOutline
             )
-            setCardBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+            setCardBackgroundColor(surfaceColor)
             setOnClickListener { selectDestination(query, location) }
         }
         val content = LinearLayout(requireContext()).apply {
@@ -894,7 +920,11 @@ class HomeFragment : Fragment() {
             toggleMapStyle()
         }
 
-        // Tombol Cari Rute
+        // Tombol Ubah Tema (di header)
+        binding.btnThemeToggle.setOnClickListener {
+            toggleAppTheme()
+        }
+
         binding.btnTemukanRute.setOnClickListener {
             handleFindRouteClick()
         }

@@ -47,6 +47,8 @@
     <string name="location_error">Gagal mengambil lokasi perangkat.</string>
     <string name="map_style_light">Peta Terang</string>
     <string name="map_style_dark">Peta Gelap</string>
+    <string name="theme_dark">Tema\nGelap</string>
+    <string name="theme_light">Tema\nTerang</string>
     <string name="map_marker_origin">Titik asal</string>
     <string name="map_marker_destination">Tujuan</string>
     <string name="map_marker_transit">Transit</string>
