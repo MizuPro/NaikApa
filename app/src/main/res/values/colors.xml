@@ -17,6 +17,7 @@
     <color name="colorDestructive">#DC2626</color>
     <color name="colorDestructiveLight">#FEE2E2</color>
     <color name="colorNeutralButton">#64748B</color>
+    <color name="colorSuccessBackground">#E8FFF9</color>
 
     <!-- Legacy Tokens (Backward Compat) -->
     <color name="colorAccentOrange">#FF6F00</color>
