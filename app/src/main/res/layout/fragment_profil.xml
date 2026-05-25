@@ -8,9 +8,14 @@
     tools:context=".presentation.profile.ProfilFragment">
 
     <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,7 +24,7 @@
             android:paddingStart="16dp"
             android:paddingTop="48dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="32dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardProfile"

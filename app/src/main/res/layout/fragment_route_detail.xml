@@ -10,12 +10,14 @@
     <!-- 1. Custom Toolbar Premium -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardToolbar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:cardElevation="4dp"
         app:cardCornerRadius="0dp"
         app:strokeWidth="0dp"
         app:cardBackgroundColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -41,15 +43,18 @@
 
             <TextView
                 android:id="@+id/tvToolbarTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="@string/route_detail_toolbar_title"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorTextPrimary"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/btnBack" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -57,11 +62,14 @@
 
     <!-- 2. Scrollable Content -->
     <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/cardToolbar"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardToolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -91,11 +99,14 @@
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
                         android:textStyle="bold"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
                         android:textColor="@color/colorTextPrimary"
                         tools:text="TransJakarta + KRL"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/tvMatchScore" />
+                        app:layout_constraintEnd_toStartOf="@id/cardMatchScore" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardMatchScore"
@@ -125,12 +136,14 @@
                     <!-- Alasan Rekomendasi -->
                     <TextView
                         android:id="@+id/tvSummaryReason"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textSize="13sp"
                         android:textColor="@color/colorTextSecondary"
                         tools:text="Rute ini paling hemat biaya dan minim transit, namun memerlukan sedikit jalan kaki tambahan."
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvSummaryTitle" />
 
                     <!-- Divider -->
@@ -354,7 +367,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="24dp"
                 android:text="@string/report_btn_report_from_route"
                 android:textSize="14sp"
                 android:textStyle="bold"
