@@ -1574,7 +1574,7 @@ class HomeFragment : Fragment() {
     private fun createMarker(point: MapPoint): Marker {
         val iconRes = when (point.markerType) {
             MapMarkerType.ORIGIN -> R.drawable.ic_my_location
-            MapMarkerType.DESTINATION -> R.drawable.ic_warning
+            MapMarkerType.DESTINATION -> R.drawable.ic_destination
             MapMarkerType.TRANSIT -> R.drawable.ic_train
         }
         val iconColor = when (point.markerType) {

@@ -40,7 +40,7 @@ class GtfsStopSearchRepository(private val gtfsDao: GtfsDao) {
             limit = AppConstants.GTFS_SEARCH_LIMIT * 3   // ambil lebih banyak, sorting di Kotlin
         )
 
-        return rawStops
+        val gtfsResults = rawStops
             .map { stop -> stop.toSearchLocation(trimmed, userLat, userLon) }
             .sortedWith(compareBy(
                 // Prioritas 1: nama stop dimulai dengan keyword (lebih relevan)
@@ -50,6 +50,33 @@ class GtfsStopSearchRepository(private val gtfsDao: GtfsDao) {
                 // Prioritas 3: nama alfabet
                 { it.name }
             ))
+            .take(AppConstants.GTFS_SEARCH_LIMIT)
+
+        // Gabungkan dengan landmark statis yang cocok dengan keyword
+        val matchingLandmarks = STATIC_LANDMARKS.filter { landmark ->
+            landmark.name.contains(trimmed, ignoreCase = true)
+        }.map { landmark ->
+            val distanceMeters = if (userLat != null && userLon != null) {
+                haversineMeters(userLat, userLon, landmark.latitude, landmark.longitude)
+            } else null
+            landmark.copy(
+                address = if (distanceMeters != null) {
+                    val distStr = if (distanceMeters < 1000) "${distanceMeters.toInt()} m"
+                    else String.format("%.1f km", distanceMeters / 1000.0)
+                    "${landmark.address ?: "Gedung / Landmark"} · $distStr"
+                } else {
+                    landmark.address ?: "Gedung / Landmark"
+                },
+                distanceMeters = distanceMeters
+            )
+        }
+
+        // Landmark statis muncul di atas jika nama dimulai dengan keyword, lainnya di bawah GTFS
+        val landmarksFirst = matchingLandmarks.filter { it.name.startsWith(trimmed, ignoreCase = true) }
+        val landmarksLast  = matchingLandmarks.filter { !it.name.startsWith(trimmed, ignoreCase = true) }
+
+        return (landmarksFirst + gtfsResults + landmarksLast)
+            .distinctBy { it.name.lowercase() }
             .take(AppConstants.GTFS_SEARCH_LIMIT)
     }
 
@@ -121,5 +148,37 @@ class GtfsStopSearchRepository(private val gtfsDao: GtfsDao) {
             "lrt" -> "LRT Jakarta"
             else  -> agencyId?.uppercase() ?: "Halte / Stasiun"
         }
+
+        /**
+         * Daftar landmark statis yang tidak ada di database GTFS.
+         * Koordinat menggunakan WGS84 (latitude, longitude).
+         *
+         * UBM Tower dan Alfa Tower berbagi koordinat yang sama karena berada di lokasi yang sama
+         * di Jl. Jalur Sutera Barat Kav. 7-9, Alam Sutera, Tangerang Selatan.
+         */
+        val STATIC_LANDMARKS: List<SearchLocation> = listOf(
+            SearchLocation(
+                name = "UBM Tower",
+                address = "Jl. Jalur Sutera Barat Kav. 7-9, Alam Sutera, Tangerang Selatan",
+                latitude = -6.2247,
+                longitude = 106.6527,
+                source = SearchLocation.SOURCE_GTFS,
+                stopId = null,
+                agencyId = null,
+                stopType = null,
+                distanceMeters = null
+            ),
+            SearchLocation(
+                name = "Alfa Tower",
+                address = "Jl. Jalur Sutera Barat Kav. 7-9, Alam Sutera, Tangerang Selatan",
+                latitude = -6.2247,
+                longitude = 106.6527,
+                source = SearchLocation.SOURCE_GTFS,
+                stopId = null,
+                agencyId = null,
+                stopType = null,
+                distanceMeters = null
+            )
+        )
     }
 }

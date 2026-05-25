@@ -128,6 +128,11 @@ class RouteDetailFragment : Fragment() {
                     )
                 )
             )
+            // Cegah NestedScrollView mengambil alih touch saat user berinteraksi dengan map
+            setOnTouchListener { v, _ ->
+                v.parent?.requestDisallowInterceptTouchEvent(true)
+                false
+            }
         }
 
         val overlays = mutableListOf<Overlay>()
@@ -434,7 +439,7 @@ class RouteDetailFragment : Fragment() {
                                             description = "Dari ${step.fromStop.stopName} ke ${step.toStop.stopName}",
                                             durationSeconds = step.durationSeconds,
                                             distanceMeters = step.distanceMeters,
-                                            iconResId = R.drawable.ic_person,
+                                            iconResId = R.drawable.ic_walk,
                                             colorInt = ContextCompat.getColor(context, R.color.colorWalking)
                                         )
                                     )
@@ -490,7 +495,7 @@ class RouteDetailFragment : Fragment() {
     private fun createMarker(mapView: MapView, point: MapPoint, context: Context): Marker {
         val iconRes = when (point.markerType) {
             MapMarkerType.ORIGIN -> R.drawable.ic_my_location
-            MapMarkerType.DESTINATION -> R.drawable.ic_warning
+            MapMarkerType.DESTINATION -> R.drawable.ic_destination
             MapMarkerType.TRANSIT -> R.drawable.ic_train
         }
         val iconColor = when (point.markerType) {
