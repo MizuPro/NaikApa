@@ -232,6 +232,7 @@ class HomeFragment : Fragment() {
         setupDestinationSearch()
         setupRouteActions()
         setupPanelToggle()
+        setupSearchOverlay()
         
         binding.root.applyStatusBarTopMarginTo(binding.cardHeader, dpToPx(16f))
         setupBottomSheetScrim()
@@ -403,12 +404,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun activateDestinationSearch() {
+        binding.tvOverlayTitle.text = getString(R.string.search_tujuan)
+        showSearchOverlay()
         binding.tilDestinationSearch.visibility = View.VISIBLE
+        binding.tilOriginSearch.visibility = View.GONE
         binding.etDestinationSearch.requestFocus()
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.showSoftInput(binding.etDestinationSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-        // Tutup origin search jika sedang terbuka
-        binding.tilOriginSearch.visibility = View.GONE
         hideSearchResults()
     }
 
@@ -436,13 +438,46 @@ class HomeFragment : Fragment() {
     }
 
     private fun activateOriginSearch() {
+        binding.tvOverlayTitle.text = getString(R.string.search_dari)
+        showSearchOverlay()
         binding.tilOriginSearch.visibility = View.VISIBLE
+        binding.tilDestinationSearch.visibility = View.GONE
         binding.etOriginSearch.requestFocus()
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.showSoftInput(binding.etOriginSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-        // Tutup destination search jika sedang terbuka
-        binding.tilDestinationSearch.visibility = View.GONE
         hideSearchResults()
+    }
+
+    // ── Search Overlay show/hide ──────────────────────────────────────────────
+
+    private fun showSearchOverlay() {
+        if (binding.cardSearchOverlay.visibility == View.VISIBLE) return
+        binding.cardSearchOverlay.alpha = 0f
+        binding.cardSearchOverlay.translationY = -dpToPx(12f).toFloat()
+        binding.cardSearchOverlay.visibility = View.VISIBLE
+        binding.cardSearchOverlay.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(200)
+            .start()
+    }
+
+    private fun hideSearchOverlay() {
+        if (binding.cardSearchOverlay.visibility != View.VISIBLE) return
+        // Sembunyikan keyboard
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.cardSearchOverlay.windowToken, 0)
+        binding.cardSearchOverlay.animate()
+            .alpha(0f)
+            .translationY(-dpToPx(12f).toFloat())
+            .setDuration(180)
+            .withEndAction {
+                binding.cardSearchOverlay.visibility = View.GONE
+                binding.tilOriginSearch.visibility = View.GONE
+                binding.tilDestinationSearch.visibility = View.GONE
+                hideSearchResults()
+            }
+            .start()
     }
 
     private fun scheduleOriginSearch(query: String) {
@@ -575,8 +610,7 @@ class HomeFragment : Fragment() {
         binding.tvOrigin.text = location.name
         binding.tvOriginSub.text = location.address ?: formatCoordinates(location.latitude, location.longitude)
         binding.etOriginSearch.setText("")
-        binding.tilOriginSearch.visibility = View.GONE
-        hideSearchResults()
+        hideSearchOverlay()
 
         val originPoint = MapPoint(
             label = getString(R.string.map_marker_origin),
@@ -754,8 +788,7 @@ class HomeFragment : Fragment() {
         binding.tvDestination.text = location.name
         binding.tvDestinationSub.text = location.address ?: formatCoordinates(location.latitude, location.longitude)
         binding.etDestinationSearch.setText("")
-        binding.tilDestinationSearch.visibility = View.GONE
-        hideSearchResults()
+        hideSearchOverlay()
 
         val destinationPoint = MapPoint(
             label = getString(R.string.map_marker_destination),
@@ -925,8 +958,32 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupSearchOverlay() {
+        binding.btnCloseSearchOverlay.setOnClickListener {
+            hideSearchOverlay()
+        }
+        // Handle back press: tutup overlay jika sedang terbuka
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : androidx.activity.OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (binding.cardSearchOverlay.visibility == View.VISIBLE) {
+                        hideSearchOverlay()
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    }
+                }
+            }
+        )
+    }
+
     private fun hidePanel() {
         isPanelVisible = false
+        // Tutup overlay pencarian jika sedang terbuka
+        if (binding.cardSearchOverlay.visibility == View.VISIBLE) {
+            hideSearchOverlay()
+        }
         binding.cardSearch.animate()
             .alpha(0f)
             .setDuration(200)

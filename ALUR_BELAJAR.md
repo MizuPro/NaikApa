@@ -508,15 +508,52 @@ Alasan index dibuat:
 - `idx_disruptions_status_expired`: mempercepat pencarian laporan gangguan yang masih aktif.
 - `idx_disruptions_stop_route`: mempercepat pengecekan gangguan berdasarkan stop/route yang dilewati rute.
 - Index GTFS mempercepat pencarian stop, route, trip, dan koneksi stop berurutan untuk graph.
-- `idx_route_cache_lookup`: disiapkan untuk mencari cache rute berdasarkan origin, destination, mode, dan priority.
+- `idx_route_cache_key`: mempercepat pencarian cache berdasarkan key unik hasil kombinasi input pencarian.
+- `idx_route_cache_created_at`: mempercepat penghapusan cache lama.
+- `idx_route_cache_lookup`: index pendukung untuk pencarian cache berdasarkan origin, destination, mode, dan priority.
 
 Status `route_cache` saat ini:
 
-- Tabel `route_cache`, model `RouteCache`, dan `RouteCacheDao` sudah ada.
-- `RouteCacheDao` punya operasi insert, find, hapus cache lama, dan hapus semua cache.
-- Namun pada kode saat ini, `RouteCacheDao` belum terlihat dipakai oleh `HomeFragment`, `RecommendationEngine`, atau repository routing.
-- Artinya route cache masih berupa infrastruktur yang disiapkan, belum terintegrasi ke flow pencarian rekomendasi.
-- Jika diimplementasikan, alurnya idealnya: cek cache sebelum hitung rute, tampilkan cache jika valid, hitung ulang jika miss/expired, lalu simpan hasil sukses.
+- Route cache sudah terintegrasi ke flow rekomendasi utama di `HomeFragment`.
+- `HomeFragment` membuat `RouteCacheRepository(RouteCacheDao(dbHelper))`.
+- Sebelum `RecommendationEngine.recommend(...)` dipanggil, aplikasi mengecek cache dulu lewat `RouteCacheRepository.getRecommendation(...)`.
+- Jika cache valid, hasil rekomendasi langsung dipakai tanpa hitung rute ulang.
+- Jika cache miss, expired, atau JSON gagal dibaca, aplikasi menghitung rute baru lalu menyimpannya lewat `saveRecommendation(...)`.
+- Cache valid selama `ROUTE_CACHE_TTL_MILLIS`, yaitu 10 menit.
+- Row cache lama dibersihkan dengan `clearExpired()` berdasarkan `ROUTE_CACHE_CLEANUP_AGE_MILLIS`, yaitu 24 jam.
+- Cache dengan key yang sama diganti memakai `insertOrReplace`, jadi hasil lama tidak menumpuk untuk pencarian yang identik.
+- Flow chip kendaraan pribadi spesifik yang langsung memanggil routing private masih bypass cache rekomendasi ini.
+
+Alur route cache:
+
+```text
+User klik cari rute
+        |
+        v
+HomeFragment membentuk input pencarian
+        |
+        v
+RouteCacheRepository membuat cacheKey
+        |
+        |-- cache ada dan umur <= 10 menit --> deserialize JSON, tampilkan rekomendasi
+        |
+        |-- cache tidak ada / expired / rusak --> RecommendationEngine hitung rute baru
+                                                  |
+                                                  v
+                                          simpan hasil ke route_cache
+```
+
+Cache key dibentuk dari input yang memengaruhi hasil rute:
+
+- Koordinat asal dan tujuan yang dibulatkan 5 desimal.
+- Mode transit.
+- Prioritas sorting.
+- Status punya motor/mobil.
+- Filter jenis kendaraan.
+- Stop asal/tujuan jika lokasi berasal dari GTFS.
+- Opsi hindari tol.
+
+Koordinat dibulatkan 5 desimal supaya pencarian yang secara praktis sama tidak mudah miss karena perbedaan angka GPS sangat kecil. Di Jakarta, 5 desimal kira-kira berada pada skala sekitar 1 meter, sehingga masih cukup presisi untuk rute tetapi lebih stabil untuk cache.
 
 Yang harus bisa kamu jawab:
 
@@ -617,6 +654,7 @@ File penting:
 - `DisruptionReport.kt`
 - `SavedTrip.kt`
 - `RouteHistory.kt`
+- `RouteCache.kt`
 
 Konsep yang perlu dipahami:
 
@@ -653,6 +691,8 @@ Repository penting:
 - `TransitGraphRepository`
 - `TransitRoutingRepository`
 - `CombinedRouteRepository`
+- `RouteCacheRepository`
+- `RouteCacheSerializer`
 
 Contoh tanggung jawab:
 
@@ -661,6 +701,8 @@ Contoh tanggung jawab:
 - `GtfsStopSearchRepository`: mencari halte/stasiun lokal dari database GTFS.
 - `TransitRoutingRepository`: mencari rute transit dengan graph dan Dijkstra.
 - `CombinedRouteRepository`: menggabungkan kendaraan pribadi + transit.
+- `RouteCacheRepository`: mengambil dan menyimpan cache hasil rekomendasi rute.
+- `RouteCacheSerializer`: mengubah `RecommendationResult` ke/dari JSON untuk disimpan di SQLite.
 
 Yang harus dipahami:
 
@@ -2763,16 +2805,24 @@ Cara kerjanya:
 
 - Menyimpan hasil rute dalam bentuk JSON.
 - Mengambil cache berdasarkan asal, tujuan, mode, dan prioritas.
+- Mengambil cache langsung berdasarkan `cache_key` lewat `findByKey`.
+- Menyimpan cache baru atau mengganti cache lama dengan `insertOrReplace`.
 - Menghapus cache lama dengan `clearOlderThan`.
 - Menghapus semua cache dengan `clearAll`.
 - Membantu menghindari hitung/API ulang jika data masih relevan.
 
-Catatan:
+Status integrasi:
 
-- Infrastruktur cache sudah ada di DAO/model/schema.
-- Pada kondisi kode saat ini, DAO ini belum terhubung ke `HomeFragment`, `RecommendationEngine`, atau repository routing.
-- Jadi statusnya masih disiapkan untuk fitur route cache, belum menjadi bagian aktif dari flow pencarian rute.
-- Karena lookup memakai koordinat `Double` langsung, implementasi lanjutan sebaiknya mempertimbangkan cache key yang dibulatkan agar pencarian ulang tidak mudah miss karena selisih desimal kecil.
+- `RouteCacheDao` sudah dipakai oleh `RouteCacheRepository`.
+- `RouteCacheRepository` sudah dipakai oleh `HomeFragment` pada flow rekomendasi utama.
+- DAO tetap sederhana: hanya tahu operasi SQLite, sedangkan aturan TTL, cache key, dan serialize/deserialize ada di repository.
+
+Detail yang perlu dipahami:
+
+- `cache_key` bersifat unik, sehingga satu kombinasi input pencarian hanya punya satu row aktif terbaru.
+- `insertOrReplace` memakai conflict replace, jadi cache lama untuk key yang sama diganti hasil baru.
+- `created_at` dipakai untuk mengecek apakah cache masih valid dan untuk membersihkan row lama.
+- Method `find(...)` berbasis kolom koordinat/mode/priority masih ada, tetapi flow baru lebih stabil memakai `findByKey(...)`.
 
 ---
 
@@ -2963,11 +3013,18 @@ Model cache rute.
 Cara kerjanya:
 
 - Mewakili hasil rute yang disimpan sementara dalam database.
-- Umumnya berisi input pencarian dan JSON hasil rute.
-- Field input cache saat ini: origin latitude/longitude, destination latitude/longitude, mode, dan priority.
-- Field output cache: `resultJson`.
+- Berisi input pencarian yang sudah dinormalisasi dan JSON hasil rekomendasi.
+- Field identitas cache: `cacheKey`.
+- Field input cache: origin latitude/longitude, destination latitude/longitude, mode, dan priority.
+- Field output cache: `resultJson`, hasil serialize dari `RecommendationResult`.
 - Field waktu: `createdAt`, dipakai untuk menentukan umur cache.
-- Model ini belum aktif dipakai di flow rekomendasi selama `RouteCacheDao` belum diintegrasikan.
+- Model ini aktif dipakai oleh `RouteCacheDao` dan `RouteCacheRepository`.
+
+Kenapa hasil disimpan sebagai JSON:
+
+- Hasil rekomendasi berisi kandidat transit, kendaraan pribadi, dan gabungan yang bentuknya berbeda.
+- Menyimpan JSON membuat cache cukup fleksibel tanpa harus membuat banyak tabel detail untuk setiap tipe rute.
+- Trade-off-nya: isi cache tidak cocok untuk query analitik detail, karena JSON dibaca ulang sebagai satu objek rekomendasi.
 
 ---
 
@@ -3173,6 +3230,56 @@ Hal yang perlu diperhatikan:
 - Rute gabungan bisa berarti `Motor + Transit`, `Mobil + Transit`, atau `Jalan Kaki + Transit`.
 - `estimatedTotalCost = estimatedFare + estimatedBbm`.
 - Segmen jalan kaki punya biaya `0`, tetapi tetap memengaruhi durasi dan skor walking.
+
+#### `app/src/main/java/com/example/naikapa/data/repository/RouteCacheRepository.kt`
+
+Repository untuk cache hasil rekomendasi rute.
+
+Cara kerjanya:
+
+1. Menerima input pencarian yang sama dengan flow rekomendasi: origin, destination, mode transit, prioritas, filter kendaraan, stop ID, dan opsi tol.
+2. Membulatkan koordinat origin/destination memakai `ROUTE_CACHE_COORDINATE_PRECISION`.
+3. Membentuk `cacheKey` dari semua input yang memengaruhi hasil rute.
+4. Mengecek `RouteCacheDao.findByKey(cacheKey)`.
+5. Jika cache tidak ada, return `null`.
+6. Jika cache ada tetapi umur lebih dari `ROUTE_CACHE_TTL_MILLIS`, return `null`.
+7. Jika cache masih valid, deserialize `resultJson` menjadi `RecommendationResult`.
+8. Saat hasil baru sukses dihitung, serialize `RecommendationResult` dan simpan lewat `insertOrReplace`.
+9. Membersihkan row lama lewat `clearExpired`, dengan batas fisik `ROUTE_CACHE_CLEANUP_AGE_MILLIS`.
+
+Konstanta penting:
+
+- `ROUTE_CACHE_TTL_MILLIS = 10 * 60 * 1000L`: cache hanya dipakai selama 10 menit.
+- `ROUTE_CACHE_CLEANUP_AGE_MILLIS = 24 * 60 * 60 * 1000L`: row lama dihapus setelah 24 jam.
+- `ROUTE_CACHE_COORDINATE_PRECISION = 5`: koordinat dibulatkan 5 angka desimal.
+
+Perbedaan TTL dan cleanup:
+
+```text
+0 - 10 menit     -> cache boleh dipakai
+> 10 menit       -> cache dianggap stale, rute dihitung ulang
+key yang sama    -> row lama diganti hasil baru
+> 24 jam         -> row lama dibersihkan dari SQLite
+```
+
+Jadi cache tidak dipakai terus menerus. Cache bisa diganti ketika pencarian dengan key yang sama berhasil dihitung ulang, dan cache lama dibersihkan setelah melewati umur cleanup.
+
+#### `app/src/main/java/com/example/naikapa/data/repository/RouteCacheSerializer.kt`
+
+Serializer untuk menyimpan dan membaca hasil rekomendasi dari cache.
+
+Cara kerjanya:
+
+- Mengubah `RecommendationResult` menjadi JSON memakai Gson.
+- Menyimpan tipe kandidat rute agar saat dibaca ulang bisa dikembalikan ke model yang benar.
+- Mendukung kandidat `TRANSIT`, `PRIVATE`, dan `COMBINED`.
+- Saat JSON rusak atau model tidak cocok, repository menganggap cache tidak valid dan menghitung rute baru.
+
+Kenapa serializer dipisah dari DAO:
+
+- DAO hanya bertanggung jawab ke SQLite.
+- Serializer bertanggung jawab ke format JSON.
+- Repository menjadi penghubung yang mengatur aturan bisnis cache: key, TTL, cleanup, dan fallback.
 
 ---
 
