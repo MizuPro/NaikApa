@@ -111,9 +111,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="@color/colorSurfaceVariant"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
             android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:orientation="horizontal">
+            android:paddingEnd="4dp"
+            android:paddingBottom="8dp">
 
             <!-- Waktu -->
             <LinearLayout
@@ -134,6 +137,8 @@
                     android:id="@+id/tvTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
@@ -167,6 +172,8 @@
                     android:id="@+id/tvCost"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
@@ -200,6 +207,8 @@
                     android:id="@+id/tvWalking"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
@@ -233,6 +242,8 @@
                     android:id="@+id/tvTransit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="12sp"
