@@ -186,12 +186,21 @@
 
     <!-- ===== NEW STYLES FROM PLAN ===== -->
     <style name="NaikApaSegmentedTab" parent="Widget.Material3.TabLayout">
-        <item name="tabIndicatorGravity">stretch</item>
-        <item name="tabIndicatorColor">@color/colorPrimaryLight</item>
-        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabIndicatorHeight">0dp</item>
+        <item name="tabSelectedTextColor">@color/white</item>
         <item name="tabTextColor">@color/colorTextSecondary</item>
-        <item name="tabIndicatorAnimationMode">linear</item>
-        <item name="tabTextAppearance">@style/TextAppearance.Material3.TitleSmall</item>
+        <item name="tabTextAppearance">@style/NaikApaSegmentedTabText</item>
+        <item name="tabBackground">@drawable/bg_tab_selector</item>
+        <item name="tabPaddingStart">0dp</item>
+        <item name="tabPaddingEnd">0dp</item>
+        <item name="tabGravity">fill</item>
+        <item name="tabMode">fixed</item>
+        <item name="android:background">@drawable/bg_segment_tab_container</item>
+    </style>
+
+    <style name="NaikApaSegmentedTabText" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="NaikApaChipFilter" parent="Widget.Material3.Chip.Filter">

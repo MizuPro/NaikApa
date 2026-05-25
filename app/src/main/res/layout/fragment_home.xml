@@ -641,6 +641,20 @@
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
+            <!-- Opsi Hindari Tol — hanya muncul saat chip Mobil aktif atau filter Kendaraan Pribadi aktif -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/checkboxAvoidToll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:contentDescription="@string/checkbox_avoid_toll_desc"
+                android:text="@string/checkbox_avoid_toll"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="13sp"
+                android:visibility="gone"
+                app:buttonTint="@color/colorPrimary" />
+
             <!-- Horizontal Route Criteria Scroll -->
             <HorizontalScrollView
                 android:id="@+id/scrollRouteCriteria"

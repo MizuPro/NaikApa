@@ -110,10 +110,10 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayoutHistory"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="40dp"
                 android:layout_marginTop="16dp"
-                style="@style/NaikApaSegmentedTab"
-                app:tabBackground="@drawable/bg_segment_unselected">
+                android:padding="3dp"
+                style="@style/NaikApaSegmentedTab">
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"

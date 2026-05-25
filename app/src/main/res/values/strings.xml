@@ -263,6 +263,10 @@
     <string name="history_replay_started">Memuat ulang rute favorit di halaman utama.</string>
     <string name="route_detail_save_favorite">Simpan ke Favorit</string>
 
+    <!-- Hindari Tol -->
+    <string name="checkbox_avoid_toll">Hindari Tol</string>
+    <string name="checkbox_avoid_toll_desc">Aktifkan untuk menghindari jalan tol pada rute mobil</string>
+
     <!-- FASE 19: Polishing UI — string resource tambahan -->
     <!-- Route Detail -->
     <string name="route_detail_toolbar_title">Detail Perjalanan</string>

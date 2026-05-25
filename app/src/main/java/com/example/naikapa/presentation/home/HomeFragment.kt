@@ -113,6 +113,7 @@ class HomeFragment : Fragment() {
     private lateinit var homeScope: CoroutineScope
     private var selectedModeCardId: Int = -1
     private var selectedVehicleTypeFilter: VehicleTypeFilter = VehicleTypeFilter.ALL
+    private var avoidTollRoads: Boolean = false
     private var selectedOrigin: LocationPoint?
         get() = savedOrigin
         set(value) {
@@ -290,8 +291,28 @@ class HomeFragment : Fragment() {
             if (checkedIds.isNotEmpty()) {
                 selectedModeCardId = checkedIds.first()
             }
+            updateAvoidTollVisibility()
         }
         selectedModeCardId = R.id.modeCampur
+
+        binding.checkboxAvoidToll.setOnCheckedChangeListener { _, isChecked ->
+            avoidTollRoads = isChecked
+        }
+    }
+
+    /**
+     * Tampilkan checkbox "Hindari Tol" hanya saat chip Mobil aktif
+     * atau saat filter Kendaraan Pribadi aktif (karena rute mobil akan dihasilkan).
+     */
+    private fun updateAvoidTollVisibility() {
+        val showForChip = selectedModeCardId == R.id.modeMobil
+        val showForFilter = selectedVehicleTypeFilter == VehicleTypeFilter.PRIVATE_ONLY
+        val shouldShow = showForChip || showForFilter
+        binding.checkboxAvoidToll.visibility = if (shouldShow) View.VISIBLE else View.GONE
+        if (!shouldShow) {
+            binding.checkboxAvoidToll.isChecked = false
+            avoidTollRoads = false
+        }
     }
 
     private fun setupVehicleTypeFilter() {
@@ -303,6 +324,7 @@ class HomeFragment : Fragment() {
                     else -> VehicleTypeFilter.ALL
                 }
                 applyVehicleFilterToModeChips()
+                updateAvoidTollVisibility()
             }
         }
         selectedVehicleTypeFilter = VehicleTypeFilter.ALL
@@ -815,25 +837,50 @@ class HomeFragment : Fragment() {
     private fun setupRouteActions() {
         // Tombol Swap Asal-Tujuan
         binding.btnSwap.setOnClickListener {
-            val tempTitle = binding.tvOrigin.text.toString()
-            val tempSub = binding.tvOriginSub.text.toString()
-            val tempOriginStop = selectedOriginStop
+            // Simpan state lama
+            val oldOrigin      = selectedOrigin
+            val oldOriginStop  = selectedOriginStop
+            val oldDestination = selectedDestination
 
-            binding.tvOrigin.text = binding.tvDestination.text
-            binding.tvOriginSub.text = binding.tvDestinationSub.text
+            val oldOriginTitle = binding.tvOrigin.text.toString()
+            val oldOriginSub   = binding.tvOriginSub.text.toString()
+            val oldDestTitle   = binding.tvDestination.text.toString()
+            val oldDestSub     = binding.tvDestinationSub.text.toString()
 
-            binding.tvDestination.text = tempTitle
-            binding.tvDestinationSub.text = tempSub
-            selectedOriginStop = selectedDestination
-            selectedDestination = tempOriginStop
-            selectedOriginStop?.let { location ->
+            // ── Isi Origin baru (dari destination lama) ──────────────────────
+            if (oldDestination != null) {
                 selectedOrigin = LocationPoint(
-                    label = location.name,
-                    latitude = location.latitude,
-                    longitude = location.longitude,
+                    label = oldDestination.name,
+                    latitude = oldDestination.latitude,
+                    longitude = oldDestination.longitude,
                     isFromGps = false
                 )
+                selectedOriginStop = oldDestination
+                binding.tvOrigin.text    = oldDestTitle
+                binding.tvOriginSub.text = oldDestSub
+            } else {
+                selectedOrigin     = null
+                selectedOriginStop = null
+                binding.tvOrigin.text    = getString(R.string.search_dari_val)
+                binding.tvOriginSub.text = getString(R.string.search_dari_sub)
             }
+
+            // ── Isi Destination baru (dari origin lama) ───────────────────────
+            // Kalau origin lama dari GPS, buat SearchLocation dari koordinat GPS-nya
+            val newDestination: SearchLocation? = when {
+                oldOriginStop != null -> oldOriginStop
+                oldOrigin != null -> SearchLocation(
+                    name      = oldOriginTitle,
+                    address   = oldOriginSub,
+                    latitude  = oldOrigin.latitude,
+                    longitude = oldOrigin.longitude,
+                    source    = SearchLocation.SOURCE_TOMTOM
+                )
+                else -> null
+            }
+            selectedDestination = newDestination
+            binding.tvDestination.text    = oldOriginTitle
+            binding.tvDestinationSub.text = oldOriginSub
 
             toast("Rute asal-tujuan ditukar")
         }
@@ -965,7 +1012,8 @@ class HomeFragment : Fragment() {
                     tomTomApiKey = BuildConfig.TOMTOM_API_KEY,
                     vehicleTypeFilter = selectedVehicleTypeFilter,
                     originStopId = selectedOriginStop?.stopId,
-                    destinationStopId = selectedDestination?.stopId
+                    destinationStopId = selectedDestination?.stopId,
+                    avoidTollRoads = avoidTollRoads
                 )
             }
             result
@@ -1017,7 +1065,8 @@ class HomeFragment : Fragment() {
                     privateVehicleMode = getCombinedPrivateVehicleMode(),
                     transitMode = getTransitModeForCurrentMode(),
                     sortPreference = getSelectedSortPreference(),
-                    agencyId = getAgencyFilterForCurrentMode()
+                    agencyId = getAgencyFilterForCurrentMode(),
+                    avoidTollRoads = avoidTollRoads
                 )
             }
             hideLoadingState()
@@ -1057,7 +1106,8 @@ class HomeFragment : Fragment() {
                     destinationLat = destination.latitude,
                     destinationLon = destination.longitude,
                     mode = mode,
-                    apiKey = BuildConfig.TOMTOM_API_KEY
+                    apiKey = BuildConfig.TOMTOM_API_KEY,
+                    avoidTollRoads = avoidTollRoads
                 )
             }
             hideLoadingState()

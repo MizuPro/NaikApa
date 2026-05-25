@@ -50,7 +50,7 @@
     <color name="colorInfoLight">#EFF6FF</color>
 
     <!-- Surface Variants -->
-    <color name="colorSurfaceVariant">#F8FAFC</color>
+    <color name="colorSurfaceVariant">#F1F5F9</color>
     <color name="colorSurfaceElevated">#FFFFFF</color>
     <color name="colorOnSurface">#1E293B</color>
     <color name="colorOnSurfaceVariant">#64748B</color>

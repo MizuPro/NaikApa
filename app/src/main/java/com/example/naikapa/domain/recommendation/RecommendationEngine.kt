@@ -66,7 +66,8 @@ class RecommendationEngine(
         tomTomApiKey: String,
         vehicleTypeFilter: VehicleTypeFilter = VehicleTypeFilter.ALL,
         originStopId: String? = null,
-        destinationStopId: String? = null
+        destinationStopId: String? = null,
+        avoidTollRoads: Boolean = false
     ): Result<RecommendationResult> = runCatching {
 
         val candidates = mutableListOf<RouteCandidate>()
@@ -114,7 +115,8 @@ class RecommendationEngine(
                         destinationLat = destination.latitude,
                         destinationLon = destination.longitude,
                         mode = PrivateVehicleMode.CAR,
-                        apiKey = tomTomApiKey
+                        apiKey = tomTomApiKey,
+                        avoidTollRoads = avoidTollRoads
                     ).getOrNull()?.firstOrNull()
                 } else null
             }
@@ -143,7 +145,8 @@ class RecommendationEngine(
                         destinationLon = destination.longitude,
                         privateVehicleMode = PrivateVehicleMode.CAR,
                         transitMode = transitMode,
-                        sortPreference = sortPreference
+                        sortPreference = sortPreference,
+                        avoidTollRoads = avoidTollRoads
                     ).getOrNull()?.firstOrNull()
                 } else null
             }

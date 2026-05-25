@@ -76,7 +76,7 @@ class CombinedRouteRepositoryTest {
         }
         val repository = CombinedRouteRepository(
             nearbyTransitStopRepository = nearbyRepository,
-            privateVehicleRouteProvider = { _, _, _, _, _ -> Result.success(listOf(vehicleRoute())) },
+            privateVehicleRouteProvider = { _, _, _, _, _, _ -> Result.success(listOf(vehicleRoute())) },
             transitRouteProvider = { _, _, _, _ -> null }
         )
 
@@ -97,7 +97,7 @@ class CombinedRouteRepositoryTest {
         val nearbyRepository = NearbyTransitStopRepository { stops }
         return CombinedRouteRepository(
             nearbyTransitStopRepository = nearbyRepository,
-            privateVehicleRouteProvider = { _, _, _, _, _ -> Result.success(listOf(vehicleRoute())) },
+            privateVehicleRouteProvider = { _, _, _, _, _, _ -> Result.success(listOf(vehicleRoute())) },
             transitRouteProvider = { startStopId, endStopId, mode, sortPreference ->
                 TransitRouteResult(
                     startStop = TransitNode(startStopId, "Stasiun Awal", -6.2010, 106.8010, "krl"),

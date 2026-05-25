@@ -23,7 +23,8 @@ class CombinedRouteRepository(
         originLon: Double,
         destinationLat: Double,
         destinationLon: Double,
-        mode: PrivateVehicleMode
+        mode: PrivateVehicleMode,
+        avoidTollRoads: Boolean
     ) -> Result<List<PrivateVehicleRouteResult>>,
     private val transitRouteProvider: (
         startStopId: String,
@@ -40,7 +41,7 @@ class CombinedRouteRepository(
         avoidTollRoads: Boolean = false
     ) : this(
         nearbyTransitStopRepository = nearbyTransitStopRepository,
-        privateVehicleRouteProvider = { originLat, originLon, destinationLat, destinationLon, mode ->
+        privateVehicleRouteProvider = { originLat, originLon, destinationLat, destinationLon, mode, avoidTolls ->
             tomTomRoutingRepository.calculateRoute(
                 originLat = originLat,
                 originLon = originLon,
@@ -48,7 +49,7 @@ class CombinedRouteRepository(
                 destinationLon = destinationLon,
                 mode = mode,
                 apiKey = apiKey,
-                avoidTollRoads = avoidTollRoads
+                avoidTollRoads = avoidTolls
             )
         },
         transitRouteProvider = { startStopId, endStopId, mode, sortPreference ->
@@ -65,7 +66,8 @@ class CombinedRouteRepository(
         transitMode: TransitMode,
         sortPreference: SortPreference,
         agencyId: String? = null,
-        limit: Int = AppConstants.COMBINED_ROUTE_STOP_CANDIDATE_LIMIT
+        limit: Int = AppConstants.COMBINED_ROUTE_STOP_CANDIDATE_LIMIT,
+        avoidTollRoads: Boolean = false
     ): Result<List<CombinedRouteResult>> = runCatching {
         val originStops = nearbyTransitStopRepository.findNearestStops(
             latitude = originLat,
@@ -95,7 +97,8 @@ class CombinedRouteRepository(
                     originLon,
                     originStop.latitude,
                     originStop.longitude,
-                    privateVehicleMode
+                    privateVehicleMode,
+                    avoidTollRoads
                 ).getOrNull()?.firstOrNull() ?: continue
             } else {
                 null

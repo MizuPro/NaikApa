@@ -84,6 +84,37 @@ class TomTomRoutingRepositoryTest {
         assertEquals(null, result)
     }
 
+    @Test
+    fun calculateRouteWithAvoidTollPassesToApiForCar() = runBlocking {
+        val capturingApi = CapturingTomTomRoutingApi()
+        TomTomRoutingRepository(capturingApi).calculateRoute(
+            originLat = -6.2,
+            originLon = 106.8,
+            destinationLat = -6.3,
+            destinationLon = 106.9,
+            mode = PrivateVehicleMode.CAR,
+            apiKey = "valid-key",
+            avoidTollRoads = true
+        )
+        assertEquals(AppConstants.TOMTOM_ROUTING_AVOID_TOLL_ROADS, capturingApi.lastAvoid)
+    }
+
+    @Test
+    fun calculateRouteWithAvoidTollNotPassedForMotor() = runBlocking {
+        val capturingApi = CapturingTomTomRoutingApi()
+        TomTomRoutingRepository(capturingApi).calculateRoute(
+            originLat = -6.2,
+            originLon = 106.8,
+            destinationLat = -6.3,
+            destinationLon = 106.9,
+            mode = PrivateVehicleMode.MOTOR,
+            apiKey = "valid-key",
+            avoidTollRoads = true
+        )
+        // Motor tidak boleh mengirim avoid=tollRoads meskipun avoidTollRoads=true
+        assertEquals(null, capturingApi.lastAvoid)
+    }
+
     private class FakeTomTomRoutingApi(
         private val response: TomTomRoutingResponse = TomTomRoutingResponse(
             routes = listOf(defaultRoute(10_000, 1_800))
@@ -98,6 +129,24 @@ class TomTomRoutingRepositoryTest {
             maxAlternatives: Int,
             avoid: String?
         ): Response<TomTomRoutingResponse> = Response.success(response)
+    }
+
+    private class CapturingTomTomRoutingApi : TomTomRoutingApi {
+        var lastAvoid: String? = null
+        override suspend fun calculateRoute(
+            from: String,
+            to: String,
+            apiKey: String,
+            travelMode: String,
+            routeType: String,
+            maxAlternatives: Int,
+            avoid: String?
+        ): Response<TomTomRoutingResponse> {
+            lastAvoid = avoid
+            return Response.success(
+                TomTomRoutingResponse(routes = listOf(defaultRoute(10_000, 1_800)))
+            )
+        }
     }
 
     companion object {
