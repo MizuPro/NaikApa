@@ -657,6 +657,40 @@ TomTomRoutingApi
 PrivateVehicleRouteResult
 ```
 
+Estimasi biaya kendaraan pribadi:
+
+```text
+jarakKm = distanceMeters / 1000
+literTerpakai = jarakKm / konsumsiKmPerLiter
+estimasiBbm = round(literTerpakai * hargaBbmPerLiter)
+```
+
+Di project ini, jarak kendaraan pribadi berasal dari TomTom Routing, bukan jarak garis lurus. `TomTomRoutingRepository` membaca `lengthInMeters` dan `travelTimeInSeconds` dari response TomTom, lalu `FuelCostCalculator` menghitung estimasi BBM.
+
+Konstanta yang dipakai:
+
+- `FUEL_COST_PER_LITER = 10000`
+- `MOTOR_CONSUMPTION_KM_PER_LITER = 40.0`
+- `CAR_CONSUMPTION_KM_PER_LITER = 12.0`
+
+Contoh:
+
+```text
+Motor 10 km = (10 / 40) * 10000 = Rp2.500
+Mobil 10 km = (10 / 12) * 10000 = Rp8.333
+```
+
+Alasan rumus ini dipakai:
+
+- Sederhana dan mudah dijelaskan.
+- Cocok untuk membandingkan kendaraan pribadi dengan transportasi umum.
+- Data jarak sudah tersedia dari TomTom Routing.
+- Biaya BBM adalah komponen biaya kendaraan pribadi yang paling langsung dihitung dari jarak.
+
+Catatan:
+
+Estimasi ini belum memasukkan biaya tol, parkir, servis, depresiasi kendaraan, perubahan harga BBM, kondisi macet real-time, dan gaya berkendara. Jadi hasilnya adalah estimasi biaya BBM, bukan total biaya riil kendaraan.
+
 Yang harus bisa kamu jawab:
 
 - Apa itu Retrofit?
@@ -820,6 +854,60 @@ RouteStepBuilder
 TransitRouteResult
 ```
 
+Base algoritma Dijkstra di project ini:
+
+```text
+node = halte/stasiun
+edge = koneksi antar stop atau transfer jalan kaki
+weight/cost = nilai yang dihitung dari durasi, biaya, jalan kaki, atau transfer
+```
+
+Graph dibangun dari data GTFS lokal:
+
+1. `GtfsDao.getAdjacentStopConnections()` mengambil pasangan stop berurutan dari tabel GTFS.
+2. `TransitGraphBuilder` membuat node dari stop dan edge dari koneksi antar stop.
+3. Durasi edge transit dihitung dari selisih `departure_time` dan `arrival_time`, lalu dirata-ratakan untuk koneksi yang sama.
+4. Jarak edge dihitung dari koordinat stop dengan `GeoDistanceCalculator`.
+5. `WalkingTransferBuilder` menambahkan edge jalan kaki antar stop beda agency yang jaraknya masih dalam radius transfer.
+
+Implementasi Dijkstra:
+
+1. `TransitRoutingRepository.findRoute()` mengambil graph dari `TransitGraphRepository`.
+2. `DijkstraAlgorithm.findPath()` menerima graph, stop asal, stop tujuan, mode transit, dan preferensi sort.
+3. Algoritma menyimpan cost terkecil sementara di `distances`.
+4. `PriorityQueue` selalu mengambil stop dengan cost paling kecil.
+5. Setiap edge keluar dari stop tersebut dicek apakah boleh dipakai sesuai `TransitMode`.
+6. `TransitEdgeCostCalculator` menghitung cost edge sesuai preferensi user.
+7. Jika cost baru lebih kecil, `distances` dan `previous` di-update.
+8. Setelah tujuan ditemukan, path direkonstruksi dari `previous`.
+9. `RouteStepBuilder` mengubah path edge menjadi langkah perjalanan yang bisa dibaca user.
+10. `TransitRouteMetricsCalculator` menghitung total durasi, jarak, biaya, jalan kaki, dan jumlah transit.
+
+Cost yang dipakai Dijkstra berubah mengikuti preferensi:
+
+```text
+FASTEST          = durasi edge + penalti transfer
+CHEAPEST         = biaya masuk agency + biaya transfer + tie-breaker durasi
+MIN_WALKING      = jarak jalan kaki * bobot + sebagian penalti transfer
+FEWEST_TRANSFERS = jumlah transfer + tie-breaker durasi
+```
+
+Konstanta penting:
+
+- `ROUTING_TRANSFER_PENALTY_SECONDS = 300`
+- `ROUTING_AGENCY_ENTRY_COST = 3500`
+- `ROUTING_TRANSFER_COST = 500`
+- `ROUTING_WALKING_DISTANCE_WEIGHT = 10.0`
+- `ROUTING_DURATION_TIEBREAKER = 0.00001`
+
+Kenapa memilih Dijkstra:
+
+- Cocok untuk graph berbobot non-negatif, dan semua cost routing di project ini bernilai nol atau positif.
+- Lebih tepat daripada BFS, karena BFS menganggap semua edge setara, sedangkan rute transit punya durasi, biaya, jarak jalan kaki, dan penalti transfer yang berbeda.
+- Lebih sederhana daripada A*, karena A* butuh heuristic yang benar. Untuk transit multi-moda, heuristic jarak geografis belum tentu cocok untuk preferensi biaya, minim jalan kaki, atau minim transfer.
+- Lebih efisien daripada Bellman-Ford untuk kasus ini, karena tidak ada edge berbobot negatif.
+- Lebih relevan daripada Floyd-Warshall, karena aplikasi mencari rute asal-tujuan saat user melakukan pencarian, bukan menghitung semua pasangan stop.
+
 Yang harus bisa kamu jawab:
 
 - Apa itu graph dalam konteks transportasi?
@@ -862,6 +950,18 @@ Konsep yang perlu dipahami:
 - Menghitung rute transit antar stop.
 - Menggabungkan beberapa segmen.
 - Menghitung total metrik.
+
+Biaya total rute gabungan:
+
+```text
+estimatedTotalCost = estimatedFare + estimatedBbm
+```
+
+Artinya:
+
+- `estimatedFare` berasal dari tarif transportasi umum.
+- `estimatedBbm` berasal dari segmen kendaraan pribadi ke halte/stasiun awal.
+- Jika rute gabungan tidak memakai kendaraan pribadi, `estimatedBbm = 0`.
 
 Yang harus bisa kamu jawab:
 

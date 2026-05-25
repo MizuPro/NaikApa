@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -18,8 +19,10 @@ import com.example.naikapa.common.applyStatusBarTopMarginTo
 import com.example.naikapa.data.local.NaikApaDatabaseHelper
 import com.example.naikapa.data.local.SavedTripDao
 import com.example.naikapa.data.model.*
+import com.example.naikapa.data.model.TransitMarkerRole
 import com.example.naikapa.data.repository.GtfsStopSearchRepository
 import com.example.naikapa.databinding.FragmentRouteDetailBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,6 +43,8 @@ class RouteDetailFragment : Fragment() {
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var savedTripDao: SavedTripDao
     private var isFavoriteSaved = false
+    private var isFullscreen = false
+    private var backPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,6 +70,7 @@ class RouteDetailFragment : Fragment() {
 
         setupToolbar()
         binding.root.applyStatusBarTopMarginTo(binding.cardToolbar, dpToPx(8f))
+        bindRouteLocations()
         bindSummaryCard(selectedRoute)
         bindMetrics(selectedRoute.candidate.metrics)
         setupDisruptionWarning(selectedRoute)
@@ -72,12 +78,90 @@ class RouteDetailFragment : Fragment() {
         setupMap(selectedRoute.candidate)
         setupFavoriteButton(selectedRoute)
         setupReportButton(selectedRoute)
+        setupFullscreenMap()
+        setupBackPressedCallback()
     }
 
     private fun setupToolbar() {
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
         }
+    }
+
+    private fun setupBackPressedCallback() {
+        backPressedCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                exitFullscreen()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback!!)
+    }
+
+    private fun setupFullscreenMap() {
+        // Setup fullscreen map tile source sama seperti detailMapView
+        binding.fullscreenMapView.apply {
+            setMultiTouchControls(true)
+            isHorizontalMapRepetitionEnabled = false
+            isVerticalMapRepetitionEnabled = false
+            setTileSource(
+                XYTileSource(
+                    "CartoDB Positron", 1, 19, 256, ".png",
+                    arrayOf(
+                        "https://a.basemaps.cartocdn.com/light_all/",
+                        "https://b.basemaps.cartocdn.com/light_all/",
+                        "https://c.basemaps.cartocdn.com/light_all/",
+                        "https://d.basemaps.cartocdn.com/light_all/"
+                    )
+                )
+            )
+        }
+
+        binding.btnFullscreen.setOnClickListener {
+            enterFullscreen()
+        }
+
+        binding.btnExitFullscreen.setOnClickListener {
+            exitFullscreen()
+        }
+    }
+
+    private fun enterFullscreen() {
+        if (isFullscreen) return
+        isFullscreen = true
+        backPressedCallback?.isEnabled = true
+
+        // Salin semua overlay dari detailMapView ke fullscreenMapView
+        binding.fullscreenMapView.overlays.clear()
+        binding.fullscreenMapView.overlays.addAll(binding.detailMapView.overlays)
+
+        // Salin posisi dan zoom
+        val center = binding.detailMapView.mapCenter
+        val zoom = binding.detailMapView.zoomLevelDouble
+        binding.fullscreenMapView.controller.setZoom(zoom)
+        binding.fullscreenMapView.controller.setCenter(GeoPoint(center.latitude, center.longitude))
+        binding.fullscreenMapView.invalidate()
+
+        // Tampilkan overlay fullscreen, sembunyikan toolbar dan scroll content
+        binding.cardToolbar.visibility = View.GONE
+        binding.layoutFullscreenMap.visibility = View.VISIBLE
+    }
+
+    private fun exitFullscreen() {
+        if (!isFullscreen) return
+        isFullscreen = false
+        backPressedCallback?.isEnabled = false
+
+        binding.layoutFullscreenMap.visibility = View.GONE
+        binding.cardToolbar.visibility = View.VISIBLE
+    }
+
+    private fun bindRouteLocations() {
+        val origin = RouteDetailSharedState.origin
+        val destination = RouteDetailSharedState.destination
+        binding.tvOriginLabel.text = origin?.label?.ifBlank { getString(R.string.map_marker_origin) }
+            ?: getString(R.string.map_marker_origin)
+        binding.tvDestinationLabel.text = destination?.name?.ifBlank { getString(R.string.map_marker_destination) }
+            ?: getString(R.string.map_marker_destination)
     }
 
     private fun bindSummaryCard(route: ScoredRoute) {
@@ -184,14 +268,16 @@ class RouteDetailFragment : Fragment() {
                         latitude = step.fromStop.lat,
                         longitude = step.fromStop.lon,
                         description = step.fromStop.agencyId,
-                        markerType = MapMarkerType.TRANSIT
+                        markerType = MapMarkerType.TRANSIT,
+                        transitRole = TransitMarkerRole.BOARD
                     )
                     val toPt = MapPoint(
                         label = step.toStop.stopName,
                         latitude = step.toStop.lat,
                         longitude = step.toStop.lon,
                         description = step.toStop.agencyId,
-                        markerType = MapMarkerType.TRANSIT
+                        markerType = MapMarkerType.TRANSIT,
+                        transitRole = TransitMarkerRole.ALIGHT
                     )
                     val stepColor = if (step.type == TransitEdgeType.WALKING) {
                         ContextCompat.getColor(context, R.color.colorWalking)
@@ -245,14 +331,16 @@ class RouteDetailFragment : Fragment() {
                             latitude = step.fromStop.lat,
                             longitude = step.fromStop.lon,
                             description = step.fromStop.agencyId,
-                            markerType = MapMarkerType.TRANSIT
+                            markerType = MapMarkerType.TRANSIT,
+                            transitRole = TransitMarkerRole.BOARD
                         )
                         val toPt = MapPoint(
                             label = step.toStop.stopName,
                             latitude = step.toStop.lat,
                             longitude = step.toStop.lon,
                             description = step.toStop.agencyId,
-                            markerType = MapMarkerType.TRANSIT
+                            markerType = MapMarkerType.TRANSIT,
+                            transitRole = TransitMarkerRole.ALIGHT
                         )
                         val stepColor = if (step.type == TransitEdgeType.WALKING) {
                             ContextCompat.getColor(context, R.color.colorWalking)
@@ -268,14 +356,16 @@ class RouteDetailFragment : Fragment() {
                     latitude = candidate.result.originStop.latitude,
                     longitude = candidate.result.originStop.longitude,
                     description = GtfsStopSearchRepository.agencyIdToLabel(candidate.result.originStop.agencyId),
-                    markerType = MapMarkerType.TRANSIT
+                    markerType = MapMarkerType.TRANSIT,
+                    transitRole = TransitMarkerRole.BOARD
                 )
                 val destinationStopPoint = MapPoint(
                     label = candidate.result.destinationStop.stopName,
                     latitude = candidate.result.destinationStop.latitude,
                     longitude = candidate.result.destinationStop.longitude,
                     description = GtfsStopSearchRepository.agencyIdToLabel(candidate.result.destinationStop.agencyId),
-                    markerType = MapMarkerType.TRANSIT
+                    markerType = MapMarkerType.TRANSIT,
+                    transitRole = TransitMarkerRole.ALIGHT
                 )
                 overlays.add(createMarker(binding.detailMapView, originStopPoint, context))
                 overlays.add(createMarker(binding.detailMapView, destinationStopPoint, context))
@@ -560,6 +650,26 @@ class RouteDetailFragment : Fragment() {
             snippet = point.description
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             this.icon = icon
+            setOnMarkerClickListener { marker, _ ->
+                val infoText = buildMarkerInfoText(point)
+                val anchorView = _binding?.root ?: return@setOnMarkerClickListener true
+                Snackbar.make(anchorView, infoText, Snackbar.LENGTH_SHORT).show()
+                true
+            }
+        }
+    }
+
+    private fun buildMarkerInfoText(point: MapPoint): String {
+        return when (point.markerType) {
+            MapMarkerType.ORIGIN -> getString(R.string.map_marker_info_origin)
+            MapMarkerType.DESTINATION -> getString(R.string.map_marker_info_destination)
+            MapMarkerType.TRANSIT -> {
+                val stopName = point.label.ifBlank { point.description ?: "-" }
+                when (point.transitRole) {
+                    TransitMarkerRole.ALIGHT -> getString(R.string.map_marker_info_alight, stopName)
+                    else -> getString(R.string.map_marker_info_board, stopName)
+                }
+            }
         }
     }
 
@@ -636,15 +746,19 @@ class RouteDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.detailMapView.onResume()
+        binding.fullscreenMapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
         binding.detailMapView.onPause()
+        binding.fullscreenMapView.onPause()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        backPressedCallback?.remove()
+        backPressedCallback = null
         if (::dbHelper.isInitialized) dbHelper.close()
         _binding = null
     }

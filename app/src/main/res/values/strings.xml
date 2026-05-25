@@ -279,6 +279,12 @@
     <string name="route_detail_save_success">Rute berhasil disimpan ke favorit.</string>
     <string name="route_detail_save_failed">Gagal menyimpan ke favorit.</string>
     <string name="route_detail_login_required">Login terlebih dahulu untuk menyimpan favorit.</string>
+    <string name="route_detail_map_fullscreen">Perbesar peta</string>
+    <string name="route_detail_map_exit_fullscreen">Kecilkan peta</string>
+    <string name="map_marker_info_origin">Titik keberangkatan</string>
+    <string name="map_marker_info_destination">Titik tujuan</string>
+    <string name="map_marker_info_board">Naik di %1$s</string>
+    <string name="map_marker_info_alight">Turun di %1$s</string>
 
     <!-- Route Recommendation Card Metrics -->
     <string name="route_metric_time">Waktu</string>

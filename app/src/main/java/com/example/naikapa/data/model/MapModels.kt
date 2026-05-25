@@ -5,7 +5,8 @@ data class MapPoint(
     val latitude: Double,
     val longitude: Double,
     val description: String? = null,
-    val markerType: MapMarkerType = MapMarkerType.TRANSIT
+    val markerType: MapMarkerType = MapMarkerType.TRANSIT,
+    val transitRole: TransitMarkerRole = TransitMarkerRole.NONE
 )
 
 data class RoutePolyline(
@@ -17,6 +18,12 @@ enum class MapMarkerType {
     ORIGIN,
     DESTINATION,
     TRANSIT
+}
+
+enum class TransitMarkerRole {
+    NONE,
+    BOARD,   // Naik di halte/stasiun ini
+    ALIGHT   // Turun di halte/stasiun ini
 }
 
 enum class MapStyle {
