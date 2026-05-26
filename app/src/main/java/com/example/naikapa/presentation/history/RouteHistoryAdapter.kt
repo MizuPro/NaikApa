@@ -13,7 +13,8 @@ import com.example.naikapa.data.model.RouteHistory
 import java.util.Locale
 
 class RouteHistoryAdapter(
-    private val onDelete: (RouteHistory) -> Unit
+    private val onDelete: (RouteHistory) -> Unit,
+    private val onItemClick: (RouteHistory) -> Unit = {}
 ) : ListAdapter<RouteHistory, RouteHistoryAdapter.ViewHolder>(DIFF) {
 
     companion object {
@@ -50,6 +51,7 @@ class RouteHistoryAdapter(
         holder.tvCost.text = formatRupiah(item.estimatedCost)
         holder.tvTransit.text = "${item.transitCount}x"
         holder.btnDelete.setOnClickListener { onDelete(item) }
+        holder.itemView.setOnClickListener { onItemClick(item) }
     }
 
     private fun formatDuration(seconds: Int): String {

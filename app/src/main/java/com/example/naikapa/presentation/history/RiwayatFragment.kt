@@ -86,7 +86,11 @@ class RiwayatFragment : Fragment() {
             onDelete = { history -> deleteSearchHistory(history) }
         )
         routeHistoryAdapter = RouteHistoryAdapter(
-            onDelete = { history -> deleteRouteHistory(history) }
+            onDelete = { history -> deleteRouteHistory(history) },
+            onItemClick = { history ->
+                RouteHistoryDetailSharedState.selected = history
+                findNavController().navigate(R.id.action_riwayatFragment_to_routeHistoryDetailFragment)
+            }
         )
 
         binding.rvHistory.layoutManager = LinearLayoutManager(requireContext())
