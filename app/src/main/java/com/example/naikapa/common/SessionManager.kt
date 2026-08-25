@@ -12,12 +12,38 @@ class SessionManager(context: Context) {
         private const val KEY_USER_ID = "userId"
         private const val KEY_USER_EMAIL = "userEmail"
         private const val KEY_USER_NAME = "userName"
+        private const val KEY_AUTH_TOKEN = "authToken"
+        private const val KEY_HAS_MOTOR = "hasMotor"
+        private const val KEY_HAS_CAR = "hasCar"
     }
 
+    /** Simpan sesi setelah auth backend berhasil (dengan JWT token). */
+    fun saveFullSession(
+        userId: Long,
+        name: String,
+        email: String,
+        token: String,
+        hasMotor: Boolean = false,
+        hasCar: Boolean = false
+    ) {
+        prefs.edit().apply {
+            putLong(KEY_USER_ID, userId)
+            putString(KEY_USER_NAME, name)
+            putString(KEY_USER_EMAIL, email)
+            putString(KEY_AUTH_TOKEN, token)
+            putBoolean(KEY_HAS_MOTOR, hasMotor)
+            putBoolean(KEY_HAS_CAR, hasCar)
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            apply()
+        }
+    }
+
+    /** Simpan sesi tanpa token (fallback offline / SQLite lokal). */
     fun saveSession(userId: Int, name: String, email: String) {
         saveSession(userId.toLong(), name, email)
     }
 
+    /** Simpan sesi tanpa token (fallback offline / SQLite lokal). */
     fun saveSession(userId: Long, name: String, email: String) {
         prefs.edit().apply {
             putLong(KEY_USER_ID, userId)
@@ -44,6 +70,19 @@ class SessionManager(context: Context) {
         }
     }
 
+    /** Kembalikan JWT token sebagai header "Bearer <token>", atau null jika belum login via backend. */
+    fun getBearerToken(): String? {
+        val token = prefs.getString(KEY_AUTH_TOKEN, null) ?: return null
+        return "Bearer $token"
+    }
+
+    /** Kembalikan raw JWT token string. */
+    fun getToken(): String? = prefs.getString(KEY_AUTH_TOKEN, null)
+
+    fun hasMotor(): Boolean = prefs.getBoolean(KEY_HAS_MOTOR, false)
+
+    fun hasCar(): Boolean = prefs.getBoolean(KEY_HAS_CAR, false)
+
     fun updateSessionUser(name: String, email: String) {
         prefs.edit().apply {
             putString(KEY_USER_NAME, name)
@@ -64,3 +103,4 @@ class SessionManager(context: Context) {
         prefs.edit().clear().apply()
     }
 }
+

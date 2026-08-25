@@ -13,6 +13,8 @@
     <string name="password_hint">Masukkan password</string>
     <string name="forgot_password">Lupa password?</string>
     <string name="login">Masuk</string>
+    <string name="login_button">Masuk</string>
+    <string name="register_button">Daftar</string>
     <string name="or_divider">atau</string>
     <string name="no_account">Belum punya akun? </string>
     <string name="register_link">Daftar</string>

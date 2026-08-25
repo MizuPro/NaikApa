@@ -18,6 +18,37 @@ class UserDao(private val dbHelper: NaikApaDatabaseHelper) {
         return dbHelper.writableDatabase.insert(NaikApaDbContract.Users.TABLE, null, values)
     }
 
+    /** Simpan atau update user dari cloud backend ke SQLite lokal dengan idUser asli dari server */
+    fun saveOrUpdateCloudUser(user: User): Long {
+        val values = ContentValues().apply {
+            if (user.idUser > 0) {
+                put(NaikApaDbContract.Users.ID, user.idUser)
+            }
+            put(NaikApaDbContract.Users.NAMA, user.nama)
+            put(NaikApaDbContract.Users.EMAIL, user.email)
+            put(NaikApaDbContract.Users.PASSWORD, user.password)
+            put(NaikApaDbContract.Users.HAS_MOTOR, user.hasMotor.toInt())
+            put(NaikApaDbContract.Users.HAS_CAR, user.hasCar.toInt())
+            put(NaikApaDbContract.Users.CREATED_AT, user.createdAt)
+        }
+        val existing = if (user.idUser > 0) getUserById(user.idUser) else null
+        return if (existing != null) {
+            dbHelper.writableDatabase.update(
+                NaikApaDbContract.Users.TABLE,
+                values,
+                "${NaikApaDbContract.Users.ID} = ?",
+                arrayOf(user.idUser.toString())
+            ).toLong()
+        } else {
+            dbHelper.writableDatabase.insertWithOnConflict(
+                NaikApaDbContract.Users.TABLE,
+                null,
+                values,
+                android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE
+            )
+        }
+    }
+
     fun isEmailExists(email: String): Boolean {
         dbHelper.readableDatabase.query(
             NaikApaDbContract.Users.TABLE,

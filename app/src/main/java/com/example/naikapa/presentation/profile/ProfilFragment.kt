@@ -59,12 +59,28 @@ class ProfilFragment : Fragment() {
 
     private fun loadActiveUser() {
         val userId = sessionManager.getUserId()
-        val user = if (userId > 0) userDao.getUserById(userId) else null
-        if (user == null) {
+        if (userId <= 0 || !sessionManager.isLoggedIn()) {
             sessionManager.logout()
             toast("Sesi tidak valid, silakan login ulang")
             goToAuth()
             return
+        }
+
+        var user = userDao.getUserById(userId)
+        if (user == null) {
+            // Fallback dari SessionManager jika data SQLite lokal belum ada
+            val name = sessionManager.getUserName() ?: "User"
+            val email = sessionManager.getUserEmail() ?: ""
+            user = User(
+                idUser = userId,
+                nama = name,
+                email = email,
+                password = "",
+                hasMotor = sessionManager.hasMotor(),
+                hasCar = sessionManager.hasCar()
+            )
+            // Cache ke SQLite lokal agar operasi userDao berjalan lancar selanjutnya
+            try { userDao.saveOrUpdateCloudUser(user) } catch (_: Exception) {}
         }
 
         activeUser = user

@@ -13,6 +13,8 @@ object AppConstants {
     const val TOMTOM_SEARCH_LIMIT = 8
     const val TOMTOM_MAX_ALTERNATIVES = 2
     const val TOMTOM_BASE_URL = "https://api.tomtom.com/"
+    const val BACKEND_BASE_URL = "https://naikapa-backend-56cbdd1ec8a0.herokuapp.com/"
+    const val BACKEND_FALLBACK_URL = "https://naikapa-backend.michaelk.fun/"
     const val TOMTOM_COUNTRY_SET_ID = "ID"
     const val TOMTOM_TYPEAHEAD = true
     const val TOMTOM_MIN_QUERY_LENGTH = 3
