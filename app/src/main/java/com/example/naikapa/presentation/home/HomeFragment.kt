@@ -191,14 +191,16 @@ class HomeFragment : Fragment() {
         )
         homeScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-        // Inisialisasi DisruptionReportDao dan RecommendationEngine
+        // Inisialisasi DisruptionReportDao, DelayRepository, dan RecommendationEngine
         disruptionReportDao = DisruptionReportDao(dbHelper)
+        val delayRepository = com.example.naikapa.data.repository.DelayRepository(disruptionReportDao = disruptionReportDao)
         routeCacheRepository = RouteCacheRepository(RouteCacheDao(dbHelper))
         recommendationEngine = RecommendationEngine(
             transitRoutingRepository = transitRoutingRepository,
             tomTomRoutingRepository = tomTomRoutingRepository,
             combinedRouteRepository = combinedRouteRepository,
             disruptionReportDao = disruptionReportDao,
+            delayRepository = delayRepository,
             scorer = RecommendationScorer(),
             reasonBuilder = RecommendationReasonBuilder()
         )
@@ -1026,12 +1028,12 @@ class HomeFragment : Fragment() {
         val transitMode = getTransitModeForCurrentMode()
         val uid = sessionManager.getUserId()
         val hasMotor = if (uid > 0) {
-            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasMotor ?: false }
-            catch (e: Exception) { false }
+            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasMotor ?: sessionManager.hasMotor() }
+            catch (e: Exception) { sessionManager.hasMotor() }
         } else false
         val hasCar = if (uid > 0) {
-            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasCar ?: false }
-            catch (e: Exception) { false }
+            try { com.example.naikapa.data.local.UserDao(dbHelper).getUserById(uid)?.hasCar ?: sessionManager.hasCar() }
+            catch (e: Exception) { sessionManager.hasCar() }
         } else false
         val tomTomApiKey = BuildConfig.TOMTOM_API_KEY
         val hasValidTomTomApiKey = tomTomApiKey.isNotBlank() &&

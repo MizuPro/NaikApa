@@ -33,11 +33,14 @@ import kotlinx.coroutines.withContext
  * 5. Urutkan berdasarkan skor.
  * 6. Kembalikan RecommendationResult (utama + maks 2 alternatif).
  */
+import com.example.naikapa.data.repository.DelayRepository
+
 class RecommendationEngine(
     private val transitRoutingRepository: TransitRoutingRepository,
     private val tomTomRoutingRepository: TomTomRoutingRepository,
     private val combinedRouteRepository: CombinedRouteRepository,
     private val disruptionReportDao: DisruptionReportDao,
+    private val delayRepository: DelayRepository? = null,
     private val scorer: RecommendationScorer = RecommendationScorer(),
     private val reasonBuilder: RecommendationReasonBuilder = RecommendationReasonBuilder()
 ) {
@@ -180,9 +183,9 @@ class RecommendationEngine(
 
         if (candidates.isEmpty()) error("Tidak ada rute yang ditemukan untuk kombinasi input ini.")
 
-        // ── 4. Ambil gangguan aktif ──────────────────────────────────────────
+        // ── 4. Ambil gangguan aktif dari Cloud Backend (NeonDB) & fallback SQLite ──
         val activeDisruptions = withContext(Dispatchers.IO) {
-            disruptionReportDao.getActiveReports()
+            delayRepository?.getActiveReports() ?: disruptionReportDao.getActiveReports()
         }
 
         // ── 5. Skor dan urutkan ──────────────────────────────────────────────

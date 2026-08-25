@@ -28,6 +28,7 @@ class StatusGangguanFragment : Fragment() {
     private lateinit var sessionManager: SessionManager
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var reportDao: DisruptionReportDao
+    private lateinit var delayRepository: com.example.naikapa.data.repository.DelayRepository
     private lateinit var adapter: DisruptionReportAdapter
 
     override fun onCreateView(
@@ -44,6 +45,7 @@ class StatusGangguanFragment : Fragment() {
         sessionManager = SessionManager(requireContext())
         dbHelper = NaikApaDatabaseHelper(requireContext())
         reportDao = DisruptionReportDao(dbHelper)
+        delayRepository = com.example.naikapa.data.repository.DelayRepository(disruptionReportDao = reportDao)
 
         setupRecyclerView()
         setupFab()
@@ -91,7 +93,7 @@ class StatusGangguanFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val reports: List<DisruptionReport> = try {
-                reportDao.getActiveReports()
+                delayRepository.getActiveReports()
             } catch (e: Exception) {
                 emptyList()
             }
@@ -130,13 +132,12 @@ class StatusGangguanFragment : Fragment() {
     private fun deleteReport(report: DisruptionReport) {
         val userId = sessionManager.getUserId()
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val deleted = reportDao.deleteByUser(report.idReport, userId)
-            // Hapus file foto jika ada
-            if (deleted > 0) {
+            val success = delayRepository.deleteReport(report.idReport, userId)
+            if (success) {
                 ReportPhotoHelper.deletePhoto(report.photoPath)
             }
             withContext(Dispatchers.Main) {
-                if (deleted > 0) {
+                if (success) {
                     toast(getString(R.string.report_deleted_success))
                     loadReports()
                 } else {

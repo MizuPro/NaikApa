@@ -35,6 +35,7 @@ class AddEditDisruptionReportFragment : Fragment() {
     private lateinit var sessionManager: SessionManager
     private lateinit var dbHelper: NaikApaDatabaseHelper
     private lateinit var reportDao: DisruptionReportDao
+    private lateinit var delayRepository: com.example.naikapa.data.repository.DelayRepository
 
     private var existingReport: DisruptionReport? = null
     private var photoFile: File? = null
@@ -104,6 +105,7 @@ class AddEditDisruptionReportFragment : Fragment() {
         sessionManager = SessionManager(requireContext())
         dbHelper = NaikApaDatabaseHelper(requireContext())
         reportDao = DisruptionReportDao(dbHelper)
+        delayRepository = com.example.naikapa.data.repository.DelayRepository(disruptionReportDao = reportDao)
 
         setupCategoryDropdown()
         setupButtons()
@@ -244,6 +246,13 @@ class AddEditDisruptionReportFragment : Fragment() {
             binding.tilDescription.error = null
         }
 
+        if (stopId == null && routeId == null) {
+            binding.tilRoute.error = "Wajib mengisi salah satu: Rute atau Halte"
+            valid = false
+        } else {
+            binding.tilRoute.error = null
+        }
+
         if (!valid) return
 
         val userId = sessionManager.getUserId()
@@ -256,6 +265,7 @@ class AddEditDisruptionReportFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val existing = existingReport
+            val photoFileObj = selectedPhotoPath?.let { File(it) }
             val result: Boolean = if (existing != null) {
                 val updated = existing.copy(
                     category    = category,
@@ -266,18 +276,17 @@ class AddEditDisruptionReportFragment : Fragment() {
                 )
                 reportDao.updateByUser(updated) > 0
             } else {
-                val now = System.currentTimeMillis()
-                val report = DisruptionReport(
-                    idUser      = userId,
-                    stopId      = stopId,
-                    routeId     = routeId,
-                    category    = category,
+                val createRes = delayRepository.createReport(
+                    idUser = userId,
+                    stopId = stopId,
+                    routeId = routeId,
+                    category = category,
                     description = description,
-                    photoPath   = selectedPhotoPath,
-                    createdAt   = now,
-                    expiredAt   = now + DisruptionReport.ONE_HOUR_MILLIS
+                    photoFile = photoFileObj,
+                    impactLevel = 1,
+                    durationMinutes = 60
                 )
-                reportDao.insert(report) > 0
+                createRes.isSuccess
             }
 
             withContext(Dispatchers.Main) {

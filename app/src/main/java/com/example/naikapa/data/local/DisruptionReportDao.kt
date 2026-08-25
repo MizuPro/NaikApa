@@ -4,18 +4,21 @@ import android.content.ContentValues
 import android.database.Cursor
 import com.example.naikapa.data.model.DisruptionReport
 
-class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
+open class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper? = null) {
 
-    fun insert(report: DisruptionReport): Long {
-        return dbHelper.writableDatabase.insert(
+    private val writableDb get() = checkNotNull(dbHelper) { "DatabaseHelper null" }.writableDatabase
+    private val readableDb get() = checkNotNull(dbHelper) { "DatabaseHelper null" }.readableDatabase
+
+    open fun insert(report: DisruptionReport): Long {
+        return writableDb.insert(
             NaikApaDbContract.DisruptionReports.TABLE,
             null,
             report.toValues()
         )
     }
 
-    fun getById(idReport: Long): DisruptionReport? {
-        dbHelper.readableDatabase.query(
+    open fun getById(idReport: Long): DisruptionReport? {
+        readableDb.query(
             NaikApaDbContract.DisruptionReports.TABLE,
             null,
             "${NaikApaDbContract.DisruptionReports.ID} = ?",
@@ -26,8 +29,8 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
         }
     }
 
-    fun getActiveReports(nowMillis: Long = System.currentTimeMillis()): List<DisruptionReport> {
-        dbHelper.readableDatabase.query(
+    open fun getActiveReports(nowMillis: Long = System.currentTimeMillis()): List<DisruptionReport> {
+        readableDb.query(
             NaikApaDbContract.DisruptionReports.TABLE,
             null,
             "${NaikApaDbContract.DisruptionReports.STATUS} = ? AND ${NaikApaDbContract.DisruptionReports.EXPIRED_AT} > ?",
@@ -41,7 +44,7 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
     }
 
     fun getByUser(idUser: Long): List<DisruptionReport> {
-        dbHelper.readableDatabase.query(
+        readableDb.query(
             NaikApaDbContract.DisruptionReports.TABLE,
             null,
             "${NaikApaDbContract.DisruptionReports.ID_USER} = ?",
@@ -55,7 +58,7 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
     }
 
     fun getActiveByUser(idUser: Long, nowMillis: Long = System.currentTimeMillis()): List<DisruptionReport> {
-        dbHelper.readableDatabase.query(
+        readableDb.query(
             NaikApaDbContract.DisruptionReports.TABLE,
             null,
             "${NaikApaDbContract.DisruptionReports.ID_USER} = ? AND " +
@@ -72,7 +75,7 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
 
     /** Update laporan — hanya jika idReport dan idUser cocok (ownership check). */
     fun updateByUser(report: DisruptionReport): Int {
-        return dbHelper.writableDatabase.update(
+        return writableDb.update(
             NaikApaDbContract.DisruptionReports.TABLE,
             report.toValues(),
             "${NaikApaDbContract.DisruptionReports.ID} = ? AND ${NaikApaDbContract.DisruptionReports.ID_USER} = ?",
@@ -80,8 +83,8 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
         )
     }
 
-    fun update(report: DisruptionReport): Int {
-        return dbHelper.writableDatabase.update(
+    open fun update(report: DisruptionReport): Int {
+        return writableDb.update(
             NaikApaDbContract.DisruptionReports.TABLE,
             report.toValues(),
             "${NaikApaDbContract.DisruptionReports.ID} = ?",
@@ -93,7 +96,7 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
         val values = ContentValues().apply {
             put(NaikApaDbContract.DisruptionReports.STATUS, DisruptionReport.STATUS_RESOLVED)
         }
-        return dbHelper.writableDatabase.update(
+        return writableDb.update(
             NaikApaDbContract.DisruptionReports.TABLE,
             values,
             "${NaikApaDbContract.DisruptionReports.ID} = ?",
@@ -102,11 +105,11 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
     }
 
     /** Tandai resolved — hanya jika idReport dan idUser cocok (ownership check). */
-    fun markResolvedByUser(idReport: Long, idUser: Long): Int {
+    open fun markResolvedByUser(idReport: Long, idUser: Long): Int {
         val values = ContentValues().apply {
             put(NaikApaDbContract.DisruptionReports.STATUS, DisruptionReport.STATUS_RESOLVED)
         }
-        return dbHelper.writableDatabase.update(
+        return writableDb.update(
             NaikApaDbContract.DisruptionReports.TABLE,
             values,
             "${NaikApaDbContract.DisruptionReports.ID} = ? AND ${NaikApaDbContract.DisruptionReports.ID_USER} = ?",
@@ -114,8 +117,8 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
         )
     }
 
-    fun delete(idReport: Long): Int {
-        return dbHelper.writableDatabase.delete(
+    open fun delete(idReport: Long): Int {
+        return writableDb.delete(
             NaikApaDbContract.DisruptionReports.TABLE,
             "${NaikApaDbContract.DisruptionReports.ID} = ?",
             arrayOf(idReport.toString())
@@ -123,8 +126,8 @@ class DisruptionReportDao(private val dbHelper: NaikApaDatabaseHelper) {
     }
 
     /** Hapus laporan — hanya jika idReport dan idUser cocok (ownership check). */
-    fun deleteByUser(idReport: Long, idUser: Long): Int {
-        return dbHelper.writableDatabase.delete(
+    open fun deleteByUser(idReport: Long, idUser: Long): Int {
+        return writableDb.delete(
             NaikApaDbContract.DisruptionReports.TABLE,
             "${NaikApaDbContract.DisruptionReports.ID} = ? AND ${NaikApaDbContract.DisruptionReports.ID_USER} = ?",
             arrayOf(idReport.toString(), idUser.toString())
